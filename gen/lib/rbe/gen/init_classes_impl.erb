@@ -1,0 +1,16 @@
+
+#include "rbe.hpp"
+% target.each do |c|
+#include "<%= c.name %>.hpp"
+% end
+
+namespace rbe
+{
+	void
+	init_classes(VALUE mod)
+	{
+% target.each do |c|
+		B::<%= c.name %>::rb_init_class(mod);
+% end
+	}
+}

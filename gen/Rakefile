@@ -1,0 +1,169 @@
+# -*- mode: ruby -*-
+
+require "yaml"
+
+$dev_mode = true
+
+DIR = File.dirname task.application.rakefile
+$:.push File.join(DIR, "lib")
+
+require "rbe/cpp"
+require "rbe/header_reader"
+require "rbe/gen/generator"
+
+if $dev_mode
+  LIBS = FileList.new(File.join(DIR, "lib", "**", "*.{rb,erb}"))
+else
+  LIBS = []
+end
+
+task :init => [:populate_file_tasks, :populate_copy_tasks]
+
+task :read_config do |t|
+  config_file = File.join(DIR, "config.yaml")
+  $config = YAML.load_file config_file
+  [["out_dir", "out"], ["patch_dir", "patch"]].each do |key, default|
+    if $config[key]
+      unless $config[key].start_with? "/"
+        $config[key] = File.join(DIR, $config[key])
+      end
+    else
+      $config[key] = File.join(DIR, default)
+    end
+  end
+  $patch_files = FileList[File.join($config["patch_dir"], "*.rb")]
+  task :apply_patches => $patch_files
+  directory $config["out_dir"]
+  task :init => $config["out_dir"]
+end
+
+task :update_hpp
+task :update_cpp
+task :copy_files
+
+def push_class(c, list)
+  unless hash.include? c.name
+    s = c.super_class
+    push_class s, list if s
+    list << c
+  end
+end
+
+task :populate_copy_tasks => :read_config do |t|
+  srcs = FileList.new(File.join($config["src_dir"], "**", "*.{c,cpp,h,hpp}"))
+  srcs.each do |src|
+    name = File.basename src
+    dst = File.join($config["out_dir"], name)
+    file dst => src do |u|
+      cp u.prerequisites[0], u.name
+    end
+    task :copy_files => dst
+  end
+end
+
+task :populate_file_tasks => [:read_config] do |t|
+  class_init_filename = File.join($config["out_dir"], "_class_init.cpp")
+  file class_init_filename do |t|
+    classes = {}
+    RBe::Cpp::Class.all_classes.each do |c|
+      (c.ancestors + [c]).each do |a|
+        classes[a.name] = a
+      end
+    end
+    # TODO
+    classes.delete "Archiver"
+    classes.delete "Unarchiver"
+    list = classes.values
+    File.open t.name, "w" do |f|
+      f.write RBe::Gen::Generator.generate(:init_classes_impl, list)
+    end
+  end
+  task :update_cpp => class_init_filename
+
+  $config["header_files"].each do |ent|
+    if String === ent
+      classes = [ent[/\/([^\.]+)\./, 1]]
+      haiku_header = File.join($config["haiku_headers_dir"], ent)
+    else
+      haiku_header = File.join($config["haiku_headers_dir"], ent.first)
+      classes = ent[1, ent.length - 1]
+    end
+    classes.each do |clazz|
+      ["cpp", "hpp"].each do |ext|
+        filename = File.join($config["out_dir"], clazz + "." + ext)
+        file class_init_filename => filename
+        file filename => haiku_header
+        file filename => $patch_files
+        file filename => LIBS unless LIBS.empty?
+        task "update_#{ext}".to_sym => filename
+        file filename do |t|
+          template = case ext
+                     when "cpp"
+                       :class_impl
+                     when "hpp"
+                       :class_header
+                     end
+          File.open t.name, "w" do |f|
+            c = RBe::Cpp::Class[clazz]
+            f.write RBe::Gen::Generator.generate(template, c)
+          end
+        end
+      end
+    end
+  end
+end
+
+task :read_headers => :read_config do |t|
+  $config["header_files"].each do |ent|
+    if String === ent
+      filename = ent
+    else
+      filename = ent.first
+    end
+    path = File.join $config["haiku_headers_dir"], filename
+    File.open path do |file|
+      access = nil
+      clazz = nil
+      RBe::HeaderReader.parse file do |what, *args|
+        case what
+        when :class_start
+          name, super_classes = args
+          name.sub! /^B?/, ""
+          clazz = RBe::Cpp::Class.new name
+          clazz.haiku_header = filename
+          unless super_classes.empty?
+            clazz.super_class = super_classes.first.sub(/^B?/, "")
+          end
+        when :public, :protected, :private
+          access = what
+        when :member
+          proto = args.first
+          if proto.include? "("
+            ftype, f = RBe::Cpp::Function.parse proto
+            case ftype
+            when :constructor
+              clazz.add_ctor f
+            when :function
+              if f.static?
+                clazz.add_static_function f, access
+              else
+                clazz.add_function f, access
+              end
+            end
+          else
+            v = RBe::Cpp::Variable.parse proto
+            clazz.add_variable v
+          end
+        end
+      end
+    end
+  end
+end
+
+task :apply_patches do |t|
+  t.prerequisites.each do |filename|
+    Module.new.instance_eval File.read(filename)
+  end
+end
+
+task :default => [:init, :read_headers, :apply_patches, :update_hpp, :update_cpp, :copy_files]

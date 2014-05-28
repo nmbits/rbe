@@ -1,0 +1,113 @@
+% c = target
+
+#ifndef RBE_<%= ruby_name(c.name).upcase %>_HPP
+#define RBE_<%= ruby_name(c.name).upcase %>_HPP 1
+
+#include <<%= c.haiku_header %>>
+
+#include <ruby.h>
+#include "type_map.hpp"
+
+namespace rbe {
+namespace B {
+	class <%= c.name %>;
+}
+template<>
+struct WrapperOf<<%= c.api_name %>>
+{
+	typedef B::<%= c.name %> Class;
+};
+
+template<>
+struct PointerOf<<%= c.api_name %>>
+{
+	typedef <%= c.root_class.api_name %> Class;
+};
+
+namespace B {
+
+class <%= c.name %> : public <%= c.api_name %>
+{
+private:
+	static VALUE sClass;
+	static rb_data_type_t sDataType;
+
+% if c.wrapper?
+	//
+	// inner variables
+	//
+%   c.inner_variables.each do |v|
+	<%= v.type %> <%= v.name %>;
+%   end
+% end
+	//
+	// Constructor
+	//
+% if c.wrapper?
+public:
+%   c.ctors.each do |f|
+	<%= c.name %>(<%= f.args.each_with_index.map{|a, i| "#{a.type} arg#{i}"}.join(", ") %>)
+		: <%= c.api_name %>(<%= f.arity.times.map{|i| "arg#{i}"}.join(", ") %>)
+%     c.inner_variables.each do |v|
+		, <%= v.name %>(<%= v.value %>)
+%     end
+	{}
+%   end
+	virtual ~<%= c.name %>() {}
+% else
+private:
+	<%= c.name %>() {}
+	~<%= c.name %>() {}
+% end
+
+% if c.hooks.size > 0
+public:
+	//
+	// Hooks
+	//
+%   c.hooks.each do |f|
+	<%= f.proto %>;
+%   end
+	//
+	// Hooks from super classes
+	//
+%   c.super_hooks.each do |f|
+	<%= f.proto %>;
+%   end
+% end
+
+public:
+	static const VALUE Class() { return sClass; }
+	static const rb_data_type_t *DataType() { return &sDataType; }
+% unless c.wrapper?
+	static VALUE Wrap(<%= c.api_name %> *obj);
+% end
+
+private:
+	//
+	// Member functions for Ruby
+	//
+% c.function_names(:hook, :public, :protected).each do |name|
+	static VALUE rb_<%= ruby_name name %>(int, VALUE *, VALUE);
+% end
+% c.variables.each do |v|
+	static VALUE rb_iv_<%= ruby_name v.name %>_get(VALUE);
+	static VALUE rb_iv_<%= ruby_name v.name %>_set(VALUE, VALUE);
+% end
+	//
+	// Ruby interfaces
+	//
+	static VALUE rb_initialize(int, VALUE *, VALUE);
+	static VALUE rb_alloc_(VALUE);
+	static void rb_mark_(void *);
+	static void rb_free_(void *);
+	static size_t rb_size_(const void *);
+
+public:
+	// init
+	static void rb_init_class(VALUE);
+};
+
+} } // namespace rbe, B
+
+#endif

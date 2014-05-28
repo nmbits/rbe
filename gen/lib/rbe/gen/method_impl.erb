@@ -1,0 +1,68 @@
+% name, c, functions = args
+
+VALUE
+<%= c.name %>::rb_<%= ruby_name name %>(int argc, VALUE *argv, VALUE self)
+{
+	RBE_TRACE_METHOD_CALL("<%= c.name %>::rb_<%= ruby_name name %>", argc, argv, self);
+	VALUE vret = Qnil;
+
+	<%= c.api_name %> *_this = Convert<<%= c.api_name %> *>::FromValue(self);
+
+% if functions.find{|f| f.assert_locked? }
+	if (find_thread(NULL) != _this->LockingThread())
+		rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
+% end
+
+% arity_max = functions.map{|f| f.arity }.max
+% arity_min = functions.map{|f| f.arity_min }.min
+% optional = arity_max - arity_min
+% if arity_max > 0
+	VALUE vargs[<%= arity_max %>];
+	rb_scan_args(argc, argv, "<%= arity_min %><%= optional %>", <%= arity_max.times.map{|i| "&vargs[#{i}]" }.join(', ') %>);
+% end
+
+% functions.each do |f|
+%   if f.arity_min == f.arity
+	if (<%= f.arity %> == argc) {
+%   else
+	if (<%= f.arity_min %> <= argc && argc <= <%= f.arity %>) {
+%   end
+%   f.args.each_with_index do |a, i|
+		if (<%= i %> < argc && !Convert<<%= a.type %>>::IsConvertable(vargs[<%= i %>]))
+			goto break_<%= f.index %>;
+%   end
+%   f.args.each_with_index do |a, i|
+%     if i < f.arity_min
+		<%= a.type %> arg<%= i %> = Convert<<%= a.type %>>::FromValue(vargs[<%= i %>]);
+%     else
+		<%= a.type %> arg<%= i %> = (<%= i %> < argc ? Convert<<%= a.type %>>::FromValue(vargs[<%= i %>]) : <%= a.value %>);
+%     end
+%   end
+%   if f.ret?
+		<%= f.ret %> ret = _this-><%= c.api_name %>::<%= f.name %>(<%= f.arity.times.map{|j| "arg#{j}" }.join(", ") %>);
+		vret = Convert<<%= f.ret %>>::ToValue(ret);
+%   else
+		_this-><%= c.api_name %>::<%= f.name %>(<%= f.arity.times.map{|j| "arg#{j}" }.join(", ") %>);
+%   end
+%   if f.option[:memorize] || f.option[:forget]
+		void *ptr = DATA_PTR(self);
+%   end
+%   if f.option[:memorize]
+%     f.option[:memorize].each do |m|
+		ObjectRegistory::Instance()->Memorize(ptr, varg[<%= m %>]);
+%     end
+%   end
+%   if f.option[:forget]
+%     f.option[:forget].each do |m|
+		ObjectRegistory::Instance()->Forget(ptr, varg[<%= m %>]);
+%     end
+%   end
+		return vret;
+	}
+ break_<%= f.index %>:
+
+% end
+
+	rb_raise(rb_eArgError, "wrong type of argument");
+	return Qnil;
+}
