@@ -29,7 +29,7 @@ Ruby 2.1.0のインストール
 2. ruby-2.1.0-haiku-thread.patchを、展開したディレクトリに適用してくだ
    さい。
 
-   > patch -p 0 < ruby-2.1.0-haiku-thread.patch
+   > patch < ruby-2.1.0-haiku-thread.patch
 
 3. gcc4モードへ移行してください。
 

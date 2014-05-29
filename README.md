@@ -25,7 +25,7 @@ Install Ruby 2.1.0
 
 2. Apply ruby-2.1.0-haiku-thread.patch to the source tree.
 
-   > patch -p 0 < ruby-2.1.0-haiku-thread.patch
+   > patch < ruby-2.1.0-haiku-thread.patch
 
 3. Switch to gcc4 mode.
 
