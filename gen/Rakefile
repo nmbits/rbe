@@ -34,7 +34,6 @@ task :read_config do |t|
   $patch_files = FileList[File.join($config["patch_dir"], "*.rb")]
   task :apply_patches => $patch_files
   directory $config["out_dir"]
-  task :init => $config["out_dir"]
 end
 
 task :update_hpp
@@ -49,12 +48,12 @@ def push_class(c, list)
   end
 end
 
-task :populate_copy_tasks => :read_config do |t|
+task :populate_copy_tasks => [:read_config] do |t|
   srcs = FileList.new(File.join($config["src_dir"], "**", "*.{c,cpp,h,hpp}"))
   srcs.each do |src|
     name = File.basename src
     dst = File.join($config["out_dir"], name)
-    file dst => src do |u|
+    file dst => [src, $config["out_dir"]] do |u|
       cp u.prerequisites[0], u.name
     end
     task :copy_files => dst
@@ -95,6 +94,7 @@ task :populate_file_tasks => [:read_config] do |t|
         file filename => haiku_header
         file filename => $patch_files
         file filename => LIBS unless LIBS.empty?
+        file filename => $config["out_dir"]
         task "update_#{ext}".to_sym => filename
         file filename do |t|
           template = case ext
