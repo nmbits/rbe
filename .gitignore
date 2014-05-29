@@ -2,4 +2,5 @@
 *.so
 build_src/
 Makefile
+mkmf.log
 *~
