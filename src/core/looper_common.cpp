@@ -42,6 +42,12 @@ namespace rbe
 			looper->Quit();
 		}
 
+		void AssertLocked(BLooper *looper, thread_id tid)
+		{
+			if (looper->LockingThread() != tid)
+				rb_raise(rb_eThreadError, "looper must be locked before proceeding\n");
+		}
+
 		void Unregister::operator()()
 		{
 			RBE_TRACE("LooperCommon::Unregister::operator()()");

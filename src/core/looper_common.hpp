@@ -5,6 +5,7 @@
 #include <app/Looper.h>
 #include <app/Handler.h>
 #include <app/Messenger.h>
+#include <kernel/OS.h>
 
 #include <ruby/ruby.h>
 #include <ruby/thread.h>
@@ -19,6 +20,7 @@ namespace rbe
 		void PostUbfMessage(void *looper_ptr);
 		void DetachLooper(BLooper *looper, int state);
 		void QuitLooper(BLooper *looper, int state);
+		void AssertLocked(BLooper *looper, thread_id tid = find_thread(NULL));
 
 		template<typename T>
 		inline status_t LockWithTimeoutFunc(T *target, bigtime_t time);

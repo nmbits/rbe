@@ -38,9 +38,8 @@ namespace rbe
 				{
 					VALUE self = Convert<BApplication *>::ToValue(app);
 					VALUE *values = ALLOCA_N(VALUE, argc);
-					for (int i = 0; i < argc; i++) {
+					for (int i = 0; i < argc; i++)
 						values[i] = rb_str_new_cstr(argv[i]);
-					}
 					rb_funcallv(self, rb_intern("argv_received"), argc, values);
 				}
 			};
@@ -71,16 +70,13 @@ namespace rbe
 			if (Convert<const char *>::IsConvertable(varg0)) {
 				const char * arg0 = Convert<const char *>::FromValue(varg0);
 				_this = new Application(arg0, &status);
-				if (status != B_OK) {
+				if (status != B_OK)
 					rb_raise(rb_eArgError, "BApplication cannot be initialized (%d)", status);
-					return Qnil;
-				}
 			} else if (Convert<BMessage *>::IsConvertable(varg0)) {
 				BMessage *arg0 = Convert<BMessage *>::FromValue(varg0);
 				_this = new Application(arg0);
 			} else {
 				rb_raise(rb_eArgError, "invalid argument");
-				return self;    
 			}
 			PointerOf<BApplication>::Class *p = _this;
 			DATA_PTR(self) = p;
@@ -104,6 +100,8 @@ namespace rbe
 
 			BApplication *_this = Convert<BApplication *>::FromValue(self);
 			Application *app = static_cast<Application *>(_this);
+
+			LooperCommon::AssertLocked(_this);
 
 			if (app->fRunCalled)
 				rb_raise(rb_eRuntimeError, "B::Application#run was already called.");
