@@ -48,6 +48,5 @@ if c
 
   c.ctors.first.set_option(:custom, true)
 
-  c.add_inner_variable RBe::Cpp::Variable.new("bool", "fDispatchMessageCalled", "false")
   c.add_inner_variable RBe::Cpp::Variable.new("bool", "fRunCalled", "false")
 end
