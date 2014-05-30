@@ -29,6 +29,15 @@ namespace rbe
 				}
 			};
 
+			struct Quit
+			{
+				BApplication *app;
+				void operator()()
+				{
+					app->Quit();
+				}
+			};
+
 			struct CallArgvReceived
 			{
 				BApplication *app;
@@ -104,13 +113,10 @@ namespace rbe
 			LooperCommon::AssertLocked(_this);
 
 			if (app->fRunCalled)
-				rb_raise(rb_eRuntimeError, "B::Application#run was already called.");
+				rb_raise(rb_eRuntimeError, "B::Application#run or #quit was already called.");
 
 			app->fRunCalled = true;
 
-			BLooper *as_looper = _this;
-
-			gGVLFlag->Set(true);
 			ApplicationPrivate::Run f = { _this };
 			ApplicationPrivate::Ubf u = { _this };
 			CallWithoutGVL<ApplicationPrivate::Run, ApplicationPrivate::Ubf> g(f, u);
@@ -129,11 +135,29 @@ namespace rbe
 						 "wrong number of arguments (%d for 0)", argc);
 
 			BApplication *_this = Convert<BApplication *>::FromValue(self);
-			PointerOf<BApplication>::Class *ptr = _this;
-			ObjectRegistory::Instance()->Unregister(ptr);
-			DATA_PTR(self) = NULL;
-			_this->BApplication::Quit();
+			Application *app = static_cast<Application *>(_this);
 
+			if (_this->LockingThread() != find_thread(NULL))
+				rb_raise(rb_eThreadError, "you must Lock the application object before calling Quit()");
+
+			if (!app->fRunCalled) {
+				app->fRunCalled = true;
+				// We don't call BApplication::Quit().
+				// We expect the app will be GCed instead.
+				return Qnil;
+			}
+
+			PointerOf<BApplication>::Class *ptr = _this;
+
+			ApplicationPrivate::Quit f = { _this };
+
+			if (find_thread(NULL) != _this->Thread()) {
+				CallWithoutGVL<ApplicationPrivate::Quit, void> g(f);
+				g();
+				rb_thread_check_ints();
+			} else {
+				f();
+			}
 			return Qnil;
 		}
 
