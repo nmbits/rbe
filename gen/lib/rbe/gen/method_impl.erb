@@ -21,6 +21,17 @@ VALUE
 	rb_scan_args(argc, argv, "<%= arity_min %><%= optional %>", <%= arity_max.times.map{|i| "&vargs[#{i}]" }.join(', ') %>);
 % end
 
+% if functions.find{|f| f.prelock? }
+	bool unlock = false;
+	if (find_thread(NULL) != _this->LockingThread()) {
+		status_t status =
+			LooperCommon::LockWithTimeout<BLooper>(_this, B_INFINITE_TIMEOUT); // TODO
+		if (status != B_OK)
+			return Qnil;
+		unlock = true;
+	}
+% end
+
 % functions.each do |f|
 %   if f.arity_min == f.arity
 	if (<%= f.arity %> == argc) {
@@ -57,12 +68,21 @@ VALUE
 		ObjectRegistory::Instance()->Forget(ptr, varg[<%= m %>]);
 %     end
 %   end
+
+% if functions.find{|f| f.prelock? }
+		if (unlock)
+			_this->Unlock();
+% end
 		return vret;
 	}
  break_<%= f.index %>:
 
 % end
 
+% if functions.find{|f| f.prelock? }
+	if (unlock)
+	    _this->Unlock();
+% end
 	rb_raise(rb_eArgError, "wrong type of argument");
 	return Qnil;
 }

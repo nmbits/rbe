@@ -61,6 +61,10 @@ module RBe
         @option[:assert_locked]
       end
 
+      def prelock?
+        @option[:prelock]
+      end
+
       def static?
         @option[:static]
       end
