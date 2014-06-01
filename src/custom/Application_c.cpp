@@ -108,14 +108,12 @@ namespace rbe
 				rb_raise(rb_eArgError, "wrong number of argument (%d for 0)", argc);
 
 			BApplication *_this = Convert<BApplication *>::FromValue(self);
-			Application *app = static_cast<Application *>(_this);
-
 			LooperCommon::AssertLocked(_this);
 
-			if (app->fRunCalled)
+			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
+			if (RTEST(run_called))
 				rb_raise(rb_eRuntimeError, "B::Application#run or #quit was already called.");
-
-			app->fRunCalled = true;
+			rb_iv_set(self, "__rbe_run_called", Qtrue);
 
 			ApplicationPrivate::Run f = { _this };
 			ApplicationPrivate::Ubf u = { _this };
@@ -137,13 +135,13 @@ namespace rbe
 						 "wrong number of arguments (%d for 0)", argc);
 
 			BApplication *_this = Convert<BApplication *>::FromValue(self);
-			Application *app = static_cast<Application *>(_this);
 
 			if (_this->LockingThread() != find_thread(NULL))
 				rb_raise(rb_eThreadError, "you must Lock the application object before calling Quit()");
 
-			if (!app->fRunCalled) {
-				app->fRunCalled = true;
+			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
+			if (!RTEST(run_called)) {
+				rb_iv_set(self, "__rbe_run_called", Qtrue);
 				// We don't call BApplication::Quit().
 				// We expect the app will be GCed instead.
 				return Qnil;

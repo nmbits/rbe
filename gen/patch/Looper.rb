@@ -46,13 +46,4 @@ if c
       f.set_option :noimp, true
     end
   end
-
-  [
-   ["void *", "fFt", "NULL"],
-   ["bool", "fInitialized", "false"],
-   ["bool", "fRunCalled", "false"]
-  ].each do |type, name, val|
-    v = RBe::Cpp::Variable.new(type, name, val)
-    c.add_inner_variable v
-  end
 end

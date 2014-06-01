@@ -78,35 +78,27 @@ namespace rbe
 			VALUE vret = Qnil;
 
 			BLooper *_this = Convert<BLooper *>::FromValue(self);
-			Looper *_looper = static_cast<Looper *>(_this);
 
 			if (_this->LockingThread() != find_thread(NULL)) {
 				rb_raise(rb_eThreadError, "the thread must have lock of this Looper");
 				return Qnil;
 			}
 
-			if (_looper->fRunCalled) {
+			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
+			if (RTEST(run_called))
 				rb_raise(rb_eRuntimeError, "run() already called");
-				return Qnil;
-			}
-
-			_looper->fRunCalled = true;
+			rb_iv_set(self, "__rbe_run_called", Qtrue);
 
 			ft_handle_t *ft = ft_thread_create();
 			VALUE ret = ft->thval;
-			PRINT(("thval: %x\n", ret));
-			PRINT(("DATA_PTR(self): %p\n", DATA_PTR(self)));
 			rb_iv_set(ret, "__rbe_looper", self); // life line
 			rb_iv_set(self, "__rbe_thread", ret); // to support Thread()
 
 			BMessageFilter *filter = new ThreadAttachFilter(ft);
 			BMessage message(RBE_MESSAGE_REMOVE_FILTER);
 			message.AddPointer("filter", static_cast<void *>(filter));
-			PRINT(("AddCommonFilter\n"));
 			_this->AddCommonFilter(filter);
-			PRINT(("PostMessage\n"));
 			_this->PostMessage(&message);
-			PRINT(("Run\n"));
 			_this->BLooper::Run();
 			ft_wait_for_attach_completed(ft);
 
@@ -123,13 +115,14 @@ namespace rbe
 						 "wrong number of arguments (%d for 0)", argc);
 
 			BLooper *_this = Convert<BLooper *>::FromValue(self);
-			Looper *_looper = static_cast<Looper *>(_this);
 			thread_id tid = find_thread(NULL);
 			
-			if (_looper->LockingThread() != tid)
+			if (_this->LockingThread() != tid)
 				rb_raise(rb_eThreadError, "This thread doesn't have lock.");
 
-			if (!_looper->fRunCalled) {
+			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
+			if (!RTEST(run_called)) {
+				rb_iv_set(self, "__rbe_run_called", Qtrue);
 				// In this case, we expect that this Looper object
 				// will be removed thru GC. So, we do nothing here.
 				return Qnil;
