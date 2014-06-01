@@ -122,6 +122,8 @@ namespace rbe
 			CallWithoutGVL<ApplicationPrivate::Run, ApplicationPrivate::Ubf> g(f, u);
 			g();
 			rb_thread_check_ints();
+			if (FuncallState() > 0)
+				rb_jump_tag(FuncallState());
 			return rb_thread_current();
 		}
 

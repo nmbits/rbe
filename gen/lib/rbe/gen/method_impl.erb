@@ -73,6 +73,8 @@ VALUE
 		if (unlock)
 			_this->Unlock();
 % end
+        if (FuncallState() > 0)
+        	rb_jump_tag(FuncallState());
 		return vret;
 	}
  break_<%= f.index %>:
