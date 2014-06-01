@@ -187,69 +187,7 @@ namespace rbe
 			RBE_TRACE("Looper::DispatchMessage");
 			RBE_PRINT(("msg = %p\n", msg));
 
-			bool interrupted = false;
-
-			switch(msg->what) {
-			case _QUIT_:
-				PRINT(("_QUIT_ received\n"));
-				BLooper::DispatchMessage(msg, handler);
-				LooperCommon::DetachLooper(this, FuncallState());
-				return;
-
-			case B_QUIT_REQUESTED:
-				if (handler == this) {
-					// from HAIKU's BLooper#_QuitRequested()
-					bool isQuitting = QuitRequested();
-					if (isQuitting) {
-						LooperCommon::QuitLooper(this, FuncallState());
-						// NEVER RETURN (?)
-					}
-					bool shutdown;
-			        if (msg->IsSourceWaiting()
-        		        || (msg->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
-                		BMessage replyMsg(B_REPLY);
-                		replyMsg.AddBool("result", isQuitting);
-                		replyMsg.AddInt32("thread", find_thread(NULL));
-                		msg->SendReply(&replyMsg);
-			        }
-				}
-				break;
-
-			case RBE_MESSAGE_REMOVE_FILTER:
-				{
-					PRINT(("Looper: RBE_MESSAGE_REMOVE_FILTER\n"));
-					void *ptr;
-					if (B_OK == msg->FindPointer("filter", &ptr)) {
-						PRINT(("removing\n"));
-						BMessageFilter *filter = static_cast<BMessageFilter *>(ptr);
-						RemoveCommonFilter(filter);
-						delete filter;
-					}
-				}
-				break;
-
-			case RBE_MESSAGE_UBF:
-				interrupted = true;
-				break;
-
-			default:
-				if (FuncallState() == 0) {
-					DetachCurrentMessage();
-					LooperCommon::CallDispatchMessage f = { this, msg, handler };
-					Protect<LooperCommon::CallDispatchMessage> p(f);
-					CallWithGVL<Protect<LooperCommon::CallDispatchMessage> > g(p);
-					g();
-					if (p.State() != 0) {
-						PRINT(("p.State() = %d", p.State()));
-						SetFuncallState(p.State());
-					}
-				}
-			}
-
-			if (interrupted || FuncallState() != 0) {
-				LooperCommon::QuitLooper(this, FuncallState());
-				// NEVER RETURN
-			}
+			LooperCommon::DispatchMessageCommon(this, msg, handler);
 		}
 	}
 }

@@ -350,6 +350,7 @@ namespace rbe
 	RBE_COMPATIBLE_CONVERT(window_type, unsigned long);
 	RBE_COMPATIBLE_CONVERT(window_feel, unsigned long);
 	RBE_COMPATIBLE_CONVERT(window_look, unsigned long);
+	RBE_COMPATIBLE_CONVERT(window_alignment, unsigned long);
 
 	// interface/InterfaceDefs.h
 	RBE_COMPATIBLE_CONVERT(mode_mouse, unsigned long);

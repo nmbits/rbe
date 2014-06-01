@@ -3,6 +3,7 @@
 #define RBE_LOOPER_COMMON_HPP
 
 #include <app/Looper.h>
+#include <app/Message.h>
 #include <app/Handler.h>
 #include <app/Messenger.h>
 #include <kernel/OS.h>
@@ -21,6 +22,7 @@ namespace rbe
 		void DetachLooper(BLooper *looper, int state);
 		void QuitLooper(BLooper *looper, int state);
 		void AssertLocked(BLooper *looper, thread_id tid = find_thread(NULL));
+		void DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler);
 
 		template<typename T>
 		inline status_t LockWithTimeoutFunc(T *target, bigtime_t time);
