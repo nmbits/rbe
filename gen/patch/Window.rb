@@ -49,8 +49,8 @@ if c
   end
 
   # custom (TODO)
-  %w(GetSizeLimits Show Run).each do |name|
-    c.functions(name).each{|f| f.set_option :noimp, true }
+  %w(Show Run).each do |name|
+    c.functions(name).each{|f| f.set_option :custom, true }
   end
 
   # noimp (temporal)

@@ -10,7 +10,12 @@
 
 #include <ruby/ruby.h>
 #include <ruby/thread.h>
+
+#include "rbe.hpp"
 #include "call_without_gvl.hpp"
+#include "convert.hpp"
+#include "Handler.hpp"
+#include "Message.hpp"
 
 #define TICK_TIMEOUT 500000
 
@@ -23,6 +28,7 @@ namespace rbe
 		void QuitLooper(BLooper *looper, int state);
 		void AssertLocked(BLooper *looper, thread_id tid = find_thread(NULL));
 		void DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler);
+		VALUE rb_run_common(int argc, VALUE *argv, VALUE self);
 
 		template<typename T>
 		inline status_t LockWithTimeoutFunc(T *target, bigtime_t time);

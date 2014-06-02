@@ -72,37 +72,7 @@ namespace rbe
 		Looper::rb_run(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE_METHOD_CALL("Looper::rb_run", argc, argv, self);
-			if (argc > 0)
-				rb_raise(rb_eArgError, "wrong number of argument (%d for 0)", argc);
-
-			VALUE vret = Qnil;
-
-			BLooper *_this = Convert<BLooper *>::FromValue(self);
-
-			if (_this->LockingThread() != find_thread(NULL)) {
-				rb_raise(rb_eThreadError, "the thread must have lock of this Looper");
-				return Qnil;
-			}
-
-			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
-			if (RTEST(run_called))
-				rb_raise(rb_eRuntimeError, "run() already called");
-			rb_iv_set(self, "__rbe_run_called", Qtrue);
-
-			ft_handle_t *ft = ft_thread_create();
-			VALUE ret = ft->thval;
-			rb_iv_set(ret, "__rbe_looper", self); // life line
-			rb_iv_set(self, "__rbe_thread", ret); // to support Thread()
-
-			BMessageFilter *filter = new ThreadAttachFilter(ft);
-			BMessage message(RBE_MESSAGE_REMOVE_FILTER);
-			message.AddPointer("filter", static_cast<void *>(filter));
-			_this->AddCommonFilter(filter);
-			_this->PostMessage(&message);
-			_this->BLooper::Run();
-			ft_wait_for_attach_completed(ft);
-
-			return ret;
+			return LooperCommon::rb_run_common(argc, argv, self);
 		}
 
 		VALUE
