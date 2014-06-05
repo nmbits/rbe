@@ -347,6 +347,8 @@ namespace rbe
 		}													\
 	}
 
+	RBE_COMPATIBLE_CONVERT(char, signed char);
+
 	RBE_COMPATIBLE_CONVERT(window_type, unsigned long);
 	RBE_COMPATIBLE_CONVERT(window_feel, unsigned long);
 	RBE_COMPATIBLE_CONVERT(window_look, unsigned long);
@@ -375,6 +377,14 @@ namespace rbe
 	RBE_COMPATIBLE_CONVERT(drawing_mode, unsigned long);
 	RBE_COMPATIBLE_CONVERT(source_alpha, unsigned long);
 	RBE_COMPATIBLE_CONVERT(alpha_function, unsigned long);
+
+	template<>
+	struct Convert<rgb_color>
+	{
+		static VALUE ToValue(rgb_color c);
+		static rgb_color FromValue(VALUE v);
+		static bool IsConvertable(VALUE v);
+	};
 
 	// support/SupportDefs.h
 

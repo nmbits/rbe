@@ -61,6 +61,14 @@ module RBe
         @option[:assert_locked]
       end
 
+      def check_lock?
+        @option[:check_lock]
+      end
+
+      def check_owner_lock?
+        @option[:check_owner_lock]
+      end
+
       def prelock?
         @option[:prelock]
       end

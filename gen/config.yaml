@@ -18,7 +18,7 @@ header_files:
 #  - app/Notification.h
 #  - app/Roster.h
   - interface/Window.h
-#  - interface/View.h
+  - interface/View.h
 #  - interface/ScrollView.h
 #  - interface/Layout.h
 #  - interface/LayoutItem.h
