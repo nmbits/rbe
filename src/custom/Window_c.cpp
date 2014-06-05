@@ -3,6 +3,7 @@
 
 #include "Looper.hpp"
 #include "Window.hpp"
+#include "View.hpp"
 
 #include "rbe.hpp"
 #include "looper_common.hpp"
@@ -50,6 +51,28 @@ namespace rbe
 			if (FuncallState() > 0)
 				rb_jump_tag(FuncallState());
 
+			return Qnil;
+		}
+
+		VALUE
+		Window::rb_add_child(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("Window::rb_add_child", argc, argv, self);
+
+			BWindow *_this = Convert<BWindow *>::FromValue(self);
+
+			VALUE vview1, vview2;
+			rb_scan_args(argc, argv, "11", &vview1, &vview2);
+
+			if (!Convert<BView *>::IsConvertable(vview1))
+				rb_raise(rb_eTypeError, "B::View required for arg 0");
+			if (argc == 2 && !NIL_P(vview2) && !Convert<BView *>::IsConvertable(vview2))
+				rb_raise(rb_eTypeError, "B::View required for arg 1");
+			BView *view1 = Convert<BView *>::FromValue(vview1);
+			BView *view2 = (NIL_P(vview2) ? NULL : Convert<BView *>::FromValue(vview2));
+			_this->AddChild(view1, view2);
+			if (FuncallState() > 0)
+				rb_jump_tag(FuncallState());
 			return Qnil;
 		}
 	}

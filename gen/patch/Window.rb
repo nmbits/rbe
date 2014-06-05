@@ -64,9 +64,14 @@ if c
   end
 
   # noimp (temporal; related to BView)
-  %w(AddChild RemoveChild ChildAt
+  %w(RemoveChild ChildAt
      FindView CurrentFocus LastMouseMovedView).each do |name|
     c.functions(name).each{|f| f.set_option :noimp, true }
+  end
+
+  # only for View, not LayoutItem
+  %w(AddChild).each do |name|
+    c.functions(name).each{|f| f.set_option :custom, true }
   end
 
   # noimp (temporal; ConvertTo, ConvertFrom)

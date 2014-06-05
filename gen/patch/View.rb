@@ -32,7 +32,8 @@ if c
      KeyDown KeyUp
      ConvertToParent ConvertFromParent
      ConvertToScreen ConvertFromScreen
-     TargetedByScrollView).each do |name|
+     TargetedByScrollView
+     Invalidate).each do |name|
     c.functions(name).each{|f| p name; f.set_option :custom, true }
   end
 
@@ -104,7 +105,6 @@ if c
      SetViewBitmap ClearViewBitmap
      SetViewOverlay ClearViewOverlay
      DrawPicture DrawPictureAsync
-     Invalidate
      AddChild RemoveChild
      Perform
      LayoutAlignment ExplicitAlignment SetExplicitAlignment
@@ -118,6 +118,4 @@ if c
      LayoutInvalidated DoLayout LayoutChanged).each do |name|
     c.functions(name).each{|f| p name; f.set_option :noimp, true }
   end
-
-
 end

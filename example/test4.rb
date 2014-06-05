@@ -2,6 +2,8 @@
 $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
+B.DEBUG = true
+
 class MyWindow < B::Window
   def quit_requested
     B.app.post_message(B::QUIT_REQUESTED)
@@ -28,19 +30,22 @@ class MyView < B::View
       stroke_line @points[i + 1]
     end
   end
+
+  def layout_changed
+  end
 end
 
 class MyApp < B::Application
   def create_window
     rect = B::Rect.new(20.0, 20.0, 300.0, 300.0)
     @window = MyWindow.new(rect, "Test", B::DOCUMENT_WINDOW, 0)
-    @view = MyView.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "test", B::WILL_DRAW, B::FOLLOW_ALL_SIDES
+    @view = MyView.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "test", B::FOLLOW_ALL_SIDES, B::WILL_DRAW
     @window.add_child @view
     @window.show
   end
   
   def ready_to_run
-    set_pulse_rate 1000000
+    # set_pulse_rate 1000000
     set_name "This is Ruby"
     create_window
   end

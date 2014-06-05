@@ -518,6 +518,9 @@ namespace rbe
 
 		static R *FromValue(VALUE v)
 		{
+			if (NIL_P(v))
+				return NULL;
+
 			if (!rb_obj_is_kind_of(v, wrapper_t::Class()))
 				rb_raise(rb_eTypeError, "%s required", rb_class2name(wrapper_t::Class()));
 			pointer_t *ptr = static_cast<pointer_t *>(DATA_PTR(v));

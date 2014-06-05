@@ -305,5 +305,17 @@ namespace rbe
 			rb_raise(rb_eTypeError, "B::Point or B::Rect expected");
 			return Qnil;		
 		}
+
+		VALUE
+		View::rb_invalidate(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("View::rb_invalidate", argc, argv, self);
+
+			BView *_this = Convert<BView *>::FromValue(self);
+			_this->BView::Invalidate();
+			if (FuncallState() > 0)
+				rb_jump_tag(FuncallState());
+			return Qnil;
+		}
 	}
 }
