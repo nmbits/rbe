@@ -39,6 +39,12 @@ namespace rbe
 			DATA_PTR(v) = NULL;
 		}
 
+		static void RemoveChildren(BWindow *window)
+		{
+			while (window->CountChildren())
+				window->RemoveChild(window->ChildAt(0));
+		}
+
 		void DetachLooper(BLooper *looper, int state)
 		{
 			ft_detach2(state, FinalizeLooper, looper);
@@ -139,8 +145,13 @@ namespace rbe
 			switch(message->what) {
 			case _QUIT_:
 				PRINT(("_QUIT_ received\n"));
-				looper->BLooper::DispatchMessage(message, handler);
-				LooperCommon::DetachLooper(looper, FuncallState());
+				{
+					BWindow *window = dynamic_cast<BWindow *>(looper);
+					if (window)
+						LooperCommon::RemoveChildren(window);
+					looper->BLooper::DispatchMessage(message, handler);
+					LooperCommon::DetachLooper(looper, FuncallState());
+				}
 				return;
 
 			case B_QUIT_REQUESTED:
@@ -148,6 +159,9 @@ namespace rbe
 					// from HAIKU's BLooper#_QuitRequested()
 					bool isQuitting = looper->QuitRequested();
 					if (isQuitting) {
+						BWindow *window = dynamic_cast<BWindow *>(looper);
+						if (window)
+							LooperCommon::RemoveChildren(window);
 						LooperCommon::QuitLooper(looper, FuncallState());
 						// NEVER RETURN (?)
 					}
