@@ -10,6 +10,7 @@
 #include <interface/View.h>
 
 #include <set>
+#include <map>
 
 #include <TLS.h>
 #include "rbe.hpp"
@@ -262,41 +263,52 @@ namespace rbe
 
 	static void mark_value_set(void *ptr)
 	{
-		std::set<VALUE> *set_ptr = static_cast<std::set<VALUE> *>(ptr);
-		std::set<VALUE>::iterator itr = set_ptr->begin();
+		std::map<VALUE, int> *set_ptr = static_cast<std::map<VALUE, int> *>(ptr);
+		std::map<VALUE, int>::iterator itr = set_ptr->begin();
 		for(; itr != set_ptr->end(); itr++)
-			rb_gc_mark(*itr);
+			rb_gc_mark(itr->first);
 	}
 
 	static void free_value_set(void *ptr)
 	{
-		std::set<VALUE> *set_ptr = static_cast<std::set<VALUE> *>(ptr);
+		std::map<VALUE, int> *set_ptr = static_cast<std::map<VALUE, int> *>(ptr);
 		delete set_ptr;
 	}
 
 	void MemorizeObject(VALUE obj, VALUE ref)
 	{
-		std::set<VALUE> *set_ptr = NULL;
+		std::map<VALUE, int> *set_ptr = NULL;
 		VALUE vset = rb_iv_get(obj, "__rbe_refs");
 		if (vset == Qnil) {
-			set_ptr = new std::set<VALUE>();
+			set_ptr = new std::map<VALUE, int>();
 			vset = Data_Wrap_Struct(rb_cData, mark_value_set, free_value_set, set_ptr);
 			rb_iv_set(obj, "__rbe_refs", vset);
 		} else {
 			void *ptr = DATA_PTR(vset);
-			set_ptr = static_cast<std::set<VALUE> *>(ptr);
+			set_ptr = static_cast<std::map<VALUE, int> *>(ptr);
 		}
-		set_ptr->insert(ref);
+		std::map<VALUE, int>::iterator itr = set_ptr->find(ref);
+		if (itr == set_ptr->end()) {
+			std::pair<VALUE, int> data(ref, 1);
+			set_ptr->insert(data);
+		} else {
+			itr->second ++;
+		}
 	}
 
 	void ForgetObject(VALUE obj, VALUE ref)
 	{
-		std::set<VALUE> *set_ptr = NULL;
+		std::map<VALUE, int> *set_ptr = NULL;
 		VALUE vset = rb_iv_get(obj, "__rbe_refs");
 		if (vset == Qnil)
 			return;
-		set_ptr = static_cast<std::set<VALUE> *>(DATA_PTR(vset));
-		set_ptr->erase(ref);
+		set_ptr = static_cast<std::map<VALUE, int> *>(DATA_PTR(vset));
+		std::map<VALUE, int>::iterator itr = set_ptr->find(ref);
+		if (itr != set_ptr->end()) {
+			itr->second --;
+			if (itr->second == 0)
+				set_ptr->erase(ref);
+		}
 	}
 
 	void
