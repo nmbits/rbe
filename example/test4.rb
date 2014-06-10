@@ -2,7 +2,7 @@
 $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
-B.DEBUG = true
+# B.DEBUG = true
 
 class MyWindow < B::Window
   def quit_requested
@@ -39,8 +39,8 @@ class MyApp < B::Application
   def create_window
     rect = B::Rect.new(20.0, 20.0, 300.0, 300.0)
     @window = MyWindow.new(rect, "Test", B::DOCUMENT_WINDOW, 0)
-    @view = MyView.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "test", B::FOLLOW_ALL_SIDES, B::WILL_DRAW
-    @window.add_child @view
+    view = MyView.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "test", B::FOLLOW_ALL_SIDES, B::WILL_DRAW
+    @window.add_child view
     @window.show
   end
   

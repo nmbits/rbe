@@ -69,8 +69,18 @@ namespace rbe
 			if (argc == 2 && !NIL_P(vview2) && !Convert<BView *>::IsConvertable(vview2))
 				rb_raise(rb_eTypeError, "B::View required for arg 1");
 			BView *view1 = Convert<BView *>::FromValue(vview1);
+			if (view1->Parent() != NULL)
+				rb_raise(rb_eArgError, "arg 0 already has a parent");
 			BView *view2 = (NIL_P(vview2) ? NULL : Convert<BView *>::FromValue(vview2));
-			_this->AddChild(view1, view2);
+			if (view2 && (view2->Window() != _this || view2->Parent() != NULL))
+				rb_raise(rb_eArgError, "invalid arg 1");
+			// pre lock
+			status_t status = LooperCommon::LockWithTimeout(static_cast<BLooper *>(_this), B_INFINITE_TIMEOUT);
+			if (status == B_OK) {
+				_this->AddChild(view1, view2);
+				_this->Unlock();
+			}
+			MemorizeObject(self, vview1);
 			if (FuncallState() > 0)
 				rb_jump_tag(FuncallState());
 			return Qnil;
