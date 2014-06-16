@@ -3,6 +3,8 @@ c = ::RBe::Cpp::Class["Window"]
 if c
   c.wrapper = true
 
+  c.ctors.each{|f| f.set_option :custom, true }
+
   # hooks (TODO: Zoom())
   %w(FrameMoved         FrameResized
      MenusBeginning     MenusEnded

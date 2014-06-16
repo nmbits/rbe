@@ -1,6 +1,8 @@
 
 #include <ruby.h>
 
+#include <app/Application.h>
+
 #include "Looper.hpp"
 #include "Window.hpp"
 #include "View.hpp"
@@ -22,6 +24,78 @@ namespace rbe
 			RBE_TRACE("Window::DispatchMessage");
 			RBE_PRINT(("message = %p, handler = %p\n", message, handler));
 			LooperCommon::DispatchMessageCommon(this, message, handler);
+		}
+
+		//
+		// B::Window.new rect, name, window_type, flags, workspace = B::CURRENT_WORKSPACE
+		// B::Window.new rect, name, [look, feel], flags, workspace = B::CURRENT_WORKSPACE
+		// B::Window.new message
+		//
+
+		VALUE
+		Window::rb_initialize(int argc, VALUE *argv, VALUE self)
+		{
+			VALUE vargs[5];
+			rb_scan_args(argc, argv, "14", &vargs[0], &vargs[1], &vargs[2], &vargs[3], &vargs[4]);
+
+			Window *_this = NULL;
+
+			if (!be_app)
+				rb_raise(rb_eRuntimeError, "You need a valid B::Application object before interacting with tha app_server");
+
+			switch (argc) {
+			case 1:
+				{
+					if (!Convert<BMessage *>::IsConvertable(vargs[0]))
+						rb_raise(rb_eTypeError, "arg 0 must be a Message");
+					BMessage * arg0 = Convert<BMessage *>::FromValue(vargs[0]);
+					_this = new Window(arg0);
+				}
+				break;
+
+			case 4:
+			case 5:
+				{
+					if (!Convert<BRect>::IsConvertable(vargs[0])) break;
+					if (!Convert<const char *>::IsConvertable(vargs[1])) break;
+					if (!Convert<uint32>::IsConvertable(vargs[3])) break;
+					if (argc == 5 && !Convert<uint32>::IsConvertable(vargs[4])) break;
+
+					BRect rect = Convert<BRect>::FromValue(vargs[0]);
+					const char * name = Convert<const char *>::FromValue(vargs[1]);
+					uint32 flags = Convert<uint32>::FromValue(vargs[3]);
+					uint32 workspace = (4 < argc ? Convert<uint32>::FromValue(vargs[4]) : B_CURRENT_WORKSPACE);
+
+					if (::TYPE(vargs[2]) == T_ARRAY) {
+						if (RARRAY_LEN(vargs[2]) != 2)
+							rb_raise(rb_eArgError, "arg 2 should have 2 integers");
+						VALUE vlook = RARRAY_AREF(vargs[2], 0);
+						VALUE vfeel = RARRAY_AREF(vargs[2], 1);
+						if (!Convert<window_look>::IsConvertable(vlook) ||
+							!Convert<window_feel>::IsConvertable(vfeel))
+							rb_raise(rb_eArgError, "arg 2 should have 2 integers");
+						window_look look = (window_look)Convert<window_look>::FromValue(vlook);
+						window_feel feel = (window_feel)Convert<window_feel>::FromValue(vfeel);
+						_this = new Window(rect, name, look, feel, flags, workspace);
+					} else {
+						if (!Convert<window_type>::IsConvertable(vargs[2])) break;
+						window_type type = (window_type)Convert<window_type>::FromValue(vargs[2]);
+						_this = new Window(rect, name, type, flags, workspace);
+					}
+				}
+				break;
+
+			default:
+				rb_raise(rb_eArgError, "wrong number of argument (%d for 1..5)", argc);
+			}
+
+			if (!_this)
+				rb_raise(rb_eTypeError, "wrong type of argument");
+
+			PointerOf<BWindow>::Class *ptr = static_cast<PointerOf<BWindow>::Class *>(_this);
+			DATA_PTR(self) = static_cast<void *>(ptr);
+			ObjectRegistory::Instance()->Register(self);
+			return self;
 		}
 
 		VALUE
