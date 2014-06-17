@@ -154,7 +154,8 @@ namespace rbe
 				_this->AddChild(view1, view2);
 				_this->Unlock();
 			}
-			MemorizeObject(self, vview1);
+			if (view1->Window() == _this)
+				MemorizeObject(self, vview1);
 			if (FuncallState() > 0)
 				rb_jump_tag(FuncallState());
 			return Qnil;
