@@ -205,6 +205,9 @@ namespace rbe
 			}
 
 			if (interrupted || FuncallState() != 0) {
+				BWindow *window = dynamic_cast<BWindow *>(looper);
+				if (window)
+					LooperCommon::RemoveChildren(window);
 				LooperCommon::QuitLooper(looper, FuncallState());
 				// NEVER RETURN
 			}
