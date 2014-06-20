@@ -160,5 +160,30 @@ namespace rbe
 				rb_jump_tag(FuncallState());
 			return Qnil;
 		}
+
+		VALUE
+		Window::rb_remove_child(int argc, VALUE *argv, VALUE self)
+		{
+			if (argc != 1)
+				rb_raise(rb_eArgError, "wrong number of argument (%d for 1)", argc);
+			VALUE vview = *argv;
+			if (!Convert<BView *>::FromValue(vview))
+				rb_raise(rb_eTypeError, "arg 0 should be a view");
+			BWindow *_this = Convert<BWindow *>::FromValue(self);
+			BView *view = Convert<BView *>::FromValue(vview);
+			status_t status = LooperCommon::LockWithTimeout(static_cast<BLooper *>(_this), B_INFINITE_TIMEOUT);
+			VALUE vret = Qfalse;
+			if (status == B_OK) {
+				bool result = _this->RemoveChild(view);
+				_this->Unlock();
+				if (result) {
+					ForgetObject(self, vview);
+					vret = Qtrue;
+				}
+			}
+			if (FuncallState() > 0)
+				rb_jump_tag(FuncallState());
+			return vret;
+		}
 	}
 }
