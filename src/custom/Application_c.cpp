@@ -38,6 +38,16 @@ namespace rbe
 				}
 			};
 
+			struct QuitRequested
+			{
+				BApplication *app;
+				bool result;
+				void operator()()
+				{
+					result = app->BApplication::QuitRequested();
+				}
+			};
+
 			struct CallArgvReceived
 			{
 				BApplication *app;
@@ -159,6 +169,28 @@ namespace rbe
 				f();
 			}
 			return Qnil;
+		}
+
+		VALUE
+		Application::rb_quit_requested(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("Application::rb_quit_requested", argc, argv, self);
+
+			BApplication *_this = Convert<BApplication *>::FromValue(self);
+
+			if (find_thread(NULL) != _this->LockingThread())
+				rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
+
+			if (argc)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
+
+			ApplicationPrivate::QuitRequested f = { _this, false };
+			CallWithoutGVL<ApplicationPrivate::QuitRequested, void> g(f);
+			g();
+			rb_thread_check_ints();
+	        if (FuncallState() > 0)
+				rb_jump_tag(FuncallState());
+			return Convert<bool>::ToValue(f.result);
 		}
 
 		void

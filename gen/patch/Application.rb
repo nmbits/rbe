@@ -35,7 +35,8 @@ if c
   c.functions("QuitRequested").each{|f| f.ret_default = "false" }
 
   %w(Run
-     Quit).each do |s|
+     Quit
+     QuitRequested).each do |s|
     c.functions(s).each{|f| f.set_option :custom, true }
   end
 
