@@ -46,16 +46,12 @@ RBeは、Haiku C++ APIのRubyバインディングです。このソフトウェ
 
 1. RBeのソースを適当なディレクトリに展開し、そのディレクトリへ移動して
    ください。
-
 2. genディレクトリへ移動し、rakeコマンドを実行してください。
 3. RBeのソースのディレクトリへ戻り、extconf.rbを実行してください。
 4. makeを実行してください。rbe.soが作られます。
-  注: "make install"するのはお勧めしません。
+   注: "make install"するのはお勧めしません。
 
 #### 例
-
-RBeの試し方
-===========
     > git clone https://github.com/nmbits/rbe.git
     > cd rbe
     > cd gen
@@ -64,7 +60,7 @@ RBeの試し方
     > ruby extconf.rb
     > make
 
-Rbeを試す
+RBeを試す
 ---------
 
 ### irbを使う
