@@ -67,24 +67,24 @@ RBeを試す
 
 irbを使うことで、RBeを簡単に試せます。以下は、irbのセッションの例です。
 
-  > irb -r ./rbe.so
-  irb(main):001:0> l = B::Looper.new
-  => #<B::Looper:0x11110000>
-  irb(main):002:0> l.run
-  => #<Thread:0x11112222 sleep>
-  irb(main):003:0> def l.message_received(message)
-  irb(main):004:1>   message.print_to_stream
-  irb(main):005:1> end
-  => :message_received
-  irb(main):006:0> l.post_message 1
-  BMessage(0x01)
-  => nil
-  irb(main):007:0> l.lock
-  => true
-  irb(main):008:0> l.quit
-  => nil
-  irb(main):009:0> quit
-  >  
+    > irb -r ./rbe.so
+    irb(main):001:0> l = B::Looper.new
+    => #<B::Looper:0x11110000>
+    irb(main):002:0> l.run
+    => #<Thread:0x11112222 sleep>
+    irb(main):003:0> def l.message_received(message)
+    irb(main):004:1>   message.print_to_stream
+    irb(main):005:1> end
+    => :message_received
+    irb(main):006:0> l.post_message 1
+    BMessage(0x01)
+    => nil
+    irb(main):007:0> l.lock
+    => true
+    irb(main):008:0> l.quit
+    => nil
+    irb(main):009:0> quit
+    >  
 
 ### exampleディレクトリ
 
