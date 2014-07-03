@@ -1,20 +1,25 @@
 
-#include "looper_common.hpp"
+#include "rbe.hpp"
+
+#define private public
+#define protected public
 
 #include <app/MessageFilter.h>
 #include <app/Application.h>
 #include <interface/Window.h>
 #include <interface/Alert.h>
 
+#undef private
+#undef protected
+
 #include <ruby.h>
-#include "rbe.hpp"
+
+#include "looper_common.hpp"
 #include "registory.hpp"
 #include "protect.hpp"
 #include "funcall.hpp"
 #include "call_with_gvl.hpp"
 #include "debug.hpp"
-#include "ft.h"
-#include "thread_attach_filter.hpp"
 
 #include "Looper.hpp"
 #include "Message.hpp"
@@ -24,42 +29,86 @@ namespace rbe
 {
 	namespace LooperCommon
 	{
-		void PostUbfMessage(void *looper_ptr)
+		void
+		UbfLooper::operator()()
 		{
-			BLooper *looper = static_cast<BLooper *>(looper_ptr);
 			looper->PostMessage(RBE_MESSAGE_UBF);
 		}
 
-		static void FinalizeLooper(void *data)
+		struct RaiseQuitLooper
 		{
-			BLooper *looper = static_cast<BLooper *>(data);
-			PointerOf<BLooper>::Class *ptr = looper;
-			VALUE v = ObjectRegistory::Instance()->Get(ptr);
-			ObjectRegistory::Instance()->Unregister(ptr);
-			DATA_PTR(v) = NULL;
+			void operator()()
+			{
+				rb_raise(eQuitLooper, "BLooper::Quit()");
+			}
+		};
+
+		static void
+		RemoveChildrenIfWindow(BLooper *looper)
+		{
+			BWindow *window = dynamic_cast<BWindow *>(looper);
+			if (window) {
+				while (window->CountChildren())
+					window->RemoveChild(window->ChildAt(0));
+			}
 		}
 
-		static void RemoveChildren(BWindow *window)
-		{
-			while (window->CountChildren())
-				window->RemoveChild(window->ChildAt(0));
-		}
-
-		void DetachLooper(BLooper *looper, int state)
-		{
-			ft_detach2(state, FinalizeLooper, looper);
-		}
-
-		void QuitLooper(BLooper *looper, int state)
-		{
-			DetachLooper(looper, state);
-			looper->Quit();
-		}
-
-		void AssertLocked(BLooper *looper, thread_id tid)
+		void
+		AssertLocked(BLooper *looper, thread_id tid)
 		{
 			if (looper->LockingThread() != tid)
 				rb_raise(rb_eThreadError, "looper must be locked before proceeding\n");
+		}
+
+		struct Task1
+		{
+			BLooper *looper;
+			void operator()()
+			{
+				if (looper->Lock()) {
+					looper->task_looper();
+				}
+			}
+		};
+
+		struct Task0
+		{
+			BLooper *looper;
+			void operator()()
+			{
+				Task1 f = { looper };
+				UbfLooper u = { looper };
+				CallWithoutGVL<Task1, UbfLooper> g(f, u);
+				g();
+				if (FuncallState())
+					rb_jump_tag(FuncallState());
+			}
+		};
+
+		VALUE looper_thread_func0(void *data)
+		{
+			BLooper *looper = static_cast<BLooper *>(data);
+
+			rename_thread(find_thread(NULL), looper->Name());
+
+			Task0 f = { looper };
+			Protect<Task0> p(f);
+			p();
+
+			PointerOf<BLooper>::Class *ptr = static_cast<PointerOf<BLooper>::Class *>(looper);
+			VALUE v = ObjectRegistory::Instance()->Get(ptr);
+			DATA_PTR(v) = NULL;
+			ObjectRegistory::Instance()->Unregister(ptr);
+			delete looper;
+
+			rb_thread_check_ints();
+
+			if (p.State() != 0) {
+				VALUE errinfo = rb_errinfo();
+				if (!rb_obj_is_kind_of(errinfo, eQuitLooper))
+					rb_jump_tag(p.State());
+			}
+			return Qnil;
 		}
 
 		VALUE rb_run_common(int argc, VALUE *argv, VALUE self)
@@ -76,35 +125,19 @@ namespace rbe
 				return Qnil;
 			}
 
-			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
-			if (RTEST(run_called))
-				rb_raise(rb_eRuntimeError, "run() already called");
-			rb_iv_set(self, "__rbe_run_called", Qtrue);
+			if (_this->fRunCalled)
+				rb_raise(rb_eThreadError, "can't call B::Looper#run twice!");
 
-			ft_handle_t *ft = ft_thread_create();
-			VALUE ret = ft->thval;
-			rb_iv_set(ret, "__rbe_looper", self); // life line
-			rb_iv_set(self, "__rbe_thread", ret); // to support Thread()
+			// assume rb_thread_create never fail!
+			_this->fRunCalled = true;
+			VALUE thval = rb_thread_create((VALUE (*)(ANYARGS))looper_thread_func0, static_cast<void *>(_this));
 
-			BMessageFilter *filter = new ThreadAttachFilter(ft);
-			BMessage message(RBE_MESSAGE_REMOVE_FILTER);
-			message.AddPointer("filter", static_cast<void *>(filter));
-			_this->AddCommonFilter(filter);
-			_this->PostMessage(&message);
-			_this->Run();
-			ft_wait_for_attach_completed(ft);
+			rb_iv_set(thval, "__rbe_looper", self); // life line
+			rb_iv_set(self, "__rbe_thread", thval); // to support Thread()
 
-			return ret;
-		}
+			_this->Unlock();
 
-		void Unregister::operator()()
-		{
-			RBE_TRACE("LooperCommon::Unregister::operator()()");
-			PointerOf<BLooper>::Class *ptr = looper;
-			VALUE self = ObjectRegistory::Instance()->Get(ptr);
-			PRINT(("Unregister::operator()(): self = %d\n", self));
-			ObjectRegistory::Instance()->Unregister(ptr);
-			DATA_PTR(self) = NULL;
+			return thval;
 		}
 
 		void CallDispatchMessage::operator()()
@@ -144,14 +177,8 @@ namespace rbe
 
 			switch(message->what) {
 			case _QUIT_:
-				PRINT(("_QUIT_ received\n"));
-				{
-					BWindow *window = dynamic_cast<BWindow *>(looper);
-					if (window)
-						LooperCommon::RemoveChildren(window);
-					looper->BLooper::DispatchMessage(message, handler);
-					LooperCommon::DetachLooper(looper, FuncallState());
-				}
+				RemoveChildrenIfWindow(looper);
+				looper->fTerminating = true;
 				return;
 
 			case B_QUIT_REQUESTED:
@@ -159,39 +186,25 @@ namespace rbe
 					// from HAIKU's BLooper#_QuitRequested()
 					bool isQuitting = looper->QuitRequested();
 					if (isQuitting) {
-						BWindow *window = dynamic_cast<BWindow *>(looper);
-						if (window)
-							LooperCommon::RemoveChildren(window);
-						LooperCommon::QuitLooper(looper, FuncallState());
-						// NEVER RETURN (?)
+						RemoveChildrenIfWindow(looper);
+						looper->fTerminating = true;
+						return;
 					}
 					bool shutdown;
 			        if (message->IsSourceWaiting()
-        		        || (message->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
-                		BMessage replyMessage(B_REPLY);
-                		replyMessage.AddBool("result", isQuitting);
-                		replyMessage.AddInt32("thread", find_thread(NULL));
-                		message->SendReply(&replyMessage);
+						|| (message->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
+						BMessage replyMessage(B_REPLY);
+						replyMessage.AddBool("result", isQuitting);
+						replyMessage.AddInt32("thread", find_thread(NULL));
+						message->SendReply(&replyMessage);
 			        }
 				}
 				break;
 
-			case RBE_MESSAGE_REMOVE_FILTER:
-				{
-					PRINT(("Looper: RBE_MESSAGE_REMOVE_FILTER\n"));
-					void *ptr;
-					if (B_OK == message->FindPointer("filter", &ptr)) {
-						PRINT(("removing\n"));
-						BMessageFilter *filter = static_cast<BMessageFilter *>(ptr);
-						looper->RemoveCommonFilter(filter);
-						delete filter;
-					}
-				}
-				break;
-
 			case RBE_MESSAGE_UBF:
-				interrupted = true;
-				break;
+				RemoveChildrenIfWindow(looper);
+				looper->fTerminating = true;
+				return;
 
 			default:
 				if (FuncallState() == 0) {
@@ -204,12 +217,9 @@ namespace rbe
 				}
 			}
 
-			if (interrupted || FuncallState() != 0) {
-				BWindow *window = dynamic_cast<BWindow *>(looper);
-				if (window)
-					LooperCommon::RemoveChildren(window);
-				LooperCommon::QuitLooper(looper, FuncallState());
-				// NEVER RETURN
+			if (FuncallState() != 0) {
+				RemoveChildrenIfWindow(looper);
+				looper->fTerminating = true;
 			}
 		}
 	}

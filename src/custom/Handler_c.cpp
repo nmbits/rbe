@@ -1,22 +1,10 @@
 
-#include <kernel/OS.h>
-#include <support/Debug.h>
-
 #include <ruby.h>
-#include <ruby/thread.h>
 
-#include "rbe.hpp"
-#include "protect.hpp"
-#include "funcall.hpp"
 #include "convert.hpp"
-#include "call_with_gvl.hpp"
-#include "call_without_gvl.hpp"
 #include "looper_common.hpp"
 
-#include "Message.hpp"
 #include "Handler.hpp"
-#include "Looper.hpp"
-#include "ft.h"
 
 #define TICK_TIMEOUT 500000
 

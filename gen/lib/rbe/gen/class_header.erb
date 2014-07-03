@@ -3,7 +3,13 @@
 #ifndef RBE_<%= ruby_name(c.name).upcase %>_HPP
 #define RBE_<%= ruby_name(c.name).upcase %>_HPP 1
 
+#define private public
+#define protected public
+
 #include <<%= c.haiku_header %>>
+
+#undef private
+#undef protected
 
 #include <ruby.h>
 #include "type_map.hpp"

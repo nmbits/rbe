@@ -15,8 +15,6 @@
 #include "Handler.hpp"
 #include "Looper.hpp"
 #include "looper_common.hpp"
-#include "thread_attach_filter.hpp"
-#include "ft.h"
 
 namespace rbe
 {
@@ -29,10 +27,7 @@ namespace rbe
 				BLooper *looper;
 				void operator()()
 				{
-					if (find_thread(NULL) == looper->Thread())
-						LooperCommon::QuitLooper(looper, FuncallState());
-					else
-						looper->Quit();
+					looper->Quit();
 				}
 			};
 		}
@@ -90,18 +85,15 @@ namespace rbe
 			if (_this->LockingThread() != tid)
 				rb_raise(rb_eThreadError, "This thread doesn't have lock.");
 
-			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
-			if (!RTEST(run_called)) {
-				rb_iv_set(self, "__rbe_run_called", Qtrue);
-				// In this case, we expect that this Looper object
-				// will be removed thru GC. So, we do nothing here.
+			if (!_this->fRunCalled) {
 				return Qnil;
 			}
 
+			if (_this->Thread() == tid)
+				rb_raise(eQuitLooper, "Looper::rb_quit");
+
 			LooperPrivate::Quit f = { _this };
 			CallWithoutGVL<LooperPrivate::Quit, void> g(f);
-			// If the current thread is a Looper thread,
-			// the following function will not return.
 			g();
 			rb_thread_check_ints();
 

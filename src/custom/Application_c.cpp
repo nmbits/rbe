@@ -8,11 +8,11 @@
 #include "protect.hpp"
 #include "call_with_gvl.hpp"
 #include "call_without_gvl.hpp"
+#include "looper_common.hpp"
 
 #include "Application.hpp"
 #include "Handler.hpp"
 #include "Message.hpp"
-#include "looper_common.hpp"
 
 namespace rbe
 {
@@ -60,15 +60,6 @@ namespace rbe
 					for (int i = 0; i < argc; i++)
 						values[i] = rb_str_new_cstr(argv[i]);
 					rb_funcallv(self, rb_intern("argv_received"), argc, values);
-				}
-			};
-
-			struct Ubf
-			{
-				BApplication *app;
-				void operator()()
-				{
-					LooperCommon::PostUbfMessage(static_cast<BLooper *>(app));
 				}
 			};
 		}
@@ -120,14 +111,12 @@ namespace rbe
 			BApplication *_this = Convert<BApplication *>::FromValue(self);
 			LooperCommon::AssertLocked(_this);
 
-			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
-			if (RTEST(run_called))
+			if (_this->fRunCalled)
 				rb_raise(rb_eRuntimeError, "B::Application#run or #quit was already called.");
-			rb_iv_set(self, "__rbe_run_called", Qtrue);
 
 			ApplicationPrivate::Run f = { _this };
-			ApplicationPrivate::Ubf u = { _this };
-			CallWithoutGVL<ApplicationPrivate::Run, ApplicationPrivate::Ubf> g(f, u);
+			LooperCommon::UbfLooper u = { _this };
+			CallWithoutGVL<ApplicationPrivate::Run, LooperCommon::UbfLooper> g(f, u);
 			g();
 			rb_thread_check_ints();
 			if (FuncallState() > 0)
@@ -149,18 +138,13 @@ namespace rbe
 			if (_this->LockingThread() != find_thread(NULL))
 				rb_raise(rb_eThreadError, "you must Lock the application object before calling Quit()");
 
-			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
-			if (!RTEST(run_called)) {
-				rb_iv_set(self, "__rbe_run_called", Qtrue);
+			if (!_this->fRunCalled) {
 				// We don't call BApplication::Quit().
 				// We expect the app will be GCed instead.
 				return Qnil;
 			}
 
-			PointerOf<BApplication>::Class *ptr = _this;
-
 			ApplicationPrivate::Quit f = { _this };
-
 			if (find_thread(NULL) != _this->Thread()) {
 				CallWithoutGVL<ApplicationPrivate::Quit, void> g(f);
 				g();
@@ -226,7 +210,6 @@ namespace rbe
 			default:
 				if (FuncallState() == 0) {
 					DetachCurrentMessage();
-
 					LooperCommon::CallDispatchMessage f = { this, msg, handler };
 					Protect<LooperCommon::CallDispatchMessage> p(f);
 					CallWithGVL<Protect<LooperCommon::CallDispatchMessage> > g(p);

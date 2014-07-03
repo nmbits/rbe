@@ -1,7 +1,13 @@
 
 #include <ruby.h>
 
+#define private public
+#define protected public
+
 #include <app/Application.h>
+
+#undef private
+#undef protected
 
 #include "Looper.hpp"
 #include "Window.hpp"
@@ -114,8 +120,7 @@ namespace rbe
 				rb_raise(rb_eArgError, "wrong number of argument (%d for 0)", argc);
 
 			BWindow *_this = Convert<BWindow *>::FromValue(self);
-			VALUE run_called = rb_iv_get(self, "__rbe_run_called");
-			if (!RTEST(run_called))
+			if (!_this->fRunCalled)
 				LooperCommon::rb_run_common(0, NULL, self);
 			status_t status = LooperCommon::LockWithTimeout(static_cast<BLooper *>(_this), B_INFINITE_TIMEOUT);
 			if (status == B_OK) {

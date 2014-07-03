@@ -3,7 +3,6 @@
 #define RBE_HPP__
 
 #include <ruby.h>
-#include <SupportDefs.h>
 
 #include "thread_local_variable.hpp"
 #include "thread_local_flag.hpp"
@@ -15,6 +14,7 @@ enum {
 
 namespace rbe
 {
+	extern VALUE eQuitLooper;
 	extern VALUE gModule;
 	extern VALUE gMarker;
 	extern ThreadLocalFlag *gGVLFlag;

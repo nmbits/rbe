@@ -1,22 +1,30 @@
 
+#include "rbe.hpp"
+
+#define private public
+#define protected public
+
 #include <app/AppDefs.h>
 #include <app/Clipboard.h>
 #include <app/Handler.h>
 #include <app/Message.h>
 
+#include <SupportDefs.h>
 #include <support/Debug.h>
 
 #include <interface/Window.h>
 #include <interface/View.h>
 
+#include <TLS.h>
+
+#undef private
+#undef protected
+
 #include <set>
 #include <map>
 
-#include <TLS.h>
-#include "rbe.hpp"
 #include "registory.hpp"
 #include "Application.hpp"
-#include "ft.h"
 #include "call_with_gvl.hpp"
 #include "call_without_gvl.hpp"
 #include "debug.hpp"
@@ -29,6 +37,7 @@
 
 namespace rbe
 {
+	VALUE eQuitLooper = Qnil;
 	VALUE gModule = Qnil;
 	VALUE gMarker = Qnil;
 	ThreadLocalFlag *gGVLFlag = NULL;
@@ -315,7 +324,6 @@ namespace rbe
 	init_threads()
 	{
 		RBE_TRACE("rbe::init_threads");
-		ft_init();
 		gGVLFlag = new ThreadLocalFlag();
 		gFuncallState = new ThreadLocalVariable();
 		CallWithGVLBase::InitStatic(gGVLFlag);
@@ -336,6 +344,7 @@ namespace rbe
 									RUBY_METHOD_FUNC(rb_s_debug_set), 1);
 		gMarker = Data_Wrap_Struct(rb_cData, global_mark, global_free, 0);
 		rb_global_variable(const_cast<VALUE *>(&gMarker));
+		eQuitLooper = rb_define_class_under(gModule, "QuitLooper", rb_eException);
 		ObjectRegistory::Initialize();
 	}
 

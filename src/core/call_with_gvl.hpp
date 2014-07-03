@@ -3,7 +3,6 @@
 #define RBE_CALL_WITH_GVL_HPP
 
 #include <ruby.h>
-#include "ft.h"
 #include "thread_local_flag.hpp"
 
 namespace rbe {

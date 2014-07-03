@@ -2,16 +2,23 @@
 #ifndef RBE_LOOPER_COMMON_HPP
 #define RBE_LOOPER_COMMON_HPP
 
+#include "rbe.hpp"
+
+#define private public
+#define protected public
+
 #include <app/Looper.h>
 #include <app/Message.h>
 #include <app/Handler.h>
 #include <app/Messenger.h>
 #include <kernel/OS.h>
 
+#undef private
+#undef protected
+
 #include <ruby/ruby.h>
 #include <ruby/thread.h>
 
-#include "rbe.hpp"
 #include "call_without_gvl.hpp"
 #include "convert.hpp"
 #include "Handler.hpp"
@@ -23,9 +30,6 @@ namespace rbe
 {
 	namespace LooperCommon
 	{
-		void PostUbfMessage(void *looper_ptr);
-		void DetachLooper(BLooper *looper, int state);
-		void QuitLooper(BLooper *looper, int state);
 		void AssertLocked(BLooper *looper, thread_id tid = find_thread(NULL));
 		void DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler);
 		VALUE rb_run_common(int argc, VALUE *argv, VALUE self);
@@ -93,17 +97,17 @@ namespace rbe
 			return f.res;
 		}
 
-		struct Unregister
-		{
-			BLooper *looper;
-			void operator()();
-		};
-
 		struct CallDispatchMessage
 		{
 			BLooper *looper;
 			BMessage *message;
 			BHandler *handler;
+			void operator()();
+		};
+
+		struct UbfLooper
+		{
+			BLooper *looper;
 			void operator()();
 		};
 	}

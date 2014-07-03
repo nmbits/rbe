@@ -1,4 +1,6 @@
 
+#include <ruby.h>
+#include <ruby/thread.h>
 #include <support/TLS.h>
 #include "call_with_gvl.hpp"
 #include "debug.hpp"

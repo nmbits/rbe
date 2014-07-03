@@ -6,10 +6,16 @@
 
 #include <ruby/ruby.h>
 
+#define private public
+#define protected public
+
 #include <app/Message.h>
 #include <interface/Window.h>
 #include <interface/InterfaceDefs.h>
 #include <interface/GraphicsDefs.h>
+
+#undef private
+#undef protected
 
 #include "registory.hpp"
 #include "type_map.hpp"
