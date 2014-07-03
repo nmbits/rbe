@@ -115,7 +115,7 @@ if c
      ScrollWithMouseWheelDelta
      StringWidth GetStringWidths
      SetTransform Transform
-     LayoutInvalidated DoLayout LayoutChanged).each do |name|
+     LayoutInvalidated DoLayout).each do |name|
     c.functions(name).each{|f| p name; f.set_option :noimp, true }
   end
 end

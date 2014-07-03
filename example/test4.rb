@@ -18,6 +18,7 @@ class MyView < B::View
   end
 
   def mouse_moved(point, flag, message)
+    p message
     @points << point
     @points.shift if @points.length > 20
     invalidate
@@ -29,9 +30,6 @@ class MyView < B::View
     (@points.size - 1).times do |i|
       stroke_line @points[i + 1]
     end
-  end
-
-  def layout_changed
   end
 end
 
