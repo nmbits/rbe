@@ -6,7 +6,7 @@ header_files:
   - [ support/Archivable.h, Archivable ] # ignore Archiver, Unarchiver
   - app/Application.h
 #  - app/Clipboard.h
-#  - app/Cursor.h
+  - app/Cursor.h
   - app/Handler.h
 #  - app/Invoker.h
   - app/Looper.h

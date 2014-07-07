@@ -51,20 +51,18 @@ private:
 	//
 % if c.wrapper?
 public:
-%   c.ctors.each do |f|
+% else
+private:
+% end
+% c.ctors.each do |f|
 	<%= c.name %>(<%= f.args.each_with_index.map{|a, i| "#{a.type} arg#{i}"}.join(", ") %>)
 		: <%= c.api_name %>(<%= f.arity.times.map{|i| "arg#{i}"}.join(", ") %>)
-%     c.inner_variables.each do |v|
+%   c.inner_variables.each do |v|
 		, <%= v.name %>(<%= v.value %>)
 %     end
 	{}
-%   end
-	virtual ~<%= c.name %>() {}
-% else
-private:
-	<%= c.name %>() {}
-	~<%= c.name %>() {}
 % end
+	virtual ~<%= c.name %>() {}
 
 % if c.hooks.size > 0
 public:
