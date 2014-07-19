@@ -11,6 +11,7 @@
 
 #include <app/Message.h>
 #include <app/Cursor.h>
+#include <app/Invoker.h>
 #include <interface/Window.h>
 #include <interface/InterfaceDefs.h>
 #include <interface/GraphicsDefs.h>
@@ -21,6 +22,8 @@
 #include "registory.hpp"
 #include "type_map.hpp"
 
+#include "Archivable.hpp"
+#include "Invoker.hpp"
 #include "Messenger.hpp"
 #include "Point.hpp"
 #include "Rect.hpp"
@@ -507,6 +510,61 @@ namespace rbe
 		static bool IsConvertable(VALUE v)
 		{
 			return Convert<R&>::IsConvertable(v);
+		}
+	};
+
+	// BInvoker
+	template<>
+	struct Convert<BInvoker *>
+	{
+		typedef WrapperOf<BInvoker>::Class wrapper_t;
+		typedef PointerOf<BInvoker>::Class pointer_t;
+
+		static VALUE ToValue(BInvoker *invoker)
+		{
+			VALUE answer = Qnil;
+
+			if (!invoker)
+				return Qnil;
+
+			BArchivable *archivable = dynamic_cast<BArchivable *>(invoker);
+			if (archivable) {
+				PointerOf<BArchivable>::Class *ptr =
+					static_cast<PointerOf<BArchivable>::Class *>(archivable);
+				return ObjectRegistory::Instance()->Get(static_cast<void *>(ptr));
+			}
+			pointer_t *ptr = static_cast<pointer_t *>(invoker);
+			return ObjectRegistory::Instance()->Get(static_cast<void *>(ptr));
+		}
+
+		static BInvoker *FromValue(VALUE v)
+		{
+			BInvoker *answer = NULL;
+			if (rb_obj_is_kind_of(v, B::Archivable::Class())) {
+				BArchivable *archivable = static_cast<BArchivable *>(DATA_PTR(v));
+				answer = dynamic_cast<BInvoker *>(archivable);
+			}
+			if (answer == NULL && rb_obj_is_kind_of(v, B::Invoker::Class())) {
+				VALUE modproxy = rb_iv_get(v, "__rbe_modproxy_Invoker");
+				if (NIL_P(modproxy)) {
+					answer = new BInvoker;
+					modproxy = B::Invoker::Wrap(answer);
+					rb_iv_set(v, "__rbe_modproxy_Invoker", modproxy);
+					rb_iv_set(modproxy, "__rbe_modproxy_Invoker_reverse", v);
+				} else {
+					PointerOf<BInvoker>::Class *ptr =
+						static_cast<PointerOf<BInvoker>::Class *>(DATA_PTR(modproxy));
+					answer = static_cast<BInvoker *>(ptr);
+				}
+			}
+			return answer;
+		}
+
+		static bool IsConvertable(VALUE v)
+		{
+			if (rb_obj_is_kind_of(v, B::Invoker::Class()))
+				return true;
+			return false;
 		}
 	};
 

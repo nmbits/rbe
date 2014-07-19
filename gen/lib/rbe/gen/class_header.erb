@@ -101,8 +101,10 @@ private:
 	//
 	// Ruby interfaces
 	//
+% unless c.module?
 	static VALUE rb_initialize(int, VALUE *, VALUE);
 	static VALUE rb_alloc_(VALUE);
+% end
 	static void rb_mark_(void *);
 	static void rb_free_(void *);
 	static size_t rb_size_(const void *);

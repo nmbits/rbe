@@ -8,7 +8,7 @@ header_files:
 #  - app/Clipboard.h
   - app/Cursor.h
   - app/Handler.h
-#  - app/Invoker.h
+  - app/Invoker.h
   - app/Looper.h
   - app/Message.h
 #  - app/MessageFilter.h

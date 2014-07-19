@@ -57,6 +57,22 @@ module RBe
         @wrapper = b
       end
 
+      def module=(b)
+        @module = b
+      end
+
+      def module?
+        @module
+      end
+
+      def custom_free=(b)
+        @custom_free = b
+      end
+
+      def custom_free?
+        @custom_free
+      end
+
       def references
         unless @references
           names = Hash.new
