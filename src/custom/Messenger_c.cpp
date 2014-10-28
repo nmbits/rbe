@@ -9,43 +9,52 @@
 #include "convert.hpp"
 #include "call_with_gvl.hpp"
 #include "call_without_gvl.hpp"
-#include "looper_common.hpp"
+#include "lock.hpp"
 
 #include "Looper.hpp"
 #include "Handler.hpp"
 #include "Messenger.hpp"
 #include "Message.hpp"
 
-
 // 30[s]
 #define SEND_MESSAGE_TIMEOUT_MAX 30000000
 
 namespace rbe
 {
-	namespace B
+	namespace Private
 	{
-		namespace MessengerPrivate
+		namespace Messenger
 		{
-			struct SendMessage
+			struct SendMessage_f
 			{
-				BMessenger *_this;
-				BMessage *message;
-				BMessage *reply;
-				bigtime_t timeout;
-				bigtime_t replyTimeout;
-				BHandler *handler;
-				BMessenger *messenger;
+				BMessenger *fMessenger;
+				BMessage *fMessage;
+				BMessage *fReply;
+				BHandler *fHandler;
+				bigtime_t fTimeout;
+				bigtime_t fReplyTimeout;
 				status_t res;
+
+				SendMessage_f(BMessenger *messenger, BMessage *message, BMessage *reply = NULL,
+					bigtime_t timeout = SEND_MESSAGE_TIMEOUT_MAX, bigtime_t replyTimeout = 0)
+					: fMessenger(messenger)
+					, fMessage(message)
+					, fReply(reply)
+					, fTimeout(timeout)
+					, fReplyTimeout(replyTimeout)
+					{}
 
 				void operator()()
 				{
-					if (reply) {
-						res = _this->SendMessage(message, reply, timeout, replyTimeout);
-					}
+					if (fReply)
+						res = fMessenger->SendMessage(fMessage, fReply, fTimeout, fReplyTimeout);
 				}
 			};
 		}
+	}
 
+	namespace B
+	{
 		VALUE
 		Messenger::rb_target(int argc, VALUE *argv, VALUE self)
 		{
@@ -78,7 +87,7 @@ namespace rbe
 				rb_raise(rb_eArgError, "wrong number of argument (%d for 0)", argc);
 
 			BMessenger *_this = Convert<BMessenger *>::FromValue(self);
-			status_t status = LooperCommon::LockWithTimeout<BMessenger>(_this, B_INFINITE_TIMEOUT);
+			status_t status = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
 			if (status == B_OK)
 				return Qtrue;
 			return Qfalse;
@@ -95,7 +104,7 @@ namespace rbe
 			BMessenger *_this = Convert<BMessenger *>::FromValue(self);
 			bigtime_t timeout = Convert<bigtime_t>::FromValue(*argv);
 
-			status_t status = LooperCommon::LockWithTimeout<BMessenger>(_this, timeout);
+			status_t status = Util::lock::LockWithTimeout(_this, timeout);
 
 			return Convert<status_t>::ToValue(status);
 		}
@@ -182,8 +191,8 @@ namespace rbe
 				return Qnil;
 			}
 
-			MessengerPrivate::SendMessage f = { ._this = msgr, .message = message };
-			CallWithoutGVL<MessengerPrivate::SendMessage, void> g(f);
+			rbe::Private::Messenger::SendMessage_f f(msgr, message);
+			CallWithoutGVL<rbe::Private::Messenger::SendMessage_f, void> g(f);
 
 			if (rb_block_given_p()) {
 				bigtime_t timeouts[2] = { SEND_MESSAGE_TIMEOUT_MAX, SEND_MESSAGE_TIMEOUT_MAX };
@@ -200,33 +209,33 @@ namespace rbe
 				}
 				BMessage *reply = new BMessage();
 				VALUE vreply = Message::Wrap(reply);
-				f.reply = reply;
-				f.timeout = timeouts[0];
-				f.replyTimeout = timeouts[1];
+				f.fReply = reply;
+				f.fTimeout = timeouts[0];
+				f.fReplyTimeout = timeouts[1];
 				g();
 				rb_thread_check_ints();
 				rb_yield(vreply);
 			} else {
-				f.reply = NULL;
+				f.fReply = NULL;
 				if (argc > 1) {
 					if (Convert<BHandler *>::IsConvertable(vargs[1])) {
-						f.handler = Convert<BHandler *>::FromValue(vargs[1]);
+						f.fHandler = Convert<BHandler *>::FromValue(vargs[1]);
 					} else if (Convert<BMessenger *>::IsConvertable(vargs[1])) {
-						f.handler = NULL;
-						f.messenger = Convert<BMessenger *>::FromValue(vargs[1]);
+						f.fHandler = NULL;
+						f.fMessenger = Convert<BMessenger *>::FromValue(vargs[1]);
 					} else if (NIL_P(vargs[1])) {
-						f.handler = NULL;
-						f.messenger = NULL;
+						f.fHandler = NULL;
+						f.fMessenger = NULL;
 					} else {
 						rb_raise(rb_eTypeError, "the first argument should be a BHandler or a BMessenger");
 						return Qnil;
 					}
 				}
-				f.timeout = SEND_MESSAGE_TIMEOUT_MAX;
+				f.fTimeout = SEND_MESSAGE_TIMEOUT_MAX;
 				if (argc > 2) {
 					if (Convert<bigtime_t>::IsConvertable(vargs[2])) {
-						f.timeout = Convert<bigtime_t>::FromValue(vargs[2]);
-						if (f.timeout > SEND_MESSAGE_TIMEOUT_MAX) {
+						f.fTimeout = Convert<bigtime_t>::FromValue(vargs[2]);
+						if (f.fTimeout > SEND_MESSAGE_TIMEOUT_MAX) {
 							rb_raise(rb_eRangeError, "timeout and reply timeout should be less than 30sec (restriction of this library)");
 							return Qnil;
 						}

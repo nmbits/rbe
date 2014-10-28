@@ -18,6 +18,7 @@ namespace rbe {
 namespace B {
 	class <%= c.name %>;
 }
+
 template<>
 struct WrapperOf<<%= c.api_name %>>
 {
@@ -29,6 +30,19 @@ struct PointerOf<<%= c.api_name %>>
 {
 	typedef <%= c.root_class.api_name %> Class;
 };
+
+namespace Hook {
+namespace <%= c.name %>
+{
+% c.hooks.each do |f|
+%   if f.arity == 0
+	<%= f.ret %> <%= f.name %>(<%= c.api_name %> *_this);
+%   else
+	<%= f.ret %> <%= f.name %>(<%= c.api_name %> *_this, <%= f.args.each_with_index.map{|a, i| "#{a.type} #{a.name}"}.join(", ") %>);
+%   end
+% end
+}
+}
 
 namespace B {
 
@@ -64,20 +78,18 @@ private:
 % end
 	virtual ~<%= c.name %>() {}
 
-% if c.hooks.size > 0
 public:
 	//
 	// Hooks
 	//
-%   c.hooks.each do |f|
+% c.hooks.each do |f|
 	<%= f.proto %>;
-%   end
+% end
 	//
 	// Hooks from super classes
 	//
-%   c.super_hooks.each do |f|
+% c.super_hooks.each do |f|
 	<%= f.proto %>;
-%   end
 % end
 
 public:

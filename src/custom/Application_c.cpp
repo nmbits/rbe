@@ -8,62 +8,134 @@
 #include "protect.hpp"
 #include "call_with_gvl.hpp"
 #include "call_without_gvl.hpp"
-#include "looper_common.hpp"
 
 #include "Application.hpp"
 #include "Handler.hpp"
 #include "Message.hpp"
 
+#include "Looper_c.hpp"
+
 namespace rbe
 {
-	namespace B
+	namespace Private
 	{
-		namespace ApplicationPrivate
+		namespace Application
 		{
-			struct Run
+			struct Run_f
 			{
-				BApplication *app;
+				BApplication *fApp;
+
+				Run_f(BApplication *app)
+					: fApp(app)
+				{}
+
 				void operator()()
 				{
-					app->BApplication::Run();
+					fApp->BApplication::Run();
 				}
 			};
 
-			struct Quit
+			struct Quit_f
 			{
-				BApplication *app;
+				BApplication *fApp;
+
+				Quit_f(BApplication *app)
+					: fApp(app)
+				{}
+
 				void operator()()
 				{
-					app->Quit();
+					fApp->Quit();
 				}
 			};
 
-			struct QuitRequested
+			struct QuitRequested_f
 			{
-				BApplication *app;
+				BApplication *fApp;
 				bool result;
+
+				QuitRequested_f(BApplication *app, bool res = false)
+					: fApp(app), result(res)
+				{}
+
 				void operator()()
 				{
-					result = app->BApplication::QuitRequested();
+					result = fApp->BApplication::QuitRequested();
 				}
 			};
 
-			struct CallArgvReceived
+			struct ArgvReceived_f
 			{
-				BApplication *app;
-				int32 argc;
-				char **argv;
+				BApplication *fApp;
+				int32 fArgc;
+				char **fArgv;
+
+				ArgvReceived_f(BApplication *app, int32 argc, char **argv)
+					: fApp(app)
+					, fArgc(argc)
+					, fArgv(argv)
+				{}
+
 				void operator()()
 				{
-					VALUE self = Convert<BApplication *>::ToValue(app);
-					VALUE *values = ALLOCA_N(VALUE, argc);
-					for (int i = 0; i < argc; i++)
-						values[i] = rb_str_new_cstr(argv[i]);
-					rb_funcallv(self, rb_intern("argv_received"), argc, values);
+					VALUE self = Convert<BApplication *>::ToValue(fApp);
+					VALUE *values = ALLOCA_N(VALUE, fArgc);
+					for (int i = 0; i < fArgc; i++)
+						values[i] = rb_str_new_cstr(fArgv[i]);
+					rb_funcallv(self, rb_intern("argv_received"), fArgc, values);
 				}
 			};
 		}
+	}
 
+	namespace Hook
+	{
+		namespace Application
+		{
+			void
+			ArgvReceived(BApplication *_this, int32 argc, char **argv)
+			{
+				RBE_TRACE("Application::ArgvReceived");
+				if (rbe::FuncallState() != 0)
+					return;
+	
+				Private::Application::ArgvReceived_f f(_this, argc, argv);
+				Protect<Private::Application::ArgvReceived_f> p(f);
+				CallWithGVL<Protect<Private::Application::ArgvReceived_f> > g(p);
+				g();
+				SetFuncallState(p.State());
+			}
+
+			void
+			DispatchMessage(BApplication *_this, BMessage *msg, BHandler *handler)
+			{
+				RBE_TRACE("Application::DispatchMessage");
+				RBE_PRINT(("msg = %p\n", msg));
+				bool interrupted = false;
+	
+				switch (msg->what) {
+				case _QUIT_:
+					_this->BApplication::DispatchMessage(msg, handler);
+					break;
+	
+				case RBE_MESSAGE_UBF:
+					interrupted = true;
+					break;
+	
+				default:
+					if (FuncallState() == 0) {
+						int state = Util::Looper::DispatchMessageCommon(_this, msg, handler);
+						SetFuncallState(state);
+					}
+				}
+				if (FuncallState() != 0 || interrupted)
+					_this->BApplication::Quit();
+			}
+		}
+	}
+
+	namespace B
+	{
 		VALUE
 		Application::rb_initialize(int argc, VALUE *argv, VALUE self)
 		{
@@ -109,14 +181,14 @@ namespace rbe
 				rb_raise(rb_eArgError, "wrong number of argument (%d for 0)", argc);
 
 			BApplication *_this = Convert<BApplication *>::FromValue(self);
-			LooperCommon::AssertLocked(_this);
+			Util::Looper::AssertLocked(_this);
 
 			if (_this->fRunCalled)
 				rb_raise(rb_eRuntimeError, "B::Application#run or #quit was already called.");
 
-			ApplicationPrivate::Run f = { _this };
-			LooperCommon::UbfLooper u = { _this };
-			CallWithoutGVL<ApplicationPrivate::Run, LooperCommon::UbfLooper> g(f, u);
+			rbe::Private::Application::Run_f f(_this);
+			Util::Looper::UbfLooper_f u(_this);
+			CallWithoutGVL<rbe::Private::Application::Run_f, Util::Looper::UbfLooper_f> g(f, u);
 			g();
 			rb_thread_check_ints();
 			if (FuncallState() > 0)
@@ -144,9 +216,9 @@ namespace rbe
 				return Qnil;
 			}
 
-			ApplicationPrivate::Quit f = { _this };
+			rbe::Private::Application::Quit_f f(_this);
 			if (find_thread(NULL) != _this->Thread()) {
-				CallWithoutGVL<ApplicationPrivate::Quit, void> g(f);
+				CallWithoutGVL<rbe::Private::Application::Quit_f, void> g(f);
 				g();
 				rb_thread_check_ints();
 			} else {
@@ -168,57 +240,13 @@ namespace rbe
 			if (argc)
 				rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
 
-			ApplicationPrivate::QuitRequested f = { _this, false };
-			CallWithoutGVL<ApplicationPrivate::QuitRequested, void> g(f);
+			rbe::Private::Application::QuitRequested_f f(_this);
+			CallWithoutGVL<rbe::Private::Application::QuitRequested_f, void> g(f);
 			g();
 			rb_thread_check_ints();
 	        if (FuncallState() > 0)
 				rb_jump_tag(FuncallState());
 			return Convert<bool>::ToValue(f.result);
-		}
-
-		void
-		Application::ArgvReceived(int32 argc, char **argv)
-		{
-			RBE_TRACE("Application::ArgvReceived");
-			if (rbe::FuncallState() != 0)
-				return;
-
-			ApplicationPrivate::CallArgvReceived f = {this, argc, argv};
-			Protect<ApplicationPrivate::CallArgvReceived> p(f);
-			CallWithGVL<Protect<ApplicationPrivate::CallArgvReceived> > g(p);
-			g();
-			SetFuncallState(p.State());
-		}
-
-		void
-		Application::DispatchMessage(BMessage *msg, BHandler *handler)
-		{
-			RBE_TRACE("Application::DispatchMessage");
-			RBE_PRINT(("msg = %p\n", msg));
-			bool interrupted = false;
-
-			switch (msg->what) {
-			case _QUIT_:
-				this->BApplication::DispatchMessage(msg, handler);
-				break;
-
-			case RBE_MESSAGE_UBF:
-				interrupted = true;
-				break;
-
-			default:
-				if (FuncallState() == 0) {
-					DetachCurrentMessage();
-					LooperCommon::CallDispatchMessage f = { this, msg, handler };
-					Protect<LooperCommon::CallDispatchMessage> p(f);
-					CallWithGVL<Protect<LooperCommon::CallDispatchMessage> > g(p);
-					g();
-					SetFuncallState(p.State());
-				}
-			}
-			if (FuncallState() != 0 || interrupted)
-				BApplication::Quit();
 		}
 	}
 }

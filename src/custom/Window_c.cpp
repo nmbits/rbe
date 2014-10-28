@@ -10,28 +10,36 @@
 #undef protected
 
 #include "Looper.hpp"
+#include "Looper_c.hpp"
 #include "Window.hpp"
 #include "View.hpp"
+#include "Message.hpp"
 
 #include "rbe.hpp"
-#include "looper_common.hpp"
+#include "lock.hpp"
 #include "convert.hpp"
 
 namespace rbe
 {
+	namespace Hook
+	{
+		namespace Window
+		{
+			void
+			DispatchMessage(BWindow *_this, BMessage *message, BHandler *handler)
+			{
+				RBE_TRACE("Window::DispatchMessage");
+				if (!message)
+					return;
+	
+				RBE_PRINT(("message = %p, handler = %p\n", message, handler));
+				Hook::Looper::DispatchMessage(_this, message, handler);
+			}
+		}
+	}
+
 	namespace B
 	{
-		void
-		Window::DispatchMessage(BMessage *message, BHandler *handler)
-		{
-			if (!message)
-				return;
-
-			RBE_TRACE("Window::DispatchMessage");
-			RBE_PRINT(("message = %p, handler = %p\n", message, handler));
-			LooperCommon::DispatchMessageCommon(this, message, handler);
-		}
-
 		//
 		// B::Window.new rect, name, window_type, flags, workspace = B::CURRENT_WORKSPACE
 		// B::Window.new rect, name, [look, feel], flags, workspace = B::CURRENT_WORKSPACE
@@ -108,7 +116,7 @@ namespace rbe
 		Window::rb_run(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE_METHOD_CALL("Window::rb_run", argc, argv, self);
-			return LooperCommon::rb_run_common(argc, argv, self);
+			return Util::Looper::rb_run_common(argc, argv, self);
 		}
 
 		VALUE
@@ -121,8 +129,8 @@ namespace rbe
 
 			BWindow *_this = Convert<BWindow *>::FromValue(self);
 			if (!_this->fRunCalled)
-				LooperCommon::rb_run_common(0, NULL, self);
-			status_t status = LooperCommon::LockWithTimeout(static_cast<BLooper *>(_this), B_INFINITE_TIMEOUT);
+				Util::Looper::rb_run_common(0, NULL, self);
+			status_t status = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
 			if (status == B_OK) {
 				_this->Show(); // TODO might block ?
 				_this->Unlock();
@@ -154,7 +162,7 @@ namespace rbe
 			if (view2 && (view2->Window() != _this || view2->Parent() != NULL))
 				rb_raise(rb_eArgError, "invalid arg 1");
 			// pre lock
-			status_t status = LooperCommon::LockWithTimeout(static_cast<BLooper *>(_this), B_INFINITE_TIMEOUT);
+			status_t status = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
 			if (status == B_OK) {
 				_this->AddChild(view1, view2);
 				_this->Unlock();
@@ -176,7 +184,7 @@ namespace rbe
 				rb_raise(rb_eTypeError, "arg 0 should be a view");
 			BWindow *_this = Convert<BWindow *>::FromValue(self);
 			BView *view = Convert<BView *>::FromValue(vview);
-			status_t status = LooperCommon::LockWithTimeout(static_cast<BLooper *>(_this), B_INFINITE_TIMEOUT);
+			status_t status = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
 			VALUE vret = Qfalse;
 			if (status == B_OK) {
 				bool result = _this->RemoveChild(view);

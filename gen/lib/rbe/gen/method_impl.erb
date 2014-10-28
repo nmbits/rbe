@@ -33,7 +33,7 @@ VALUE
 	bool unlock = false;
 	if (find_thread(NULL) != _this->LockingThread()) {
 		status_t status =
-			LooperCommon::LockWithTimeout<BLooper>(_this, B_INFINITE_TIMEOUT); // TODO
+			Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
 		if (status != B_OK)
 			return Qnil;
 		unlock = true;

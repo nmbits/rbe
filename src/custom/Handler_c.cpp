@@ -2,11 +2,9 @@
 #include <ruby.h>
 
 #include "convert.hpp"
-#include "looper_common.hpp"
+#include "lock.hpp"
 
 #include "Handler.hpp"
-
-#define TICK_TIMEOUT 500000
 
 namespace rbe
 {
@@ -22,7 +20,7 @@ namespace rbe
 
 			BHandler *_this = Convert<BHandler *>::FromValue(self);
 
-			status_t result = LooperCommon::LockWithTimeout<BHandler>(_this, B_INFINITE_TIMEOUT);
+			status_t result = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
 			if (result == B_OK)
 				return Qtrue;
 			return Qfalse;
@@ -39,7 +37,7 @@ namespace rbe
 			BHandler *_this = Convert<BHandler *>::FromValue(self);
 			bigtime_t timeout = Convert<bigtime_t>::FromValue(*argv);
 
-			status_t result = LooperCommon::LockWithTimeout<BHandler>(_this, timeout);
+			status_t result = Util::lock::LockWithTimeout(_this, timeout);
 
 			return Convert<status_t>::ToValue(result);
 		}

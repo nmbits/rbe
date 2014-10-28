@@ -9,27 +9,41 @@
 #include "convert.hpp"
 #include "call_with_gvl.hpp"
 #include "call_without_gvl.hpp"
-#include "looper_common.hpp"
+#include "lock.hpp"
+
+#define protected public
+#define private public
 
 #include <interface/ScrollView.h>
 
+#undef protected
+#undef private
+
 namespace rbe
 {
-	namespace B
+	namespace Private
 	{
-		namespace ViewPrivate
+		namespace View
 		{
-			struct CallKeyUpDown
+			struct KeyUpDown_f
 			{
-				BView *view;
-				const char *string;
-				int length;
-				bool up;
+				BView *fView;
+				const char *fString;
+				int fLength;
+				bool fUp;
+
+				KeyUpDown_f(BView *view, const char *string, int length, bool up)
+					: fView(view)
+					, fString(string)
+					, fLength(length)
+					, fUp(up)
+				{}
+
 				void operator()()
 				{
-					VALUE str = rb_str_new(string, length);
-					VALUE self = Convert<BView *>::ToValue(view);
-					if (up)
+					VALUE str = rb_str_new(fString, fLength);
+					VALUE self = Convert<BView *>::ToValue(fView);
+					if (fUp)
 						rb_funcall(self, rb_intern("key_up"), 1, str);
 					else
 						rb_funcall(self, rb_intern("key_down"), 1, str);
@@ -55,27 +69,90 @@ namespace rbe
 				return Qnil;
 			}
 
-			struct
-			CallGetPreferredSize
+			struct GetPreferredSize_f
 			{
-				BView *view;
-				float *arg0;
-				float *arg1;
+				BView *fView;
+				float *fArg0;
+				float *fArg1;
+
+				GetPreferredSize_f(BView *view, float *arg0, float *arg1)
+					: fView(view)
+					, fArg0(arg0)
+					, fArg1(arg1)
+				{}
+
 				void operator()()
 				{
-					VALUE self = Convert<BView *>::ToValue(view);
+					VALUE self = Convert<BView *>::ToValue(fView);
 					VALUE res = rb_funcall(self, rb_intern("get_preferred_size"), 0);
 					Check_Type(res, T_ARRAY);
 					if (RARRAY_LEN(res) != 2)
 						rb_raise(rb_eRangeError, "return value should be an array of 2 floats");
 					float res0 = NUM2DBL(RARRAY_AREF(res, 0));
 					float res1 = NUM2DBL(RARRAY_AREF(res, 1));
-					*arg0 = res0;
-					*arg1 = res1;
+					*fArg0 = res0;
+					*fArg1 = res1;
 				}
 			};
 		}
+	}
 
+	namespace Hook
+	{
+		namespace View
+		{
+			void
+			KeyDown(BView *_this, const char * arg0, int32 arg1)
+			{
+			    RBE_TRACE("Hook::View::KeyDown");
+			    if (FuncallState() != 0)
+			        return;
+
+				Private::View::KeyUpDown_f f(_this, arg0, arg1, false);
+				Protect<Private::View::KeyUpDown_f> p(f);
+				CallWithGVL<Protect<Private::View::KeyUpDown_f> > g(p);
+				g();
+				SetFuncallState(p.State());
+			}
+
+			void
+			KeyUp(BView *_this, const char * arg0, int32 arg1)
+			{
+			    RBE_TRACE("Hook::View::KeyDown");
+			    if (FuncallState() != 0)
+			        return;
+
+				Private::View::KeyUpDown_f f(_this, arg0, arg1, true);
+				Protect<Private::View::KeyUpDown_f> p(f);
+				CallWithGVL<Protect<Private::View::KeyUpDown_f> > g(p);
+				g();
+				SetFuncallState(p.State());
+			}
+
+			void
+			GetPreferredSize(BView *_this, float * arg0, float * arg1)
+			{
+				RBE_TRACE("Hook::View::GetPreferredSize");
+				if (FuncallState() != 0)
+					return;
+			
+				Private::View::GetPreferredSize_f f(_this, arg0, arg1);
+				Protect<Private::View::GetPreferredSize_f> p(f);
+				CallWithGVL<Protect<Private::View::GetPreferredSize_f> > g(p);
+				g();
+				SetFuncallState(p.State());
+			}
+
+			void
+			TargetedByScrollView(BView *_this, BScrollView *scroll_view)
+			{
+				return;
+			}
+		}
+	}
+
+	namespace B
+	{
 		VALUE
 		View::rb_initialize(int argc, VALUE *argv, VALUE self)
 		{
@@ -114,60 +191,19 @@ namespace rbe
 			return self;
 		}
 
-		void
-		View::KeyDown(const char * arg0, int32 arg1)
-		{
-		    RBE_TRACE("View::KeyDown");
-		    if (FuncallState() != 0)
-		        return;
-
-			ViewPrivate::CallKeyUpDown f = { this, arg0, arg1, false };
-			Protect<ViewPrivate::CallKeyUpDown> p(f);
-			CallWithGVL<Protect<ViewPrivate::CallKeyUpDown> > g(p);
-			g();
-			SetFuncallState(p.State());
-		}
-
-		void
-		View::KeyUp(const char * arg0, int32 arg1)
-		{
-		    RBE_TRACE("View::KeyDown");
-		    if (FuncallState() != 0)
-		        return;
-
-			ViewPrivate::CallKeyUpDown f = { this, arg0, arg1, true };
-			Protect<ViewPrivate::CallKeyUpDown> p(f);
-			CallWithGVL<Protect<ViewPrivate::CallKeyUpDown> > g(p);
-			g();
-			SetFuncallState(p.State());
-		}
 
 		VALUE
 		View::rb_key_down(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE_METHOD_CALL("View::rb_key_down", argc, argv, self);
-			return ViewPrivate::rb_key_up_down(argc, argv, self, false);
+			return rbe::Private::View::rb_key_up_down(argc, argv, self, false);
 		}
 
 		VALUE
 		View::rb_key_up(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE_METHOD_CALL("View::rb_key_down", argc, argv, self);
-			return ViewPrivate::rb_key_up_down(argc, argv, self, true);
-		}
-
-		void
-		View::GetPreferredSize(float * arg0, float * arg1)
-		{
-			RBE_TRACE("View::GetPreferredSize");
-			if (FuncallState() != 0)
-				return;
-		
-			ViewPrivate::CallGetPreferredSize f = { this, arg0, arg1 };
-			Protect<ViewPrivate::CallGetPreferredSize> p(f);
-			CallWithGVL<Protect<ViewPrivate::CallGetPreferredSize> > g(p);
-			g();
-			SetFuncallState(p.State());
+			return rbe::Private::View::rb_key_up_down(argc, argv, self, true);
 		}
 
 		VALUE
@@ -183,12 +219,6 @@ namespace rbe
 			rb_ary_push(ary, DBL2NUM(arg0));
 			rb_ary_push(ary, DBL2NUM(arg1));
 			return ary;
-		}
-
-		void
-		View::TargetedByScrollView(BScrollView *scroll_view)
-		{
-			return;
 		}
 
 		VALUE

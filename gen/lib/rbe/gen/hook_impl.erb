@@ -1,12 +1,16 @@
 % f, c = args
-% const = (f.const? ? " const" : "")
 % arg_types = f.args.map{|a| a.type }.join(", ")
 % args_def = f.args.each_with_index.map{|a, i| "#{a.type} arg#{i}" }.join(", ")
 
+% if f.arity == 0
 <%= f.ret %>
-<%= c.name %>::<%= f.name %>(<%= args_def %>)<%= const %>
+<%= f.name %>(<%= c.api_name %> *_this)
+% else
+<%= f.ret %>
+<%= f.name %>(<%= c.api_name %> *_this, <%= args_def %>)
+% end
 {
-	RBE_TRACE("<%= c.name %>::<%= f.name %>");
+	RBE_TRACE("Hook::<%= c.name %>::<%= f.name %>");
 	if (FuncallState() != 0)
 % if f.ret?
 		return <%= f.ret_default %>;
@@ -16,9 +20,9 @@
 
 % ftype = "Funcall<#{f.ret} (#{c.api_name}::*)(#{arg_types})>"
 % if f.arity == 0
-	<%= ftype %> f(this, "<%= ruby_name f.name %>");
+	<%= ftype %> f(_this, "<%= ruby_name f.name %>");
 % else
-	<%= ftype %> f(this, "<%= ruby_name f.name %>", <%= f.arity.times.map{|i| "arg#{i}" }.join(", ") %>);
+	<%= ftype %> f(_this, "<%= ruby_name f.name %>", <%= f.arity.times.map{|i| "arg#{i}" }.join(", ") %>);
 % end
 	Protect<<%= ftype %> > p(f);
 	CallWithGVL<Protect<<%= ftype %> > > g(p);

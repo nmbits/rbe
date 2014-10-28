@@ -4,7 +4,7 @@
 #include "funcall.hpp"
 #include "protect.hpp"
 #include "call_with_gvl.hpp"
-#include "looper_common.hpp"
+#include "lock.hpp"
 #include "debug.hpp"
 
 % c = target
@@ -19,21 +19,41 @@
 % end
 
 namespace rbe {
-namespace B {
 
-// hooks
-
+namespace Hook {
+namespace <%= c.name %> {
 % c.hooks.each do |f|
 %   if f.custom_hook?
-/****  (custom_hook)
+/**** (custom hook)
 %   end
 <%= template :hook_impl, f, c %>
 %   if f.custom_hook?
  ****/
 %   end
 % end
-% c.super_hooks.each do |f|
-<%= template :hook_impl, f, c %>
+}
+}
+
+namespace B {
+
+// hooks
+
+% (c.hooks + c.super_hooks).each do |f|
+%   const = (f.const? ? " const" : "")
+%   arg_types = f.args.map{|a| a.type }.join(", ")
+%   args_def = f.args.each_with_index.map{|a, i| "#{a.type} arg#{i}" }.join(", ")
+
+<%= f.ret %>
+<%= c.name %>::<%= f.name %>(<%= args_def %>)<%= const %>
+{
+	RBE_TRACE("<%= c.name %>::<%= f.name %>");
+%   args_call = (["this"] + f.arity.times.map{|i| "arg#{i}"}).join(", ")
+%   if f.ret?
+	return Hook::<%= f.clazz.name %>::<%= f.name %>(<%= args_call %>);
+%   else
+	Hook::<%= c.name %>::<%= f.name %>(<%= args_call %>);
+%   end
+}
 % end
 
 // methods
