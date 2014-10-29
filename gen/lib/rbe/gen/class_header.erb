@@ -32,8 +32,7 @@ struct PointerOf<<%= c.api_name %>>
 };
 
 namespace Hook {
-namespace <%= c.name %>
-{
+namespace <%= c.name %> {
 % c.hooks.each do |f|
 %   if f.arity == 0
 	<%= f.ret %> <%= f.name %>(<%= c.api_name %> *_this);
@@ -99,7 +98,7 @@ public:
 	static VALUE Wrap(<%= c.api_name %> *obj);
 % end
 
-private:
+public:
 	//
 	// Member functions for Ruby
 	//

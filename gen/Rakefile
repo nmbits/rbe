@@ -64,15 +64,20 @@ task :populate_file_tasks => [:read_config] do |t|
   class_init_filename = File.join($config["out_dir"], "_class_init.cpp")
   file class_init_filename do |t|
     classes = {}
+    list = []
     RBe::Cpp::Class.all_classes.each do |c|
-      (c.ancestors + [c]).each do |a|
-        classes[a.name] = a
+      if c.module?
+        list.push c
+      else
+        (c.ancestors + [c]).each do |a|
+          classes[a.name] = a
+        end
       end
     end
     # TODO
     classes.delete "Archiver"
     classes.delete "Unarchiver"
-    list = classes.values
+    list += classes.values
     File.open t.name, "w" do |f|
       f.write RBe::Gen::Generator.generate(:init_classes_impl, list)
     end

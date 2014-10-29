@@ -18,6 +18,10 @@
 #include "<%= name %>.hpp"
 % end
 
+% if c.mixin
+#include "<%= c.mixin %>.hpp"
+% end
+
 namespace rbe {
 
 namespace Hook {
@@ -51,7 +55,7 @@ namespace B {
 %   if f.ret?
 	return Hook::<%= f.clazz.name %>::<%= f.name %>(<%= args_call %>);
 %   else
-	Hook::<%= c.name %>::<%= f.name %>(<%= args_call %>);
+	Hook::<%= f.clazz.name %>::<%= f.name %>(<%= args_call %>);
 %   end
 }
 % end
@@ -170,6 +174,9 @@ void
 	VALUE c = rb_define_class_under(mod, "<%= c.name %>", <%= c.super_class.name %>::Class());
 % else
 	VALUE c = rb_define_class_under(mod, "<%= c.name %>", rb_cObject);
+% end
+% if c.mixin
+	rb_include_module(c, rbe::B::<%= c.mixin %>::Class());
 % end
 	sClass = c;
 % unless c.module?

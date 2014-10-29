@@ -2,7 +2,7 @@
 module RBe
   module Cpp
     class Class
-      attr_accessor :name, :ctors, :kit, :haiku_header
+      attr_accessor :name, :ctors, :kit, :haiku_header, :mixin
 
       @@registory = {}
 

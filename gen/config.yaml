@@ -19,6 +19,7 @@ header_files:
 #  - app/Roster.h
   - interface/Window.h
   - interface/View.h
+  - interface/Control.h
 #  - interface/ScrollView.h
 #  - interface/Layout.h
 #  - interface/LayoutItem.h
