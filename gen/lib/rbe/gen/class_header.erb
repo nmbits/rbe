@@ -31,6 +31,8 @@ struct PointerOf<<%= c.api_name %>>
 	typedef <%= c.root_class.api_name %> Class;
 };
 
+% c.auto_hooks
+
 namespace Hook {
 namespace <%= c.name %> {
 % c.hooks.each do |f|

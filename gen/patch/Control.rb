@@ -16,22 +16,6 @@ if c
     end
   end
 
-  # Hooks
-  %w(
-    WindowActivated
-    AttachedToWindow
-    DetachedFromWindow
-    AllAttached
-    AllDetached
-    MessageReceived
-    KeyDown
-    MouseDown
-    MouseUp
-    MouseMoved
-  ).each do |name|
-    c.set_hook name
-  end
-
   # custom hook
   %w(
     GetPreferredSize

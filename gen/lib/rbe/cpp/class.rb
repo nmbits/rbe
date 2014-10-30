@@ -174,6 +174,17 @@ module RBe
         ret.values
       end
 
+      # If a member function is a member of super_hooks,
+      # mark it as hook.
+      def auto_hooks
+        s = super_hooks.map{|hook| hook.name}
+        function_names.each do |name|
+          if s.include? name
+            set_hook name
+          end
+        end
+      end
+
       # for code generation
 
       def header_file
