@@ -4,7 +4,7 @@ require 'b/cpp/type'
 module RBe
   module Cpp
     class Argument
-      attr_accessor :type, :name, :value
+      attr_accessor :type, :name, :value, :out
 
       def initialize(type, name, value)
         @type, @name, @value = type, name, value

@@ -17,8 +17,16 @@ class MyView < B::View
     @points = []
   end
 
+  def mouse_up(*a)
+    resize_to_preferred
+  end
+
+  def get_preferred_size
+    p :get_preferred_size
+    super
+  end
+
   def mouse_moved(point, flag, message)
-    p message
     @points << point
     @points.shift if @points.length > 20
     invalidate

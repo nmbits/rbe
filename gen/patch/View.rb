@@ -19,22 +19,24 @@ if c
      LayoutChanged
      ).each{|name| c.set_hook name}
 
+  # GetPreferredSize
+  f = c.functions("GetPreferredSize").first
+  f.args.each{|a| a.out = true}
+
   # custom_hook
 
-  %w(GetPreferredSize
-     KeyDown KeyUp
+  %w(KeyDown KeyUp
      TargetedByScrollView).each do |name|
-    c.functions(name).each{|f| p name; f.set_option :custom_hook, true }
+    c.functions(name).each{|f| f.set_option :custom_hook, true }
   end
 
   # custom
-  %w(GetPreferredSize
-     KeyDown KeyUp
+  %w(KeyDown KeyUp
      ConvertToParent ConvertFromParent
      ConvertToScreen ConvertFromScreen
      TargetedByScrollView
      Invalidate).each do |name|
-    c.functions(name).each{|f| p name; f.set_option :custom, true }
+    c.functions(name).each{|f| f.set_option :custom, true }
   end
 
   # check_lock
@@ -69,7 +71,7 @@ if c
      RemoveSelf
      MoveBy MoveTo
      ResizeBy ResizeTo).each do |name|
-    c.functions(name).each{|f| p name; f.set_option :check_lock, true }
+    c.functions(name).each{|f| f.set_option :check_lock, true }
   end
 
   # check_owner_lock
@@ -77,7 +79,7 @@ if c
      BeginRectTracking EndRectTracking
      PushState PopState
      SetOrigin Origin).each do |name|
-    c.functions(name).each{|f| p name; f.set_option :check_owner_lock, true }
+    c.functions(name).each{|f| f.set_option :check_owner_lock, true }
   end
 
   # noimp (TODO; temporal)
@@ -116,6 +118,6 @@ if c
      StringWidth GetStringWidths
      SetTransform Transform
      LayoutInvalidated DoLayout).each do |name|
-    c.functions(name).each{|f| p name; f.set_option :noimp, true }
+    c.functions(name).each{|f| f.set_option :noimp, true }
   end
 end

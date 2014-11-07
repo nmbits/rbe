@@ -8,31 +8,110 @@
 
 namespace rbe
 {
+	template<typename T>
+	class In
+	{
+	public:
+		enum { IN = 1, OUT = 0 };
+		typedef T Type;
+
+	private:
+		T fValue;
+
+	public:
+		In(T value)
+			: fValue(value)
+		{}
+
+		void SetArg(VALUE **p)
+		{
+			RBE_TRACE(("In::SetArg"));
+			**p = Convert<T>::ToValue(fValue);
+			(*p) ++;
+		}
+
+		void SetResult(VALUE **p)
+		{}
+	};
+
+	template<typename T>
+	class Out
+	{};
+
+	template<typename T>
+	class Out<T *>
+	{
+	public:
+		enum { IN = 0, OUT = 1 };
+		typedef T * Type;
+		typedef T Deref;
+
+	private:
+		T *fPointer;
+
+	public:
+		Out(T *pointer)
+			: fPointer(pointer)
+		{}
+
+		void SetArg(VALUE **p)
+		{}
+
+		void SetResult(VALUE **p)
+		{
+			*fPointer = Convert<T>::FromValue(**p);
+			(*p) ++;
+		}
+	};
+
 	class Funcall0
 	{
 	private:
 		const char *fName;
 
 	protected:
-		Funcall0(const char *name) : fName(name) {}
+		Funcall0(const char *name)
+			: fName(name)
+		{}
 
 	public:
 		virtual ~Funcall0() {}
 
 	protected:
 		virtual int Arity() = 0;
+		virtual int NumReturn() = 0;
+		virtual int NumOut() = 0;
 		virtual VALUE ReceiverValue() = 0;
-		virtual void ToArgs(VALUE *) = 0;
-		virtual void SetResult(VALUE) = 0;
+		virtual void SetArgs(VALUE **p) = 0;
+		virtual void SetResult(VALUE **p) = 0;
 
 	public:
 		void operator()() {
+			RBE_TRACE(("Funcall0::operator()"));
+
 			VALUE args[16];
-			VALUE recv = ReceiverValue();
-			ID id = rb_intern(fName);
+			VALUE *args_ptr = args;
+
 			int arity = Arity();
-			ToArgs(args);
-			SetResult(rb_funcall2(recv, id, arity, args));
+			SetArgs(&args_ptr);
+
+			VALUE result =
+				rb_funcall2(ReceiverValue(), rb_intern(fName), arity, args);
+
+
+			int num_out = NumOut();
+			int expected = NumReturn() + num_out;
+			VALUE *result_ptr = &result;
+			if (num_out > 1) {
+				Check_Type(result, T_ARRAY);
+				if (RARRAY_LEN(result) != expected) {
+					rb_raise(rb_eRangeError,
+						"wrong number of returned values (%d for %d)",
+						RARRAY_LEN(result), expected);
+				}
+				result_ptr = RARRAY_PTR(result);
+			}
+			SetResult(&result_ptr);
 		}
 	};
 
@@ -58,7 +137,12 @@ namespace rbe
 
 	protected:
 		Funcall2(const C *r, const char *name) : Funcall1<C>(r, name) {}
-		virtual void SetResult(VALUE v) { fResult = Convert<R>::FromValue(v); }
+		virtual void SetResult(VALUE **p)
+		{
+			fResult = Convert<R>::FromValue(**p);
+			(*p) ++;
+		}
+		virtual int NumReturn() { return 1; }
 
 	public:
 		R Result() { return fResult; }
@@ -69,8 +153,11 @@ namespace rbe
 	class Funcall2<C, void> : public Funcall1<C>
 	{
 	protected:
-		Funcall2(const C *r, const char *name) : Funcall1<C>(r, name) {}
-		virtual void SetResult(VALUE v) {}
+		Funcall2(const C *r, const char *name)
+			: Funcall1<C>(r, name)
+		{}
+		virtual void SetResult(VALUE **p) {}
+		virtual int NumReturn() { return 0; }
 
 	public:
 		virtual ~Funcall2() {}
@@ -83,15 +170,24 @@ namespace rbe
 	class Funcall<R (C::*)(void)> : public Funcall2<C, R>
 	{
 	public:
-		enum { ARITY = 0 };
+		typedef Funcall2<C, R> Super;
 		Funcall(const C *r, const char *name)
-			:
-			Funcall2<C, R>(r, name) {}
+			: Funcall2<C, R>(r, name) {}
 		virtual ~Funcall() {}
 
 	protected:
-		virtual int Arity() { return ARITY; }
-		virtual void ToArgs(VALUE *args) {}
+		virtual int Arity()
+		{
+			return 0;
+		}
+
+		virtual int NumOut()
+		{
+			return 0;
+		}
+
+		virtual void SetArgs(VALUE **p)
+		{}
 	};
 
 	template<typename C, typename R,
@@ -99,20 +195,35 @@ namespace rbe
 	class Funcall<R (C::*)(A0)> : public Funcall2<C, R>
 	{
 	private:
-		A0 fA0;
+		A0 &fA0;
 
 	public:
-		enum { ARITY = 1 };
-		Funcall(const C *r, const char *name, A0 a0)
+		typedef Funcall2<C, R> Super;
+		Funcall(const C *r, const char *name, A0 &a0)
 			: fA0(a0)
 			, Funcall2<C, R>(r, name) {}
 		virtual ~Funcall() {}
 
 	protected:
-		virtual int Arity() { return ARITY; }
-		virtual void ToArgs(VALUE *args)
+		virtual int Arity()
 		{
-			args[0] = Convert<A0>::ToValue(fA0);
+			return A0::IN;
+		}
+
+		virtual int NumOut()
+		{
+			return A0::OUT;
+		}
+
+		virtual void SetArgs(VALUE **p)
+		{
+			fA0.SetArg(p);
+		}
+
+		virtual void SetResult(VALUE **p)
+		{
+			Super::SetResult(p);
+			fA0.SetResult(p);
 		}
 	};
 
@@ -121,21 +232,39 @@ namespace rbe
 	class Funcall<R (C::*)(A0, A1)> : public Funcall2<C, R>
 	{
 	private:
-		A0 fA0; A1 fA1;
+		A0 &fA0; A1 &fA1;
 
 	public:
-		enum { ARITY = 2 };
-		Funcall(const C *r, const char *name, A0 a0, A1 a1)
+		typedef Funcall2<C, R> Super;
+		Funcall(const C *r, const char *name, A0 &a0, A1 &a1)
 			: fA0(a0), fA1(a1)
 			, Funcall2<C, R>(r, name) {}
 		virtual ~Funcall() {}
 
 	protected:
-		virtual int Arity() { return ARITY; }
-		virtual void ToArgs(VALUE *args)
+		virtual int Arity()
 		{
-			args[0] = Convert<A0>::ToValue(fA0);
-			args[1] = Convert<A1>::ToValue(fA1);
+			return A0::IN + A1::IN;
+		}
+
+		virtual int NumOut()
+		{
+			return A0::OUT + A1::OUT;
+		}
+
+		virtual void SetArgs(VALUE **p)
+		{
+			RBE_TRACE(("Funcall(2)::SetArgs"));
+			fA0.SetArg(p);
+			fA1.SetArg(p);
+		}
+
+		virtual void SetResult(VALUE **p)
+		{
+			RBE_TRACE(("Funcall(2)::SetResult"));
+			Super::SetResult(p);
+			fA0.SetResult(p);
+			fA1.SetResult(p);
 		}
 	};
 
@@ -144,22 +273,39 @@ namespace rbe
 	class Funcall<R (C::*)(A0, A1, A2)> : public Funcall2<C, R>
 	{
 	private:
-		A0 fA0;	A1 fA1; A2 fA2;
+		A0 &fA0; A1 &fA1; A2 &fA2;
 
 	public:
-		enum { ARITY = 3 };
-		Funcall(const C *r, const char *name, A0 a0, A1 a1, A2 a2)
+		typedef Funcall2<C, R> Super;
+		Funcall(const C *r, const char *name, A0 &a0, A1 &a1, A2 &a2)
 			: fA0(a0), fA1(a1), fA2(a2)
 			, Funcall2<C, R>(r, name) {}
 		virtual ~Funcall() {}
 
 	protected:
-		virtual int Arity() { return ARITY; }
-		virtual void ToArgs(VALUE *args)
+		virtual int Arity()
 		{
-			args[0] = Convert<A0>::ToValue(fA0);
-			args[1] = Convert<A1>::ToValue(fA1);
-			args[2] = Convert<A2>::ToValue(fA2);
+			return A0::IN + A1::IN + A2::IN;
+		}
+
+		virtual int NumOut()
+		{
+			return A0::OUT + A1::OUT + A2::OUT;
+		}
+
+		virtual void SetArgs(VALUE **p)
+		{
+			fA0.SetArg(p);
+			fA1.SetArg(p);
+			fA2.SetArg(p);
+		}
+
+		virtual void SetResult(VALUE **p)
+		{
+			Super::SetResult(p);
+			fA0.SetResult(p);
+			fA1.SetResult(p);
+			fA2.SetResult(p);
 		}
 	};
 
@@ -168,23 +314,41 @@ namespace rbe
 	class Funcall<R (C::*)(A0, A1, A2, A3)> : public Funcall2<C, R>
 	{
 	private:
-		A0 fA0;	A1 fA1; A2 fA2; A3 fA3;
+		A0 &fA0; A1 &fA1; A2 &fA2; A3 &fA3;
 
 	public:
-		enum { ARITY = 4 };
-		Funcall(const C *r, const char *name, A0 a0, A1 a1, A2 a2, A3 a3)
+		typedef Funcall2<C, R> Super;
+		Funcall(const C *r, const char *name, A0 &a0, A1 &a1, A2 &a2, A3 &a3)
 			: fA0(a0), fA1(a1), fA2(a2), fA3(a3)
 			, Funcall2<C, R>(r, name) {}
 		virtual ~Funcall() {}
 
 	protected:
-		virtual int Arity() { return ARITY; }
-		virtual void ToArgs(VALUE *args)
+		virtual int Arity()
 		{
-			args[0] = Convert<A0>::ToValue(fA0);
-			args[1] = Convert<A1>::ToValue(fA1);
-			args[2] = Convert<A2>::ToValue(fA2);
-			args[3] = Convert<A3>::ToValue(fA3);
+			return A0::IN + A1::IN + A2::IN + A3::IN;
+		}
+
+		virtual int NumOut()
+		{
+			return A0::OUT + A1::OUT + A2::OUT + A3::OUT;
+		}
+
+		virtual void SetArgs(VALUE **p)
+		{
+			fA0.SetArg(p);
+			fA1.SetArg(p);
+			fA2.SetArg(p);
+			fA3.SetArg(p);
+		}
+
+		virtual void SetResult(VALUE **p)
+		{
+			Super::SetResult(p);
+			fA0.SetResult(p);
+			fA1.SetResult(p);
+			fA2.SetResult(p);
+			fA3.SetResult(p);
 		}
 	};
 }

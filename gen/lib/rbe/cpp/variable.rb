@@ -4,7 +4,7 @@ require 'rbe/cpp/type'
 module RBe
   module Cpp
     class Variable
-      attr_accessor :type, :name, :value
+      attr_accessor :type, :name, :value, :out
 
       def initialize(type, name, value = nil)
         @type, @name, @value = type, name, value
@@ -12,6 +12,13 @@ module RBe
 
       def has_value?
         (!@value.nil?)
+      end
+
+      def deref_type
+        if type =~ /\*$/
+          return $`.strip
+        end
+        raise "#{type} is not a pointer type"
       end
 
       # assume

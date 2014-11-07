@@ -149,7 +149,9 @@ namespace rbe
 							return;
 						}
 					}
-					Funcall<void (BLooper::*)(BMessage *, BHandler *)> f(fLooper, "dispatch_message", fMessage, fHandler);
+					In<BMessage *> a0(fMessage);
+					In<BHandler *> a1(fHandler);
+					Funcall<void (BLooper::*)(In<BMessage *>, In<BHandler *>)> f(fLooper, "dispatch_message", a0, a1);
 					f();
 				}
 			};
@@ -209,6 +211,7 @@ namespace rbe
 
 			int DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler)
 			{
+				RBE_TRACE(("Looper::DispatchMessageCommon"));
 				looper->DetachCurrentMessage();
 				Private::Looper::DispatchMessage_f f(looper, message, handler);
 				Protect<Private::Looper::DispatchMessage_f> p(f);

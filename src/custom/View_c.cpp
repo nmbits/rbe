@@ -68,32 +68,6 @@ namespace rbe
 					rb_jump_tag(FuncallState());
 				return Qnil;
 			}
-
-			struct GetPreferredSize_f
-			{
-				BView *fView;
-				float *fArg0;
-				float *fArg1;
-
-				GetPreferredSize_f(BView *view, float *arg0, float *arg1)
-					: fView(view)
-					, fArg0(arg0)
-					, fArg1(arg1)
-				{}
-
-				void operator()()
-				{
-					VALUE self = Convert<BView *>::ToValue(fView);
-					VALUE res = rb_funcall(self, rb_intern("get_preferred_size"), 0);
-					Check_Type(res, T_ARRAY);
-					if (RARRAY_LEN(res) != 2)
-						rb_raise(rb_eRangeError, "return value should be an array of 2 floats");
-					float res0 = NUM2DBL(RARRAY_AREF(res, 0));
-					float res1 = NUM2DBL(RARRAY_AREF(res, 1));
-					*fArg0 = res0;
-					*fArg1 = res1;
-				}
-			};
 		}
 	}
 
@@ -125,20 +99,6 @@ namespace rbe
 				Private::View::KeyUpDown_f f(_this, arg0, arg1, true);
 				Protect<Private::View::KeyUpDown_f> p(f);
 				CallWithGVL<Protect<Private::View::KeyUpDown_f> > g(p);
-				g();
-				SetFuncallState(p.State());
-			}
-
-			void
-			GetPreferredSize(BView *_this, float * arg0, float * arg1)
-			{
-				RBE_TRACE("Hook::View::GetPreferredSize");
-				if (FuncallState() != 0)
-					return;
-			
-				Private::View::GetPreferredSize_f f(_this, arg0, arg1);
-				Protect<Private::View::GetPreferredSize_f> p(f);
-				CallWithGVL<Protect<Private::View::GetPreferredSize_f> > g(p);
 				g();
 				SetFuncallState(p.State());
 			}
@@ -204,21 +164,6 @@ namespace rbe
 		{
 			RBE_TRACE_METHOD_CALL("View::rb_key_down", argc, argv, self);
 			return rbe::Private::View::rb_key_up_down(argc, argv, self, true);
-		}
-
-		VALUE
-		View::rb_get_preferred_size(int argc, VALUE *argv, VALUE self)
-		{
-			RBE_TRACE_METHOD_CALL("View::rb_get_preferred_size", argc, argv, self);
-
-			BView *_this = Convert<BView *>::FromValue(self);
-			float arg0;
-			float arg1;
-			_this->BView::GetPreferredSize(&arg0, &arg1);
-			VALUE ary = rb_ary_new();
-			rb_ary_push(ary, DBL2NUM(arg0));
-			rb_ary_push(ary, DBL2NUM(arg1));
-			return ary;
 		}
 
 		VALUE

@@ -16,21 +16,7 @@ if c
     end
   end
 
-  # custom hook
-  %w(
-    GetPreferredSize
-  ).each do |name|
-    c.functions(name).each do |f|
-      f.set_option :custom_hook, true
-    end
-  end
-
-  # custom
-  %w(
-    GetPreferredSize
-  ).each do |name|
-    c.functions(name).each do |f|
-      f.set_option :custom, true
-    end
-  end
+  # GetPreferredSize
+  f = c.functions("GetPreferredSize")[0]
+  f.args.each{|a| a.out = true}
 end

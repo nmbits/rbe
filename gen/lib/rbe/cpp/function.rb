@@ -82,7 +82,19 @@ module RBe
       end
 
       def arity_min
-        args.count{ |a| a.value.nil? }
+        args.count{|a| !a.value}
+      end
+
+      def in_args
+        args.find_all{|a| !a.out}
+      end
+
+      def method_arity
+        in_args.length
+      end
+
+      def method_arity_min
+        in_args.count{|a| !a.value}
       end
 
       def void?

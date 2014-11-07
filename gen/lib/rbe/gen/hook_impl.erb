@@ -1,5 +1,7 @@
 % f, c = args
-% arg_types = f.args.map{|a| a.type }.join(", ")
+% arg_types = f.args.map do |a|
+%   a.out ? "Out<#{a.type}>" : "In<#{a.type}>"
+% end.join(", ")
 % args_def = f.args.each_with_index.map{|a, i| "#{a.type} arg#{i}" }.join(", ")
 
 % if f.arity == 0
@@ -19,10 +21,13 @@
 % end
 
 % ftype = "Funcall<#{f.ret} (#{c.api_name}::*)(#{arg_types})>"
+% f.args.each_with_index do |a, i|
+	<%= a.out ? "Out<#{a.type}>" : "In<#{a.type}>" %> a<%= i %>(arg<%= i %>);
+% end
 % if f.arity == 0
 	<%= ftype %> f(_this, "<%= ruby_name f.name %>");
 % else
-	<%= ftype %> f(_this, "<%= ruby_name f.name %>", <%= f.arity.times.map{|i| "arg#{i}" }.join(", ") %>);
+	<%= ftype %> f(_this, "<%= ruby_name f.name %>", <%= f.arity.times.map{|i| "a#{i}" }.join(", ") %>);
 % end
 	Protect<<%= ftype %> > p(f);
 	CallWithGVL<Protect<<%= ftype %> > > g(p);

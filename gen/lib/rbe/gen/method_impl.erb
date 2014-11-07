@@ -21,14 +21,6 @@ VALUE
 		rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
 % end
 
-% arity_max = functions.map{|f| f.arity }.max
-% arity_min = functions.map{|f| f.arity_min }.min
-% optional = arity_max - arity_min
-% if arity_max > 0
-	VALUE vargs[<%= arity_max %>];
-	rb_scan_args(argc, argv, "<%= arity_min %><%= optional %>", <%= arity_max.times.map{|i| "&vargs[#{i}]" }.join(', ') %>);
-% end
-
 % if functions.find{|f| f.prelock? }
 	bool unlock = false;
 	if (find_thread(NULL) != _this->LockingThread()) {
@@ -39,23 +31,51 @@ VALUE
 		unlock = true;
 	}
 % end
-
+	int type_error_index = 0;
+% arity_max = 0
+% arity_min = 100
+%
 % functions.each do |f|
-%   if f.arity_min == f.arity
-	if (<%= f.arity %> == argc) {
+%   method_arity = f.method_arity
+%   method_arity_min = f.method_arity_min
+%   method_arity_opt = method_arity - method_arity_min
+%
+%   arity_max = (arity_max < method_arity ? method_arity : arity_max)
+%   arity_min = (arity_min < method_arity_min ? arity_min : method_arity_min)
+%
+%   if method_arity_opt == 0
+	if (<%= method_arity %> == argc) {
 %   else
-	if (<%= f.arity_min %> <= argc && argc <= <%= f.arity %>) {
+	if (<%= method_arity_min %> <= argc && argc <= <%= method_arity %>) {
 %   end
+%
+%   argi = 0
 %   f.args.each_with_index do |a, i|
-		if (<%= i %> < argc && !Convert< <%= a.type %>>::IsConvertable(vargs[<%= i %>]))
-			goto break_<%= f.index %>;
-%   end
-%   f.args.each_with_index do |a, i|
-%     if i < f.arity_min
-		<%= a.type %> arg<%= i %> = Convert< <%= a.type %>>::FromValue(vargs[<%= i %>]);
+
+%     if a.out
+		<%= a.deref_type %> tmp<%= i %>;
+		<%= a.type %> arg<%= i %> = &tmp<%= i %>;
 %     else
-		<%= a.type %> arg<%= i %> = (<%= i %> < argc ? Convert< <%= a.type %>>::FromValue(vargs[<%= i %>]) : <%= a.value %>);
+%       if argi < method_arity_min
+		if (!Convert< <%= a.type %>>::IsConvertable(argv[<%= argi %>])) {
+			type_error_index = <%= i %>;
+			goto break_<%= f.index %>;
+		}
+		<%= a.type %> arg<%= i %> = Convert< <%= a.type %>>::FromValue(argv[<%= argi %>]);
+%       else
+		<%= a.type %> arg<%= i %>;
+		if (<%= argi %> < argc) {
+			if (!Convert< <%= a.type %>>::IsConvertable(argv[<%= argi %>])) {
+				type_error_index = <%= i %>;
+				goto break_<%= f.index %>;
+			}
+			arg<%= i %> = Convert< <%= a.type %>>::FromValue(argv[<%= argi %>]);
+		} else {
+			arg<%= i %> = <%= a.value %>;
+		}
+%       end
 %     end
+%     argi += 1
 %   end
 %   if f.ret?
 		<%= f.ret %> ret = _this-><%= c.api_name %>::<%= f.name %>(<%= f.arity.times.map{|j| "arg#{j}" }.join(", ") %>);
@@ -63,26 +83,44 @@ VALUE
 %   else
 		_this-><%= c.api_name %>::<%= f.name %>(<%= f.arity.times.map{|j| "arg#{j}" }.join(", ") %>);
 %   end
-%   if f.option[:memorize] || f.option[:forget]
-		void *ptr = DATA_PTR(self);
+%   if f.args.find{|a| a.out}
+		VALUE tmp_array = rb_ary_new();
+%     if f.ret?
+		rb_ary_push(tmp_array, vret);
+%     end
+%     f.args.each_with_index.find_all{|a, i| a.out}.each do |a, i|
+		rb_ary_push(tmp_array, Convert<<%= a.deref_type %>>::ToValue(tmp<%= i %>));
+%     end
+		vret = tmp_array;
 %   end
-
-% if functions.find{|f| f.prelock? }
+%   if functions.find{|f| f.prelock? }
 		if (unlock)
 			_this->Unlock();
-% end
-        if (FuncallState() > 0)
-        	rb_jump_tag(FuncallState());
+%   end
+		if (FuncallState() > 0)
+			rb_jump_tag(FuncallState());
+
 		return vret;
 	}
  break_<%= f.index %>:
 
 % end
-
 % if functions.find{|f| f.prelock? }
 	if (unlock)
 	    _this->Unlock();
 % end
-	rb_raise(rb_eArgError, "wrong type of argument");
+% if arity_max == 0
+	rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
+% elsif arity_max == arity_min
+	if (argc != <%= arity_min %>)
+		rb_raise(rb_eArgError, "wrong number of arguments (%d for <%= arity_min %>)", argc);
+	else
+		rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+% else
+	if (argc < <%= arity_min %> || argc > <%= arity_max %>)
+		rb_raise(rb_eArgError, "wrong number of arguments (%d for <%= (arity_min..arity_max).to_s %>)", argc);
+	else
+		rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+% end
 	return Qnil;
 }
