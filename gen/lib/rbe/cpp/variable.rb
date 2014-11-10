@@ -4,7 +4,7 @@ require 'rbe/cpp/type'
 module RBe
   module Cpp
     class Variable
-      attr_accessor :type, :name, :value, :out
+      attr_accessor :type, :name, :value, :out, :accept_nil
 
       def initialize(type, name, value = nil)
         @type, @name, @value = type, name, value

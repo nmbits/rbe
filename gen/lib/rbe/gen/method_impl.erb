@@ -56,17 +56,18 @@ VALUE
 		<%= a.deref_type %> tmp<%= i %>;
 		<%= a.type %> arg<%= i %> = &tmp<%= i %>;
 %     else
+%       nil_check = a.accept_nil ? "argv[#{argi}] != Qnil && " : ""
 %       if argi < method_arity_min
-		if (!Convert< <%= a.type %>>::IsConvertable(argv[<%= argi %>])) {
-			type_error_index = <%= i %>;
+		if (<%= nil_check %> !Convert< <%= a.type %>>::IsConvertable(argv[<%= argi %>])) {
+			type_error_index = <%= argi %>;
 			goto break_<%= f.index %>;
 		}
 		<%= a.type %> arg<%= i %> = Convert< <%= a.type %>>::FromValue(argv[<%= argi %>]);
 %       else
 		<%= a.type %> arg<%= i %>;
 		if (<%= argi %> < argc) {
-			if (!Convert< <%= a.type %>>::IsConvertable(argv[<%= argi %>])) {
-				type_error_index = <%= i %>;
+			if (<%= nil_check %> !Convert< <%= a.type %>>::IsConvertable(argv[<%= argi %>])) {
+				type_error_index = <%= argi %>;
 				goto break_<%= f.index %>;
 			}
 			arg<%= i %> = Convert< <%= a.type %>>::FromValue(argv[<%= argi %>]);

@@ -17,6 +17,7 @@ header_files:
   - app/Messenger.h
 #  - app/Notification.h
 #  - app/Roster.h
+  - interface/Button.h
   - interface/Window.h
   - interface/View.h
   - interface/Control.h

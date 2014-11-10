@@ -10,9 +10,6 @@
 % c = target
 
 #include "<%= c.name %>.hpp"
-% if c.super_class
-#include "<%= c.super_class.name %>.hpp"
-% end
 
 % c.references.each do |name|
 #include "<%= name %>.hpp"

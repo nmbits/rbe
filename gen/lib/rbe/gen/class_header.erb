@@ -14,6 +14,10 @@
 #include <ruby.h>
 #include "type_map.hpp"
 
+% if c.super_class
+#include "<%= c.super_class.name %>.hpp"
+
+% end
 namespace rbe {
 namespace B {
 	class <%= c.name %>;
