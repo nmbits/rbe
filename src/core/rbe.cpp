@@ -30,6 +30,8 @@
 #include "call_without_gvl.hpp"
 #include "debug.hpp"
 
+#include "Button.hpp"
+
 #define RBE_CONST_ULONG(name)	\
 	rb_define_const(gModule, #name, ULONG2NUM(B_ ## name))
 
@@ -278,6 +280,11 @@ namespace rbe
 		RBE_CONST_ULONG(FOLLOW_BOTTOM);
 		RBE_CONST_ULONG(FOLLOW_TOP_BOTTOM);
 		RBE_CONST_ULONG(FOLLOW_V_CENTER);
+
+		// Button
+		rb_define_const(B::Button::Class(), "BUTTON_BEHAVIOR", INT2FIX(BButton::B_BUTTON_BEHAVIOR));
+		rb_define_const(B::Button::Class(), "TOGGLE_BEHAVIOR", INT2FIX(BButton::B_TOGGLE_BEHAVIOR));
+		rb_define_const(B::Button::Class(), "POP_UP_BEHAVIOR", INT2FIX(BButton::B_POP_UP_BEHAVIOR));
 	}
 
 	VALUE
@@ -415,6 +422,6 @@ void Init_rbe()
 	SET_DEBUG_ENABLED(false);
 	rbe::init_threads();
 	rbe::init_rbe();
-	rbe::init_consts();
 	rbe::init_classes(rbe::gModule);
+	rbe::init_consts();
 }

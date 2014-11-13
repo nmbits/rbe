@@ -8,9 +8,7 @@ if c
   f.args.each{|a| a.out = true}
 
   #noimp
-  %w(Behavior
-     SetBehavior
-     Perform
+  %w(Perform
      SetIcon
   ).each do |name|
      c.functions(name).each{|f| f.set_option :noimp, true}

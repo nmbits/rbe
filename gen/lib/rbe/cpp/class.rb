@@ -89,6 +89,7 @@ module RBe
               end
             end
           end
+          names.delete "Behavior" # TODO
           @references = names.keys
         end
         @references

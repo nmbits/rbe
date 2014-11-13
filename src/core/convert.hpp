@@ -15,6 +15,7 @@
 #include <interface/Window.h>
 #include <interface/InterfaceDefs.h>
 #include <interface/GraphicsDefs.h>
+#include <interface/Button.h>
 
 #undef private
 #undef protected
@@ -388,9 +389,11 @@ namespace rbe
 	RBE_COMPATIBLE_CONVERT(source_alpha, unsigned long);
 	RBE_COMPATIBLE_CONVERT(alpha_function, unsigned long);
 
+	// interface/Button.h
+	RBE_COMPATIBLE_CONVERT(BButton::BBehavior, unsigned long);
+
 	// app/Cursor.h
 	RBE_COMPATIBLE_CONVERT(BCursorID, unsigned long);
-
 
 	template<>
 	struct Convert<rgb_color>
