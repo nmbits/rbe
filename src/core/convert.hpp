@@ -16,6 +16,8 @@
 #include <interface/InterfaceDefs.h>
 #include <interface/GraphicsDefs.h>
 #include <interface/Button.h>
+#include <interface/TextView.h>
+#include <interface/Font.h>
 
 #undef private
 #undef protected
@@ -29,6 +31,7 @@
 #include "Point.hpp"
 #include "Rect.hpp"
 #include "Size.hpp"
+#include "Font.hpp"
 
 namespace rbe
 {
@@ -449,6 +452,7 @@ namespace rbe
 	RBE_IMM_STRUCT_CONVERT(BPoint);
 	RBE_IMM_STRUCT_CONVERT(BRect);
 	RBE_IMM_STRUCT_CONVERT(BSize);
+	RBE_IMM_STRUCT_CONVERT(BFont);
 
 	template<typename R>
 	struct Convert<const R>

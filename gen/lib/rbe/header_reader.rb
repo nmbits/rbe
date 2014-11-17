@@ -85,7 +85,7 @@ module RBe
           
         when /^\s*(class|struct)\s+[A-Za-z0-9_]+\s*;$/ # class reference. ignore.
 
-        when /^\s*class\s+([A-Za-z0-9]+)\s*:?([^\{]+)?\s*\{/ # class start
+        when /^\s*class\s+(B[A-Za-z0-9]+)\s*:?([^\{]+)?\s*\{/ # class start
           mode.check_or_error :header?, line
           clazz = $1
           mode.push :class

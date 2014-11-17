@@ -21,9 +21,11 @@ header_files:
   - interface/Window.h
   - interface/View.h
   - interface/Control.h
+  - [ interface/Font.h, Font ]
 #  - interface/ScrollView.h
 #  - interface/Layout.h
 #  - interface/LayoutItem.h
   - interface/Rect.h
   - interface/Point.h
   - interface/Size.h
+#  - interface/TextView.h
