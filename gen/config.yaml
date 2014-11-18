@@ -28,4 +28,4 @@ header_files:
   - interface/Rect.h
   - interface/Point.h
   - interface/Size.h
-#  - interface/TextView.h
+  - interface/TextView.h

@@ -452,7 +452,6 @@ namespace rbe
 	RBE_IMM_STRUCT_CONVERT(BPoint);
 	RBE_IMM_STRUCT_CONVERT(BRect);
 	RBE_IMM_STRUCT_CONVERT(BSize);
-	RBE_IMM_STRUCT_CONVERT(BFont);
 
 	template<typename R>
 	struct Convert<const R>

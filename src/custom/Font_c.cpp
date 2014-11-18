@@ -30,8 +30,8 @@ namespace rbe
 				_this = new BFont();
 				break;
 			case 1:
-				if (Convert<BFont>::IsConvertable(vargs[0])) {
-					BFont arg0 = Convert<BFont>::FromValue(vargs[0]);
+				if (Convert<BFont *>::IsConvertable(vargs[0])) {
+					BFont *arg0 = Convert<BFont *>::FromValue(vargs[0]);
 					_this = new BFont(arg0);
 				}
 			}
