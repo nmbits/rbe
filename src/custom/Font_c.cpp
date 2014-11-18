@@ -1,4 +1,12 @@
 
+#define private public
+#define protected public
+
+#include <app/Application.h>
+
+#undef private
+#undef protected
+
 #include "Font.hpp"
 
 #include "rbe.hpp"
@@ -17,6 +25,8 @@ namespace rbe
 			BFont *_this = NULL;
 			switch (argc) {
 			case 0:
+				if (!be_app)
+					rb_raise(rb_eRuntimeError, "be_plain_font was not initialized");
 				_this = new BFont();
 				break;
 			case 1:
