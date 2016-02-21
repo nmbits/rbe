@@ -101,7 +101,7 @@ if c
      FillRoundRect
      FillRegion
      FillTriangle
-     StrokeShape FillShape
+     StrokeShape FillShape ClipToShape ClipToInverseShape
      SetDiskMode
      BeginPicture AppendToPicture EndPicture
      SetViewBitmap ClearViewBitmap
@@ -117,7 +117,8 @@ if c
      ScrollWithMouseWheelDelta
      StringWidth GetStringWidths
      SetTransform Transform
-     LayoutInvalidated DoLayout).each do |name|
+     LayoutInvalidated DoLayout
+     SetViewUIColor ViewUIColor HighUIColor SetHighUIColor LowUIColor SetLowUIColor).each do |name|
     c.functions(name).each{|f| f.set_option :noimp, true }
   end
 end

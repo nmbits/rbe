@@ -6,7 +6,8 @@ if c
     c.functions(s).each{|f| f.set_option :noimp, true }
   end
 
-  %w(SendReply Flatten Unflatten GetCurrentSpecifier AddAlignment AddPointer AddRef AddFlat AddData FindData FindAlignment ReplaceAlignment FindPointer ReplacePointer ReplaceRef FindRef FindFlat  ReplaceFlat ReplaceData HasFlat GetPointer SetPointer GetAlignment GetRect SetAlignment SetData).each do |s|
+  %w(SendReply Flatten Unflatten GetCurrentSpecifier AddAlignment AddPointer AddRef AddFlat AddData FindData FindAlignment ReplaceAlignment FindPointer ReplacePointer ReplaceRef FindRef FindFlat  ReplaceFlat ReplaceData HasFlat SetPointer GetAlignment GetRect SetAlignment SetData).each do |s|
+    p s
     c.functions(s).each{|f| f.set_option :noimp, true }
   end
 
@@ -16,7 +17,7 @@ if c
   end
 
   # TODO
-  %w(GetRect GetPoint GetSize SetRect SetPoint SetSize).each do |s|
+  %w(GetRect GetPoint GetSize SetRect SetPoint SetSize AddColor FindColor ReplaceColor GetColor).each do |s|
     c.functions(s).each{|f| f.set_option :noimp, true }
   end
 
