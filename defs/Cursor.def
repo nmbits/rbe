@@ -1,0 +1,20 @@
+define_class "BCursor" do
+  kit "app"
+  # super_class_name "BArchivable"
+  header_file "app/Cursor.h"
+  function "BCursor" do
+    options :ctor, :public
+    interface ["const void *cursorData"], nil, :ignore
+    interface ["const BCursor& other"], nil, :ignore
+    interface ["BCursorID id"], nil, :ignore
+    interface ["BMessage *data"], nil
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Instantiate" do
+    options :public, :static, :ignore
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+end

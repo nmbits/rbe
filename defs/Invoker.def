@@ -1,0 +1,76 @@
+define_class "BInvoker" do
+  kit "app"
+  header_file "app/Invoker.h"
+  options :module, :custom_free
+  function "BInvoker" do
+    options :ctor, :public
+    interface [], nil
+    interface ["BMessage *message", "const BHandler *handler", "const BLooper *looper = NULL"], nil
+    interface ["BMessage *message", "BMessenger target"], nil
+  end
+  function "SetMessage" do
+    options :public, :custom
+    interface ["BMessage *message"], "status_t", :virtual
+  end
+  function "Message" do
+    options :public
+    interface [], "BMessage *", :const
+  end
+  function "Command" do
+    options :public
+    interface [], "uint32", :const
+  end
+  function "SetTarget" do
+    options :public, :custom
+    interface ["const BHandler *handler", "const BLooper *looper = NULL"], "status_t", :virtual
+    interface ["BMessenger messenger"], "status_t", :virtual
+  end
+  function "IsTargetLocal" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "Target" do
+    options :public, :custom
+    interface ["BLooper **_looper = NULL"], "BHandler *", :const
+  end
+  function "Messenger" do
+    options :public
+    interface [], "BMessenger", :const
+  end
+  function "SetHandlerForReply" do
+    options :public, :custom
+    interface ["BHandler *handler"], "status_t", :virtual
+  end
+  function "HandlerForReply" do
+    options :public
+    interface [], "BHandler *", :const
+  end
+  function "Invoke" do
+    options :public
+    interface ["BMessage *message = NULL"], "status_t", :virtual
+  end
+  function "InvokeNotify" do
+    options :public
+    interface ["BMessage *message", "uint32 kind = B_CONTROL_INVOKED"], "status_t"
+  end
+  function "SetTimeout" do
+    options :public
+    interface ["bigtime_t timeout"], "status_t"
+  end
+  function "Timeout" do
+    options :public
+    interface [], "bigtime_t", :const
+  end
+  function "InvokeKind" do
+    options :protected, :custom
+    interface ["bool *_notify = NULL"], "uint32"
+  end
+  function "BeginInvokeNotify" do
+    options :protected
+    interface ["uint32 kind = B_CONTROL_INVOKED"], nil
+  end
+  function "EndInvokeNotify" do
+    options :protected
+    interface [], nil
+  end
+end

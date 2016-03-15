@@ -1,0 +1,29 @@
+define_class "BArchivable" do
+  kit "support"
+  header_file "support/Archivable.h"
+  function "BArchivable" do
+    options :ctor, :public
+    interface ["BMessage *from"], nil
+    interface [], nil
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *into", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AllUnarchived" do
+    options :public
+    interface ["const BMessage *archive"], "status_t", :virtual
+  end
+  function "AllArchived" do
+    options :public
+    interface ["BMessage *archive"], "status_t", :const, :virtual
+  end
+end

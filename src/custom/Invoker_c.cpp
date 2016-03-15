@@ -8,6 +8,7 @@
 #include "Messenger.hpp"
 
 #include "rbe.hpp"
+#include "memorize.hpp"
 #include "convert.hpp"
 #include "registory.hpp"
 #include "type_map.hpp"
@@ -17,20 +18,16 @@ namespace rbe
 {
 	namespace B
 	{
-		void
-		Invoker::rb_free_(void *ptr)
+		void Invoker::rbe__gc_free(void *ptr)
 		{
-			RBE_TRACE("Invoker::rb_free_");
-			ObjectRegistory::Instance()->Unregister(ptr);
-			BInvoker *invoker = static_cast<BInvoker *>(ptr);
-			invoker->fMessage = NULL;
-			delete invoker;
+			RBE_PRINT(("Invoker::rb__gc_free: %p\n", ptr));
+			/* TODO */
 		}
 
 		VALUE
-		Invoker::rb_set_message(int argc, VALUE *argv, VALUE self)
+		Invoker::rbe_set_message(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Invoker::rb_set_message", argc, argv, self);
+			RBE_TRACE_METHOD_CALL("Invoker::rbe_set_message", argc, argv, self);
 			VALUE vret = Qnil;
 		
 			BInvoker *_this = Convert<BInvoker *>::FromValue(self);
@@ -39,7 +36,6 @@ namespace rbe
 			VALUE vmessage = *argv;
 			if (!NIL_P(vmessage) && !Convert< BMessage *>::IsConvertable(vmessage))
 				rb_raise(rb_eTypeError, "wrong type of argument 1");
-
 			BMessage *message = NULL;
 			if (!NIL_P(vmessage))
 				message = Convert<BMessage *>::FromValue(vmessage);
@@ -47,27 +43,21 @@ namespace rbe
 			if (old_message) {
 				VALUE vold_message =
 					ObjectRegistory::Instance()->Get(static_cast<void *>(old_message));
-				if (!NIL_P(vold_message)) {
-					ForgetObject(vold_message, self);
-					ForgetObject(self, vold_message);
-				}
-				_this->fMessage = NULL;
+				if (!NIL_P(vold_message))
+					Forget(self, vold_message);
+				_this->fMessage = NULL;  // because, Invoker automatically deletes the old message
 			}
 			status_t ret = _this->BInvoker::SetMessage(message);
-			if (ret == B_OK && message) {
-				MemorizeObject(self, vmessage);
-				MemorizeObject(vmessage, self);
-			}
+			if (ret == B_OK && message)
+				Memorize(self, vmessage);
 			vret = Convert< status_t>::ToValue(ret);
-
 			return vret;
 		}
 
 		VALUE
-		Invoker::rb_set_target(int argc, VALUE *argv, VALUE self)
+		Invoker::rbe_set_target(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Invoker::rb_set_target", argc, argv, self);
-			VALUE vret = Qnil;
+			RBE_TRACE_METHOD_CALL("Invoker::rbe_set_target", argc, argv, self);
 
 			BInvoker *_this = Convert<BInvoker *>::FromValue(self);
 		
@@ -97,7 +87,7 @@ namespace rbe
 
 			status_t status;
 			BMessenger messenger(handler, looper, &status);
-			if (status!= B_OK)
+			if (status != B_OK)
 				rb_raise(rb_eArgError, "something wrong with arguments");
 
 			BHandler *old_handler;
@@ -107,35 +97,27 @@ namespace rbe
 			if (status == B_OK) {
 				if (old_handler) {
 					VALUE vold_handler = Convert<BHandler *>::ToValue(old_handler);
-					if (!NIL_P(vold_handler)) {
-						ForgetObject(vold_handler, self);
-						ForgetObject(self, vold_handler);
-					}
+					if (!NIL_P(vold_handler))
+						Forget(self, vold_handler);
 				}
 				if (old_looper) {
 					VALUE vold_looper = Convert<BLooper *>::ToValue(old_looper);
-					if (!NIL_P(vold_looper)) {
-						ForgetObject(vold_looper, self);
-						ForgetObject(self, vold_looper);
-					}
+					if (!NIL_P(vold_looper))
+						Forget(self, vold_looper);
 				}
-				if (rb_obj_is_kind_of(argv[0], B::Handler::Class())) {
-					MemorizeObject(argv[0], self);
-					MemorizeObject(self, argv[0]);
-				}
-				if (rb_obj_is_kind_of(argv[1], B::Looper::Class())) {
-					MemorizeObject(argv[1], self);
-					MemorizeObject(self, argv[1]);
-				}
+				if (rb_obj_is_kind_of(argv[0], B::Handler::Class()))
+					Memorize(self, argv[0]);
+
+				if (rb_obj_is_kind_of(argv[1], B::Looper::Class()))
+					Memorize(self, argv[1]);
 			}
 			return Convert<status_t>::ToValue(status);
 		}
 
 		VALUE
-		Invoker::rb_set_handler_for_reply(int argc, VALUE *argv, VALUE self)
+		Invoker::rbe_set_handler_for_reply(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Invoker::rb_set_handler_for_reply", argc, argv, self);
-			VALUE vret = Qnil;
+			RBE_TRACE_METHOD_CALL("Invoker::rbe_set_handler_for_reply", argc, argv, self);
 		
 			BInvoker *_this = Convert<BInvoker *>::FromValue(self);
 		
@@ -147,7 +129,7 @@ namespace rbe
 
 			if (NIL_P(vhandler))
 				handler = NULL;
-			else if (Convert< BHandler *>::IsConvertable(vhandler))
+			else if (Convert<BHandler *>::IsConvertable(vhandler))
 				handler = Convert<BHandler *>::FromValue(vhandler);
 			else
 				rb_raise(rb_eTypeError, "worng type of argument");
@@ -157,25 +139,19 @@ namespace rbe
 			if (ret == B_OK) {
 				if (old_handler) {
 					VALUE vold_handler = Convert<BHandler *>::ToValue(old_handler);
-					if (!NIL_P(vold_handler)) {
-						ForgetObject(vold_handler, self);
-						ForgetObject(self, vold_handler);
-					}
+					if (!NIL_P(vold_handler))
+						Forget(self, vold_handler);
 				}
-				if (handler) {
-					MemorizeObject(vhandler, self);
-					MemorizeObject(self, vhandler);
-				}
+				if (handler)
+					Memorize(self, vhandler);
 			}
-
-			return Convert< status_t>::ToValue(ret);
+			return Convert<status_t>::ToValue(ret);
 		}
 
 		VALUE
-		Invoker::rb_target(int argc, VALUE *argv, VALUE self)
+		Invoker::rbe_target(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Invoker::rb_target", argc, argv, self);
-			VALUE vret = Qnil;
+			RBE_TRACE_METHOD_CALL("Invoker::rbe_target", argc, argv, self);
 		
 			BInvoker *_this = Convert<BInvoker *>::FromValue(self);
 
@@ -191,10 +167,9 @@ namespace rbe
 		}
 
 		VALUE
-		Invoker::rb_invoke_kind(int argc, VALUE *argv, VALUE self)
+		Invoker::rbe_invoke_kind(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Invoker::rb_invoke_kind", argc, argv, self);
-			VALUE vret = Qnil;
+			RBE_TRACE_METHOD_CALL("Invoker::rbe_invoke_kind", argc, argv, self);
 
 			BInvoker *_this = Convert<BInvoker *>::FromValue(self);
 

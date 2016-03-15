@@ -1,12 +1,12 @@
 % c = target
 
-#ifndef RBE_<%= ruby_name(c.name).upcase %>_HPP
-#define RBE_<%= ruby_name(c.name).upcase %>_HPP 1
+#ifndef <%= header_file_identifier(c.name) %>
+#define <%= header_file_identifier(c.name) %> 1
 
 #define private public
 #define protected public
 
-#include <<%= c.haiku_header %>>
+#include <<%= c.header_file %>>
 
 #undef private
 #undef protected
@@ -14,123 +14,102 @@
 #include <ruby.h>
 #include "type_map.hpp"
 
-% if c.super_class
-#include "<%= c.super_class.name %>.hpp"
+% if c.super_class_name
+#include "<%= class_binding_header c.super_class_name %>"
 
 % end
 namespace rbe {
-namespace B {
-	class <%= c.name %>;
-}
+	namespace B {
+		class <%= class_binding_name(c.name) %>;
+	}
 
-template<>
-struct WrapperOf<<%= c.api_name %>>
-{
-	typedef B::<%= c.name %> Class;
-};
+	template<>
+	struct WrapperOf<<%= c.name %>>
+	{
+		typedef B::<%= class_binding_name(c.name) %> Class;
+	};
 
-template<>
-struct PointerOf<<%= c.api_name %>>
-{
-	typedef <%= c.root_class.api_name %> Class;
-};
+	template<>
+	struct PointerOf<<%= c.name %>>
+	{
+		typedef <%= c.root_class.name %> Class;
+	};
 
-% c.auto_hooks
-
-namespace Hook {
-namespace <%= c.name %> {
-% c.hooks.each do |f|
-%   if f.arity == 0
-	<%= f.ret %> <%= f.name %>(<%= c.api_name %> *_this);
-%   else
-	<%= f.ret %> <%= f.name %>(<%= c.api_name %> *_this, <%= f.args.each_with_index.map{|a, i| "#{a.type} #{a.name}"}.join(", ") %>);
-%   end
-% end
-}
-}
-
-namespace B {
-
-class <%= c.name %> : public <%= c.api_name %>
-{
-private:
-	static VALUE sClass;
-	static rb_data_type_t sDataType;
-
+	namespace B {
+		class <%= class_binding_name(c.name) %> : public <%= c.name %>
+		{
+		private:
+			static VALUE sClass;
+			static const rb_data_type_t sDataType;
+			//
+			// Constructor
+			//
 % if c.wrapper?
-	//
-	// inner variables
-	//
-%   c.inner_variables.each do |v|
-	<%= v.type %> <%= v.name %>;
-%   end
-% end
-	//
-	// Constructor
-	//
-% if c.wrapper?
-public:
+		public:
 % else
-private:
+		private:
 % end
-% c.ctors.each do |f|
-	<%= c.name %>(<%= f.args.each_with_index.map{|a, i| "#{a.type} arg#{i}"}.join(", ") %>)
-		: <%= c.api_name %>(<%= f.arity.times.map{|i| "arg#{i}"}.join(", ") %>)
-%   c.inner_variables.each do |v|
-		, <%= v.name %>(<%= v.value %>)
-%     end
-	{}
+% c.ctor.interfaces.each do |f|
+			<%= class_binding_name(c.name) %>(<%= args_proto_string(f.args) %>)
+				: <%= c.name %>(<%= args_string(f.args) %>)
+			{}
 % end
-	virtual ~<%= c.name %>() {}
+			virtual ~<%= class_binding_name(c.name) %>() {}
 
-public:
-	//
-	// Hooks
-	//
+		public:
+			//
+			// Hooks
+			//
 % c.hooks.each do |f|
-	<%= f.proto %>;
+%   next if f.ignore?
+			<%= f.interfaces.first.proto %>;
 % end
-	//
-	// Hooks from super classes
-	//
+
+% c.hooks.each do |f|
+%   next if f.ignore?
+			<%= hookst_proto(f.interfaces.first) %>;
+% end
+			//
+			// Hooks from super classes
+			//
 % c.super_hooks.each do |f|
-	<%= f.proto %>;
+%   next if f.ignore?
+			<%= f.interfaces.first.proto %>;
 % end
 
-public:
-	static const VALUE Class() { return sClass; }
-	static const rb_data_type_t *DataType() { return &sDataType; }
+			static VALUE Class() { return sClass; }
+			static const rb_data_type_t *DataType() { return &sDataType; }
 % unless c.wrapper?
-	static VALUE Wrap(<%= c.api_name %> *obj);
+			static VALUE Wrap(<%= c.name %> *obj);
 % end
-
-public:
-	//
-	// Member functions for Ruby
-	//
-% c.function_names(:hook, :public, :protected).each do |name|
-	static VALUE rb_<%= ruby_name name %>(int, VALUE *, VALUE);
+		private:
+			//
+			// Member functions for Ruby
+			//
+% c.find_functions.each do |f|
+%   next if f.ignore?
+%   next if f.ctor?
+			static VALUE rbe_<%= underscore f.name %>(int, VALUE *, VALUE);
 % end
 % c.variables.each do |v|
-	static VALUE rb_iv_<%= ruby_name v.name %>_get(VALUE);
-	static VALUE rb_iv_<%= ruby_name v.name %>_set(VALUE, VALUE);
+			static VALUE rbe_iv_<%= underscore v.name %>_get(VALUE);
+			static VALUE rbe_iv_<%= underscore v.name %>_set(VALUE, VALUE);
 % end
-	//
-	// Ruby interfaces
-	//
-% unless c.module?
-	static VALUE rb_initialize(int, VALUE *, VALUE);
-	static VALUE rb_alloc_(VALUE);
-% end
-	static void rb_mark_(void *);
-	static void rb_free_(void *);
-	static size_t rb_size_(const void *);
+			//
+			// Ruby interfaces
+			//
 
-public:
-	// init
-	static void rb_init_class(VALUE);
-};
+			static VALUE rbe__initialize(int, VALUE *, VALUE);
+			static VALUE rbe__alloc(VALUE);
+			static void rbe__gc_mark(void *);
+			static void rbe__gc_free(void *);
+			static size_t rbe__gc_size(const void *);
 
-} } // namespace rbe, B
+		public:
+			// init
+			static VALUE rbe__init_class(VALUE);
+		};
+	} // namespace B
+} // namespace rbe
 
 #endif

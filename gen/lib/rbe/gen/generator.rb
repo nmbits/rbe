@@ -1,10 +1,11 @@
 
+require 'rbe/gen/util'
 require 'erb'
 
 module RBe
   module Gen
     class Generator
-
+      include Util
       ERBS = {}
 
       def self.generate(sym, *args)
@@ -38,11 +39,6 @@ module RBe
         "B" + name
       end
 
-      def ruby_name(name)
-        ary = name.split(/([A-Z][a-z0-9_]*)/)
-        ary.shift while ary.first == ""
-        ary.map{|x| x.downcase}.join("_").gsub(/_+/, '_')
-      end
     end
   end
 end

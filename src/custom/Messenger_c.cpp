@@ -5,10 +5,8 @@
 #include <ruby.h>
 
 #include "rbe.hpp"
-#include "funcall.hpp"
 #include "convert.hpp"
-#include "call_with_gvl.hpp"
-#include "call_without_gvl.hpp"
+#include "gvl.hpp"
 #include "lock.hpp"
 
 #include "Looper.hpp"
@@ -16,87 +14,63 @@
 #include "Messenger.hpp"
 #include "Message.hpp"
 
+#include <functional>
+
 // 30[s]
 #define SEND_MESSAGE_TIMEOUT_MAX 30000000
 
 namespace rbe
 {
-	namespace Private
+	struct SendMessage_f
 	{
-		namespace Messenger
+		BMessenger *fMessenger;
+		BMessage *fMessage;
+		BMessage *fReply;
+		BHandler *fHandler;
+		bigtime_t fTimeout;
+		bigtime_t fReplyTimeout;
+		status_t res;
+
+		SendMessage_f(BMessenger *messenger, BMessage *message, BMessage *reply = NULL,
+					  bigtime_t timeout = SEND_MESSAGE_TIMEOUT_MAX, bigtime_t replyTimeout = 0)
+			: fMessenger(messenger)
+			, fMessage(message)
+			, fReply(reply)
+			, fTimeout(timeout)
+			, fReplyTimeout(replyTimeout)
+		{}
+
+		void operator()()
 		{
-			struct SendMessage_f
-			{
-				BMessenger *fMessenger;
-				BMessage *fMessage;
-				BMessage *fReply;
-				BHandler *fHandler;
-				bigtime_t fTimeout;
-				bigtime_t fReplyTimeout;
-				status_t res;
-
-				SendMessage_f(BMessenger *messenger, BMessage *message, BMessage *reply = NULL,
-					bigtime_t timeout = SEND_MESSAGE_TIMEOUT_MAX, bigtime_t replyTimeout = 0)
-					: fMessenger(messenger)
-					, fMessage(message)
-					, fReply(reply)
-					, fTimeout(timeout)
-					, fReplyTimeout(replyTimeout)
-					{}
-
-				void operator()()
-				{
-					if (fReply)
-						res = fMessenger->SendMessage(fMessage, fReply, fTimeout, fReplyTimeout);
-				}
-			};
+			if (fReply)
+				res = fMessenger->SendMessage(fMessage, fReply, fTimeout, fReplyTimeout);
 		}
-	}
+	};
 
 	namespace B
 	{
 		VALUE
-		Messenger::rb_target(int argc, VALUE *argv, VALUE self)
+		Messenger::rbe_lock_target(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Messenger::rb_target", argc, argv, self);
-			VALUE vret = Qnil;
-
-			BMessenger *_this = Convert<BMessenger *>::FromValue(self);
-
-			if (argc)
-				rb_raise(rb_eArgError, "wrong number of argument (%1 for 0)");
-
-			BLooper *looper;
-			BHandler *handler = _this->BMessenger::Target(&looper);
-			if (handler) {
-				VALUE vhandler = Convert<BHandler *>::ToValue(handler);
-				VALUE vlooper = Convert<BLooper *>::ToValue(looper);
-				VALUE vret = rb_ary_new_from_args(2, vhandler, vlooper);
-			}
-
-			return vret;
-		}
-
-		VALUE
-		Messenger::rb_lock_target(int argc, VALUE *argv, VALUE self)
-		{
-			RBE_TRACE_METHOD_CALL("Messenger::rb_lock_target", argc, argv, self);
-			VALUE vret = Qnil;
+			RBE_TRACE_METHOD_CALL("Messenger::rbe_lock_target", argc, argv, self);
 
 			if (argc > 0)
 				rb_raise(rb_eArgError, "wrong number of argument (%d for 0)", argc);
 
 			BMessenger *_this = Convert<BMessenger *>::FromValue(self);
-			status_t status = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
+			std::function<status_t (bigtime_t)> f = [&](bigtime_t tm) -> status_t {
+				return _this->LockTargetWithTimeout(tm);
+			};
+			status_t status = Util::LockWithTimeoutCommon(f, B_INFINITE_TIMEOUT);
 			if (status == B_OK)
 				return Qtrue;
 			return Qfalse;
 		}
 
 		VALUE
-		Messenger::rb_lock_target_with_timeout(int argc, VALUE *argv, VALUE self)
+		Messenger::rbe_lock_target_with_timeout(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Messenger::rb_lock_target_with_timeout", argc, argv, self);
+			RBE_TRACE_METHOD_CALL("Messenger::rbe_lock_target_with_timeout", argc, argv, self);
 
 			if (argc != 1)
 				rb_raise(rb_eArgError, "wrong number of argument (%d for 1)", argc);
@@ -104,15 +78,17 @@ namespace rbe
 			BMessenger *_this = Convert<BMessenger *>::FromValue(self);
 			bigtime_t timeout = Convert<bigtime_t>::FromValue(*argv);
 
-			status_t status = Util::lock::LockWithTimeout(_this, timeout);
-
+			std::function<status_t (bigtime_t)> f = [&](bigtime_t tm) -> status_t {
+				return _this->LockTargetWithTimeout(tm);
+			};
+			status_t status = Util::LockWithTimeoutCommon(f, timeout);
 			return Convert<status_t>::ToValue(status);
 		}
 
 		VALUE
-		Messenger::rb_initialize(int argc, VALUE *argv, VALUE self)
+		Messenger::rbe__initialize(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Messenger::rb_initialize", argc, argv, self);
+			RBE_TRACE_METHOD_CALL("Messenger::rbe__initialize", argc, argv, self);
 
 			VALUE vargs[2];
 			rb_scan_args(argc, argv, "11", &vargs[0], &vargs[1]);
@@ -168,11 +144,10 @@ namespace rbe
 		// messenger.send_message(msg [, handler] [, timeout])
 		// messenger.send_message(msg [, messenger] [, timeout])
 		VALUE
-		Messenger::rb_send_message(int argc, VALUE *argv, VALUE self)
+		Messenger::rbe_send_message(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Messenger::rb_send_message", argc, argv, self);
-			VALUE vret = Qnil;
-		
+			RBE_TRACE_METHOD_CALL("Messenger::rbe_send_message", argc, argv, self);
+
 			BMessenger *msgr = Convert<BMessenger *>::FromValue(self);
 
 			VALUE vargs[3];
@@ -191,8 +166,9 @@ namespace rbe
 				return Qnil;
 			}
 
-			rbe::Private::Messenger::SendMessage_f f(msgr, message);
-			CallWithoutGVL<rbe::Private::Messenger::SendMessage_f, void> g(f);
+			SendMessage_f f(msgr, message);
+
+			CallWithoutGVL<SendMessage_f, void> g(f);
 
 			if (rb_block_given_p()) {
 				bigtime_t timeouts[2] = { SEND_MESSAGE_TIMEOUT_MAX, SEND_MESSAGE_TIMEOUT_MAX };

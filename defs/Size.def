@@ -1,0 +1,48 @@
+define_class "BSize" do
+  kit "interface"
+  header_file "interface/Size.h"
+  variable "float width"
+  variable "float height"
+  function "BSize" do
+    options :ctor, :public
+    interface [], nil
+    interface ["const BSize& other"], nil
+    interface ["float width", "float height"], nil
+  end
+  # function "Width" do
+  #   options :public
+  #   interface [], "float", :const
+  # end
+  # function "Height" do
+  #   options :public
+  #   interface [], "float", :const
+  # end
+  function "Set" do
+    options :public
+    interface ["float width", "float height"], nil
+  end
+  function "SetWidth" do
+    options :public
+    interface ["float width"], nil
+  end
+  function "SetHeight" do
+    options :public
+    interface ["float height"], nil
+  end
+  function "IntegerWidth" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "IntegerHeight" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "IsWidthSet" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsHeightSet" do
+    options :public
+    interface [], "bool", :const
+  end
+end

@@ -1,0 +1,412 @@
+define_class "BWindow" do
+  kit "interface"
+  header_file "interface/Window.h"
+  super_class_name "BLooper"
+  options :wrapper
+  function "BWindow" do
+    options :ctor, :public, :custom
+    interface ["BRect frame", "const char *title", "window_type type", "uint32 flags", "uint32 workspace = B_CURRENT_WORKSPACE"], nil
+    interface ["BRect frame", "const char *title", "window_look look", "window_feel feel", "uint32 flags", "uint32 workspace = B_CURRENT_WORKSPACE"], nil
+    interface ["BMessage *archive"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Quit" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "Close" do
+    options :public
+    interface [], nil
+  end
+  function "AddChild" do
+    options :public, :prelock
+    interface ["%memorize BView *child", "BView *before = NULL"], nil
+    interface ["BLayoutItem *child"], nil, :ignore
+  end
+  function "RemoveChild" do
+    options :public, :prelock
+    interface ["%forget BView *child"], "bool"
+  end
+  function "CountChildren" do
+    options :public, :prelock
+    interface [], "int32", :const
+  end
+  function "ChildAt" do
+    options :public, :prelock
+    interface ["int32 index"], "BView *", :const
+  end
+  function "DispatchMessage" do
+    options :public, :hook, :custom_hook
+    interface ["BMessage *message", "BHandler *handler"], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "FrameMoved" do
+    options :public, :hook
+    interface ["BPoint newPosition"], nil, :virtual
+  end
+  function "WorkspacesChanged" do
+    options :public, :hook
+    interface ["uint32 oldWorkspaces", "uint32 newWorkspaces"], nil, :virtual
+  end
+  function "WorkspaceActivated" do
+    options :public, :hook
+    interface ["int32 workspace", "bool state"], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "Minimize" do
+    options :public, :prelock
+    interface ["bool minimize"], nil, :virtual
+  end
+  function "Zoom" do
+    options :public
+    interface ["BPoint origin", "float width", "float height"], nil, :virtual
+    interface [], nil
+  end
+  function "SetZoomLimits" do
+    options :public
+    interface ["float maxWidth", "float maxHeight"], nil
+  end
+  function "ScreenChanged" do
+    options :public, :hook
+    interface ["BRect screenSize", "color_space depth"], nil, :virtual
+  end
+  function "SetPulseRate" do
+    options :public
+    interface ["bigtime_t rate"], nil
+  end
+  function "PulseRate" do
+    options :public
+    interface [], "bigtime_t", :const
+  end
+  function "AddShortcut" do
+    options :public
+    interface ["uint32 key", "uint32 modifiers", "BMessage *message"], nil
+    interface ["uint32 key", "uint32 modifiers", "BMessage *message", "BHandler *target"], nil
+  end
+  function "HasShortcut" do
+    options :public
+    interface ["uint32 key", "uint32 modifiers"], "bool"
+  end
+  function "RemoveShortcut" do
+    options :public
+    interface ["uint32 key", "uint32 modifiers"], nil
+  end
+  function "SetDefaultButton" do
+    options :public, :ignore
+    interface ["BButton *button"], nil
+  end
+  function "DefaultButton" do
+    options :public, :ignore
+    interface [], "BButton *", :const
+  end
+  function "MenusBeginning" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "MenusEnded" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "NeedsUpdate" do
+    options :public, :prelock
+    interface [], "bool", :const
+  end
+  function "UpdateIfNeeded" do
+    options :public
+    interface [], nil
+  end
+  function "FindView" do
+    options :public
+    interface ["const char *viewName"], "BView *", :const
+    interface ["BPoint point"], "BView *", :const
+  end
+  function "CurrentFocus" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "Activate" do
+    options :public
+    interface ["bool active = true"], nil
+  end
+  function "WindowActivated" do
+    options :public, :hook
+    interface ["bool focus"], nil, :virtual
+  end
+  function "ConvertToScreen" do
+    options :public
+    interface ["BPoint *point"], nil, :const, :ignore
+    interface ["BPoint point"], "BPoint", :const
+    interface ["BRect *rect"], nil, :const, :ignore
+    interface ["BRect rect"], "BRect", :const
+  end
+  function "ConvertFromScreen" do
+    options :public
+    interface ["BPoint *point"], nil, :const, :ignore
+    interface ["BPoint point"], "BPoint", :const
+    interface ["BRect *rect"], nil, :const, :ignore
+    interface ["BRect rect"], "BRect", :const
+  end
+  function "MoveBy" do
+    options :public, :prelock
+    interface ["float dx", "float dy"], nil
+  end
+  function "MoveTo" do
+    options :public, :prelock
+    interface ["BPoint point"], nil
+    interface ["float x", "float y"], nil
+  end
+  function "ResizeBy" do
+    options :public, :prelock
+    interface ["float dx", "float dy"], nil
+  end
+  function "ResizeTo" do
+    options :public, :prelock
+    interface ["float width", "float height"], nil
+  end
+  function "ResizeToPreferred" do
+    options :public
+    interface [], nil
+  end
+  function "CenterIn" do
+    options :public, :prelock
+    interface ["const BRect& rect"], nil
+  end
+  function "CenterOnScreen" do
+    options :public, :prelock
+    interface [], nil
+    interface ["screen_id id"], nil, :ignore
+  end
+  function "MoveOnScreen" do
+    options :public
+    interface ["uint32 flags = 0"], nil
+  end
+  function "Show" do
+    options :public, :custom
+    interface [], nil, :virtual
+  end
+  function "Hide" do
+    options :public, :prelock
+    interface [], nil, :virtual
+  end
+  function "IsHidden" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsMinimized" do
+    options :public, :prelock
+    interface [], "bool", :const
+  end
+  function "Flush" do
+    options :public, :prelock
+    interface [], nil, :const
+  end
+  function "Sync" do
+    options :public, :prelock
+    interface [], nil, :const
+  end
+  function "SendBehind" do
+    options :public, :prelock
+    interface ["const BWindow *window"], "status_t"
+  end
+  function "DisableUpdates" do
+    options :public, :prelock
+    interface [], nil
+  end
+  function "EnableUpdates" do
+    options :public, :prelock
+    interface [], nil
+  end
+  function "BeginViewTransaction" do
+    options :public, :prelock
+    interface [], nil
+  end
+  function "EndViewTransaction" do
+    options :public, :prelock
+    interface [], nil
+  end
+  function "InViewTransaction" do
+    options :public, :prelock
+    interface [], "bool", :const
+  end
+  function "Bounds" do
+    options :public
+    interface [], "BRect", :const
+  end
+  function "Frame" do
+    options :public
+    interface [], "BRect", :const
+  end
+  function "DecoratorFrame" do
+    options :public
+    interface [], "BRect", :const
+  end
+  function "Size" do
+    options :public
+    interface [], "BSize", :const
+  end
+  function "Title" do
+    options :public
+    interface [], "const char *", :const
+  end
+  function "SetTitle" do
+    options :public, :prelock
+    interface ["const char *title"], nil
+  end
+  function "IsFront" do
+    options :public, :prelock
+    interface [], "bool", :const
+  end
+  function "IsActive" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetKeyMenuBar" do
+    options :public, :ignore
+    interface ["BMenuBar *bar"], nil
+  end
+  function "KeyMenuBar" do
+    options :public, :ignore
+    interface [], "BMenuBar *", :const
+  end
+  function "SetSizeLimits" do
+    options :public, :prelock
+    interface ["float minWidth", "float maxWidth", "float minHeight", "float maxHeight"], nil
+  end
+  function "GetSizeLimits" do
+    options :public
+    interface ["%out float *minWidth", "%out float *maxWidth", "%out float *minHeight", "%out float *maxHeight"], nil
+  end
+  function "UpdateSizeLimits" do
+    options :public, :prelock
+    interface [], nil
+  end
+  function "SetDecoratorSettings" do
+    options :public, :prelock
+    interface ["const BMessage& settings"], "status_t"
+  end
+  function "GetDecoratorSettings" do
+    options :public, :prelock
+    interface ["BMessage *settings"], "status_t", :const
+  end
+  function "Workspaces" do
+    options :public, :prelock
+    interface [], "uint32", :const
+  end
+  function "SetWorkspaces" do
+    options :public, :prelock
+    interface ["uint32 workspaces"], nil
+  end
+  function "LastMouseMovedView" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 what", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "AddToSubset" do
+    options :public, :prelock
+    interface ["BWindow *window"], "status_t"
+  end
+  function "RemoveFromSubset" do
+    options :public, :prelock
+    interface ["BWindow *window"], "status_t"
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code code", "void *data"], "status_t", :virtual
+  end
+  function "SetType" do
+    options :public, :prelock
+    interface ["window_type type"], "status_t"
+  end
+  function "Type" do
+    options :public
+    interface [], "window_type", :const
+  end
+  function "SetLook" do
+    options :public, :prelock
+    interface ["window_look look"], "status_t"
+  end
+  function "Look" do
+    options :public
+    interface [], "window_look", :const
+  end
+  function "SetFeel" do
+    options :public, :prelock
+    interface ["window_feel feel"], "status_t"
+  end
+  function "Feel" do
+    options :public
+    interface [], "window_feel", :const
+  end
+  function "SetFlags" do
+    options :public, :prelock
+    interface ["uint32 flags"], "status_t"
+  end
+  function "Flags" do
+    options :public
+    interface [], "uint32", :const
+  end
+  function "IsModal" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsFloating" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetWindowAlignment" do
+    options :public, :prelock
+    interface ["window_alignment mode", "int32 h", "int32 hOffset = 0", "int32 width = 0", "int32 widthOffset = 0", "int32 v = 0", "int32 vOffset = 0", "int32 height = 0", "int32 heightOffset = 0"], "status_t"
+  end
+  function "GetWindowAlignment" do
+    options :public, :prelock, :ignore
+    interface ["window_alignment *mode = NULL", "int32 *h = NULL", "int32 *hOffset = NULL", "int32 *width = NULL", "int32 *widthOffset = NULL", "int32 *v = NULL", "int32 *vOffset = NULL", "int32 *height = NULL", "int32 *heightOffset = NULL"], "status_t", :const
+  end
+  function "QuitRequested" do
+    options :public, :hook
+    interface [], "bool = true", :virtual
+  end
+  function "Run" do
+    options :public, :custom
+    interface [], "thread_id", :virtual
+  end
+  function "SetLayout" do
+    options :public, :ignore
+    interface ["BLayout *layout"], nil, :virtual
+  end
+  function "GetLayout" do
+    options :public, :ignore
+    interface [], "BLayout *", :const
+  end
+  function "InvalidateLayout" do
+    options :public
+    interface ["bool descendants = false"], nil
+  end
+  function "Layout" do
+    options :public
+    interface ["bool force"], nil
+  end
+  function "IsOffscreenWindow" do
+    options :public
+    interface [], "bool", :const
+  end
+end

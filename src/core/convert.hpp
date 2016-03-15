@@ -33,6 +33,9 @@
 #include "Size.hpp"
 #include "Font.hpp"
 
+#include <utility>
+#include <string.h>
+
 namespace rbe
 {
 	template<typename _T> struct Convert;
@@ -317,6 +320,32 @@ namespace rbe
 		}
 	};
 
+	// char *
+
+	template<>
+	struct Convert<char *>
+	{
+		static VALUE ToValue(char *a)
+		{
+			if (a == NULL)
+				return Qnil;
+
+			VALUE s = rb_str_new_cstr(a);
+			rb_str_freeze(s);
+			return s;
+		}
+
+		static char *FromValue(VALUE v)
+		{
+			return StringValueCStr(v);
+		}
+
+		static bool IsConvertable(VALUE v)
+		{
+			return ((TYPE(v) == T_STRING) || (rb_respond_to(v, rb_intern("to_str"))));
+		}
+	};
+
 	// const char *
 
 	template<>
@@ -343,6 +372,56 @@ namespace rbe
 		}
 	};
 
+	// char * and length
+
+	template<>
+	struct Convert<std::pair<char *, int32> >
+	{
+		static VALUE ToValue(std::pair<char *, int32> a)
+		{
+			if (a.first == NULL)
+				return Qnil;
+			VALUE s = rb_str_new(a.first, a.second);
+			return s;
+		}
+
+		static std::pair<char *, int32> FromValue(VALUE v)
+		{
+			char *str = StringValueCStr(v);
+			std::pair<char *, int32> answer(str, strlen(str));
+			return answer;
+		}
+
+		static bool IsConvertable(VALUE v)
+		{
+			return ((TYPE(v) == T_STRING) || (rb_respond_to(v, rb_intern("to_str"))));
+		}
+	};
+
+	template<>
+	struct Convert<std::pair<const char *, int32> >
+	{
+		static VALUE ToValue(std::pair<const char *, int32> a)
+		{
+			if (a.first == NULL)
+				return Qnil;
+			VALUE s = rb_str_new(a.first, a.second);
+			return s;
+		}
+
+		static std::pair<const char *, int32> FromValue(VALUE v)
+		{
+			const char *str = StringValueCStr(v);
+			std::pair<const char *, int32> answer(str, strlen(str));
+			return answer;
+		}
+
+		static bool IsConvertable(VALUE v)
+		{
+			return ((TYPE(v) == T_STRING) || (rb_respond_to(v, rb_intern("to_str"))));
+		}
+	};
+	
 #define RBE_COMPATIBLE_CONVERT(orig, compat)				\
 	template<>												\
 	struct Convert<orig>									\
@@ -528,8 +607,6 @@ namespace rbe
 
 		static VALUE ToValue(BInvoker *invoker)
 		{
-			VALUE answer = Qnil;
-
 			if (!invoker)
 				return Qnil;
 

@@ -1,0 +1,180 @@
+define_class "BFont" do
+  kit "interface"
+  header_file "interface/Font.h"
+  function "BFont" do
+    options :ctor, :public, :custom
+    interface [], nil
+    interface ["const BFont& font"], nil, :ignore
+    interface ["const BFont *font"], nil
+  end
+  function "SetFamilyAndStyle" do
+    options :public, :ignore
+    interface ["const font_family family", "const font_style style"], "status_t"
+    interface ["uint32 code"], nil
+  end
+  function "SetFamilyAndFace" do
+    options :public, :ignore
+    interface ["const font_family family", "uint16 face"], "status_t"
+  end
+  function "SetSize" do
+    options :public
+    interface ["float size"], nil
+  end
+  function "SetShear" do
+    options :public
+    interface ["float shear"], nil
+  end
+  function "SetRotation" do
+    options :public
+    interface ["float rotation"], nil
+  end
+  function "SetFalseBoldWidth" do
+    options :public
+    interface ["float width"], nil
+  end
+  function "SetSpacing" do
+    options :public
+    interface ["uint8 spacing"], nil
+  end
+  function "SetEncoding" do
+    options :public
+    interface ["uint8 encoding"], nil
+  end
+  function "SetFace" do
+    options :public
+    interface ["uint16 face"], nil
+  end
+  function "SetFlags" do
+    options :public
+    interface ["uint32 flags"], nil
+  end
+  function "GetFamilyAndStyle" do
+    options :public, :ignore
+    interface ["font_family *family", "font_style *style"], nil, :const
+  end
+  function "FamilyAndStyle" do
+    options :public
+    interface [], "uint32", :const
+  end
+  function "Size" do
+    options :public
+    interface [], "float", :const
+  end
+  function "Shear" do
+    options :public
+    interface [], "float", :const
+  end
+  function "Rotation" do
+    options :public
+    interface [], "float", :const
+  end
+  function "FalseBoldWidth" do
+    options :public
+    interface [], "float", :const
+  end
+  function "Spacing" do
+    options :public
+    interface [], "uint8", :const
+  end
+  function "Encoding" do
+    options :public
+    interface [], "uint8", :const
+  end
+  function "Face" do
+    options :public
+    interface [], "uint16", :const
+  end
+  function "Flags" do
+    options :public
+    interface [], "uint32", :const
+  end
+  function "Direction" do
+    options :public, :ignore
+    interface [], "font_direction", :const
+  end
+  function "IsFixed" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsFullAndHalfFixed" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "BoundingBox" do
+    options :public
+    interface [], "BRect", :const
+  end
+  function "Blocks" do
+    options :public, :ignore
+    interface [], "unicode_block", :const
+  end
+  function "FileFormat" do
+    options :public, :ignore
+    interface [], "font_file_format", :const
+  end
+  function "CountTuned" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "GetTunedInfo" do
+    options :public, :ignore
+    interface ["int32 index", "tuned_font_info *info"], nil, :const
+  end
+  function "TruncateString" do
+    options :public, :ignore
+    interface ["BString *inOut", "uint32 mode", "float width"], nil, :const
+  end
+  function "GetTruncatedStrings" do
+    options :public, :ignore
+    interface ["const char *stringArray[]", "int32 numStrings", "uint32 mode", "float width", "BString resultArray[]"], nil, :const
+    interface ["const char *stringArray[]", "int32 numStrings", "uint32 mode", "float width", "char *resultArray[]"], nil, :const
+  end
+  function "StringWidth" do
+    options :public
+    interface ["const char *string"], "float", :const
+    interface ["const char *string", "int32 length"], "float", :const
+  end
+  function "GetStringWidths" do
+    options :public, :ignore
+    interface ["const char *stringArray[]", "const int32 lengthArray[]", "int32 numStrings", "float widthArray[]"], nil, :const
+  end
+  function "GetEscapements" do
+    options :public, :ignore
+    interface ["const char charArray[]", "int32 numChars", "float escapementArray[]"], nil, :const
+    interface ["const char charArray[]", "int32 numChars", "escapement_delta *delta", "float escapementArray[]"], nil, :const
+    interface ["const char charArray[]", "int32 numChars", "escapement_delta *delta", "BPoint escapementArray[]"], nil, :const
+    interface ["const char charArray[]", "int32 numChars", "escapement_delta *delta", "BPoint escapementArray[]", "BPoint offsetArray[]"], nil, :const
+  end
+  function "GetEdges" do
+    options :public, :ignore
+    interface ["const char charArray[]", "int32 numBytes", "edge_info edgeArray[]"], nil, :const
+  end
+  function "GetHeight" do
+    options :public, :ignore
+    interface ["font_height *height"], nil, :const
+  end
+  function "GetBoundingBoxesAsGlyphs" do
+    options :public, :ignore
+    interface ["const char charArray[]", "int32 numChars", "font_metric_mode mode", "BRect boundingBoxArray[]"], nil, :const
+  end
+  function "GetBoundingBoxesAsString" do
+    options :public, :ignore
+    interface ["const char charArray[]", "int32 numChars", "font_metric_mode mode", "escapement_delta *delta", "BRect boundingBoxArray[]"], nil, :const
+  end
+  function "GetBoundingBoxesForStrings" do
+    options :public, :ignore
+    interface ["const char *stringArray[]", "int32 numStrings", "font_metric_mode mode", "escapement_delta deltas[]", "BRect boundingBoxArray[]"], nil, :const
+  end
+  function "GetGlyphShapes" do
+    options :public, :ignore
+    interface ["const char charArray[]", "int32 numChars", "BShape *glyphShapeArray[]"], nil, :const
+  end
+  function "GetHasGlyphs" do
+    options :public, :ignore
+    interface ["const char charArray[]", "int32 numChars", "bool hasArray[]"], nil, :const
+  end
+  function "PrintToStream" do
+    options :public
+    interface [], nil, :const
+  end
+end

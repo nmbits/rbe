@@ -3,41 +3,66 @@ require 'rbe/cpp/type'
 
 module RBe
   module Cpp
-    class Variable
-      attr_accessor :type, :name, :value, :out, :accept_nil
-
-      def initialize(type, name, value = nil)
-        @type, @name, @value = type, name, value
-      end
+    class Variable < Struct.new(:type, :name, :value, :options)
+      OPTIONS = ["out", "forget", "memorize", "nillable", "pair"]
 
       def has_value?
-        (!@value.nil?)
+        ! value.nil?
       end
 
-      def deref_type
-        if type =~ /\*$/
-          return $`.strip
-        end
-        raise "#{type} is not a pointer type"
+      def option(sym)
+        options[sym]
+      end
+      
+      OPTIONS.each do |opt|
+        define_method(opt + "?") { option opt.to_sym }
       end
 
-      # assume
-      # <type> <name> [ = <value> ]
-
-      def self.parse(str)
-        str.gsub!(/;$/, "")
-        type_and_name, avalue = str.split('=').map{|x| x.strip}
-        no_const = type_and_name.gsub(/const/, "")
-        if no_const.split(/\s/).size == 1
-          name = nil
-          type = Type.normalize type_and_name
+      def optional?
+        value ? true : false
+      end
+      
+      def to_ruby
+        if options && !options.empty?
+          answer = options.keys.map{|o| '%' + o.to_s}.join(" ") + " "
         else
-          /([a-zA-Z0-9_\[\]]+)$/ =~ type_and_name
+          answer = ""
+        end
+        answer += type
+        answer += " " + name if name
+        answer.gsub!(/\* /, "*")
+        if value
+          answer += " = " + value
+        end
+        answer
+      end
+
+      alias_method :to_s, :to_ruby
+      
+      def self.parse(str)
+        options = {}
+        str.gsub!(/;$/, "")
+        type_and_name, avalue = str.split('=').map {|x| x.strip }
+        # pure = type_and_name.gsub(/const/, "")
+        pure = type_and_name.dup
+        len = pure.length
+        OPTIONS.each do |opt|
+          pure.gsub!(/%#{opt}/, "")
+          if pure.length < len
+            options[opt.to_sym] = true
+            len = pure.length
+          end
+        end
+        if pure.split(/\W/).size == 1
+          name = nil
+          type = Type.new pure
+        else
+          /([a-zA-Z0-9_\[\]]+)$/ =~ pure
           name = $1
-          type = Type.normalize $`
+          type = Type.new $`
         end
         value = (avalue.nil? || avalue.empty? ? nil : avalue.strip)
-        self.new(type, name, value)
+        self.new(type, name, value, options)
       end
     end
   end

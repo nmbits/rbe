@@ -1,0 +1,906 @@
+define_class "BView" do
+  kit "interface"
+  header_file "interface/View.h"
+  super_class_name "BHandler"
+  options :wrapper
+  function "BView" do
+    options :ctor, :public
+    interface ["const char *name", "uint32 flags", "BLayout *layout = NULL"], nil, :ignore
+    interface ["BRect frame", "const char *name", "uint32 resizingMode", "uint32 flags"], nil
+    interface ["BMessage *archive"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "AllUnarchived" do
+    options :public
+    interface ["const BMessage *archive"], "status_t", :virtual
+  end
+  function "AllArchived" do
+    options :public
+    interface ["BMessage *archive"], "status_t", :const, :virtual
+  end
+  function "AttachedToWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllAttached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllDetached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "AddChild" do
+    options :public
+    interface ["%memorize BView *child", "BView *before = NULL"], nil
+    interface ["BLayoutItem *child"], "bool", :ignore
+  end
+  function "RemoveChild" do
+    options :public
+    interface ["%forget BView *child"], "bool"
+  end
+  function "CountChildren" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "ChildAt" do
+    options :public
+    interface ["int32 index"], "BView *", :const
+  end
+  function "NextSibling" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "PreviousSibling" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "RemoveSelf" do
+    options :public, :ignore
+    interface [], "bool"
+  end
+  function "Window" do
+    options :public
+    interface [], "BWindow *", :const
+  end
+  function "Draw" do
+    options :public, :hook
+    interface ["BRect updateRect"], nil, :virtual
+  end
+  function "MouseDown" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseUp" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseMoved" do
+    options :public, :hook
+    interface ["BPoint where", "uint32 code", "const BMessage *dragMessage"], nil, :virtual
+  end
+  function "WindowActivated" do
+    options :public, :hook
+    interface ["bool active"], nil, :virtual
+  end
+  function "KeyDown" do
+    options :public, :hook
+    interface ["%pair const char *bytes", "int32 numBytes"], nil, :virtual
+  end
+  function "KeyUp" do
+    options :public, :hook
+    interface ["%pair const char *bytes", "int32 numBytes"], nil, :virtual
+  end
+  function "Pulse" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "FrameMoved" do
+    options :public, :hook
+    interface ["BPoint newPosition"], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "TargetedByScrollView" do
+    options :public, :hook, :ignore
+    interface ["BScrollView *scrollView"], nil, :virtual
+  end
+  function "BeginRectTracking" do
+    options :public
+    interface ["BRect startRect", "uint32 style = B_TRACK_WHOLE_RECT"], nil
+  end
+  function "EndRectTracking" do
+    options :public
+    interface [], nil
+  end
+  function "GetMouse" do
+    options :public, :ignore
+    interface ["BPoint *location", "uint32 *buttons", "bool checkMessageQueue = true"], nil
+  end
+  function "DragMessage" do
+    options :public
+    interface ["BMessage *message", "BRect dragRect", "BHandler *replyTo = NULL"], nil
+    interface ["BMessage *message", "BBitmap *bitmap", "BPoint offset", "BHandler *replyTo = NULL"], nil, :ignore
+    interface ["BMessage *message", "BBitmap *bitmap", "drawing_mode dragMode", "BPoint offset", "BHandler *replyTo = NULL"], nil, :ignore
+  end
+  function "FindView" do
+    options :public
+    interface ["const char *name"], "BView *", :const
+  end
+  function "Parent" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "Bounds" do
+    options :public
+    interface [], "BRect", :const
+  end
+  function "Frame" do
+    options :public
+    interface [], "BRect", :const
+  end
+  function "ConvertToScreen" do
+    options :public
+    interface ["BPoint *point"], nil, :const, :ignore
+    interface ["BPoint point"], "BPoint", :const
+    interface ["BRect *rect"], nil, :const, :ignore
+    interface ["BRect rect"], "BRect", :const
+  end
+  function "ConvertFromScreen" do
+    options :public
+    interface ["BPoint *point"], nil, :const, :ignore
+    interface ["BPoint point"], "BPoint", :const
+    interface ["BRect *rect"], nil, :const, :ignore
+    interface ["BRect rect"], "BRect", :const
+  end
+  function "ConvertToParent" do
+    options :public
+    interface ["BPoint *point"], nil, :const, :ignore
+    interface ["BPoint point"], "BPoint", :const
+    interface ["BRect *rect"], nil, :const, :ignore
+    interface ["BRect rect"], "BRect", :const
+  end
+  function "ConvertFromParent" do
+    options :public
+    interface ["BPoint *point"], nil, :const, :ignore
+    interface ["BPoint point"], "BPoint", :const
+    interface ["BRect *rect"], nil, :const, :ignore
+    interface ["BRect rect"], "BRect", :const
+  end
+  function "LeftTop" do
+    options :public
+    interface [], "BPoint", :const
+  end
+  function "GetClippingRegion" do
+    options :public, :ignore
+    interface ["BRegion *region"], nil, :const
+  end
+  function "ConstrainClippingRegion" do
+    options :public, :ignore
+    interface ["BRegion *region"], nil, :virtual
+  end
+  function "ClipToPicture" do
+    options :public, :ignore
+    interface ["BPicture *picture", "BPoint where = B_ORIGIN", "bool sync = true"], nil
+  end
+  function "ClipToInversePicture" do
+    options :public, :ignore
+    interface ["BPicture *picture", "BPoint where = B_ORIGIN", "bool sync = true"], nil
+  end
+  function "ClipToRect" do
+    options :public
+    interface ["BRect rect"], nil
+  end
+  function "ClipToInverseRect" do
+    options :public
+    interface ["BRect rect"], nil
+  end
+  function "ClipToShape" do
+    options :public, :ignore
+    interface ["BShape *shape"], nil
+  end
+  function "ClipToInverseShape" do
+    options :public, :ignore
+    interface ["BShape *shape"], nil
+  end
+  function "SetDrawingMode" do
+    options :public
+    interface ["drawing_mode mode"], nil, :virtual
+  end
+  function "DrawingMode" do
+    options :public
+    interface [], "drawing_mode", :const
+  end
+  function "SetBlendingMode" do
+    options :public, :ignore
+    interface ["source_alpha srcAlpha", "alpha_function alphaFunc"], nil
+  end
+  function "GetBlendingMode" do
+    options :public, :ignore
+    interface ["source_alpha *srcAlpha", "alpha_function *alphaFunc"], nil, :const
+  end
+  function "SetPenSize" do
+    options :public
+    interface ["float size"], nil, :virtual
+  end
+  function "PenSize" do
+    options :public
+    interface [], "float", :const
+  end
+  function "SetViewCursor" do
+    options :public, :ignore
+    interface ["const BCursor *cursor", "bool sync = true"], nil
+  end
+  function "HasDefaultColors" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "HasSystemColors" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "AdoptParentColors" do
+    options :public
+    interface [], nil
+  end
+  function "AdoptSystemColors" do
+    options :public
+    interface [], nil
+  end
+  function "AdoptViewColors" do
+    options :public
+    interface ["BView *view"], nil
+  end
+  function "SetViewColor" do
+    options :public
+    interface ["rgb_color color"], nil, :virtual
+    interface ["uchar red", "uchar green", "uchar blue", "uchar alpha = 255"], nil
+  end
+  function "ViewColor" do
+    options :public
+    interface [], "rgb_color", :const
+  end
+  function "SetViewUIColor" do
+    options :public, :ignore
+    interface ["color_which which", "float tint = B_NO_TINT"], nil
+  end
+  function "ViewUIColor" do
+    options :public, :ignore
+    interface ["float *tint = NULL"], "color_which", :const
+  end
+  function "SetViewBitmap" do
+    options :public, :ignore
+    interface ["const BBitmap *bitmap", "BRect srcRect", "BRect dstRect", "uint32 followFlags = B_FOLLOW_LEFT_TOP", "uint32 options = B_TILE_BITMAP"], nil
+    interface ["const BBitmap *bitmap", "uint32 followFlags = B_FOLLOW_LEFT_TOP", "uint32 options = B_TILE_BITMAP"], nil
+  end
+  function "ClearViewBitmap" do
+    options :public
+    interface [], nil
+  end
+  function "SetViewOverlay" do
+    options :public, :ignore
+    interface ["const BBitmap *overlay", "BRect srcRect", "BRect dstRect", "rgb_color *colorKey", "uint32 followFlags = B_FOLLOW_LEFT_TOP", "uint32 options = 0"], "status_t"
+    interface ["const BBitmap *overlay", "rgb_color *colorKey", "uint32 followFlags = B_FOLLOW_LEFT_TOP", "uint32 options = 0"], "status_t"
+  end
+  function "ClearViewOverlay" do
+    options :public
+    interface [], nil
+  end
+  function "SetHighColor" do
+    options :public
+    interface ["rgb_color color"], nil, :virtual
+    interface ["uchar red", "uchar green", "uchar blue", "uchar alpha = 255"], nil
+  end
+  function "HighColor" do
+    options :public
+    interface [], "rgb_color", :const
+  end
+  function "SetHighUIColor" do
+    options :public, :ignore
+    interface ["color_which which", "float tint = B_NO_TINT"], nil
+  end
+  function "HighUIColor" do
+    options :public, :ignore
+    interface ["float *tint = NULL"], "color_which", :const
+  end
+  function "SetLowColor" do
+    options :public
+    interface ["rgb_color color"], nil, :virtual
+    interface ["uchar red", "uchar green", "uchar blue", "uchar alpha = 255"], nil
+  end
+  function "LowColor" do
+    options :public
+    interface [], "rgb_color", :const
+  end
+  function "SetLowUIColor" do
+    options :public, :ignore
+    interface ["color_which which", "float tint = B_NO_TINT"], nil
+  end
+  function "LowUIColor" do
+    options :public, :ignore
+    interface ["float *tint = NULL"], "color_which", :const
+  end
+  function "SetLineMode" do
+    options :public, :ignore
+    interface ["cap_mode lineCap", "join_mode lineJoin", "float miterLimit = B_DEFAULT_MITER_LIMIT"], nil
+  end
+  function "LineJoinMode" do
+    options :public, :ignore
+    interface [], "join_mode", :const
+  end
+  function "LineCapMode" do
+    options :public, :ignore
+    interface [], "cap_mode", :const
+  end
+  function "LineMiterLimit" do
+    options :public
+    interface [], "float", :const
+  end
+  function "SetFillRule" do
+    options :public
+    interface ["int32 rule"], nil
+  end
+  function "FillRule" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "SetOrigin" do
+    options :public
+    interface ["BPoint where"], nil
+    interface ["float x", "float y"], nil
+  end
+  function "Origin" do
+    options :public
+    interface [], "BPoint", :const
+  end
+  function "SetTransform" do
+    options :public, :ignore
+    interface ["BAffineTransform transform"], nil
+  end
+  function "Transform" do
+    options :public, :ignore
+    interface [], "BAffineTransform", :const
+  end
+  function "TranslateBy" do
+    options :public
+    interface ["double x", "double y"], nil
+  end
+  function "ScaleBy" do
+    options :public
+    interface ["double x", "double y"], nil
+  end
+  function "RotateBy" do
+    options :public
+    interface ["double angleRadians"], nil
+  end
+  function "PushState" do
+    options :public
+    interface [], nil
+  end
+  function "PopState" do
+    options :public
+    interface [], nil
+  end
+  function "MovePenTo" do
+    options :public
+    interface ["BPoint pt"], nil
+    interface ["float x", "float y"], nil
+  end
+  function "MovePenBy" do
+    options :public
+    interface ["float x", "float y"], nil
+  end
+  function "PenLocation" do
+    options :public
+    interface [], "BPoint", :const
+  end
+  function "StrokeLine" do
+    options :public
+    interface ["BPoint toPoint", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BPoint start", "BPoint end", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "BeginLineArray" do
+    options :public
+    interface ["int32 count"], nil
+  end
+  function "AddLine" do
+    options :public
+    interface ["BPoint start", "BPoint end", "rgb_color color"], nil
+  end
+  function "EndLineArray" do
+    options :public
+    interface [], nil
+  end
+  function "StrokePolygon" do
+    options :public, :ignore
+    interface ["const BPolygon *polygon", "bool closed = true", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["const BPoint *pointArray", "int32 numPoints", "bool closed = true", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["const BPoint *pointArray", "int32 numPoints", "BRect bounds", "bool closed = true", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "FillPolygon" do
+    options :public, :ignore
+    interface ["const BPolygon *polygon", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["const BPoint *pointArray", "int32 numPoints", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["const BPoint *pointArray", "int32 numPoints", "BRect bounds", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["const BPolygon *polygon", "const BGradient& gradient"], nil
+    interface ["const BPoint *pointArray", "int32 numPoints", "const BGradient& gradient"], nil
+    interface ["const BPoint *pointArray", "int32 numPoints", "BRect bounds", "const BGradient& gradient"], nil
+  end
+  function "StrokeTriangle" do
+    options :public
+    interface ["BPoint point1", "BPoint point2", "BPoint point3", "BRect bounds", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BPoint point1", "BPoint point2", "BPoint point3", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "FillTriangle" do
+    options :public
+    interface ["BPoint point1", "BPoint point2", "BPoint point3", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BPoint point1", "BPoint point2", "BPoint point3", "BRect bounds", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BPoint point1", "BPoint point2", "BPoint point3", "const BGradient& gradient"], nil, :ignore
+    interface ["BPoint point1", "BPoint point2", "BPoint point3", "BRect bounds", "const BGradient& gradient"], nil, :ignore
+  end
+  function "StrokeRect" do
+    options :public
+    interface ["BRect rect", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "FillRect" do
+    options :public
+    interface ["BRect rect", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BRect rect", "const BGradient& gradient"], nil, :ignore
+  end
+  function "FillRegion" do
+    options :public, :ignore
+    interface ["BRegion *rectegion", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BRegion *rectegion", "const BGradient& gradient"], nil
+  end
+  function "InvertRect" do
+    options :public
+    interface ["BRect rect"], nil
+  end
+  function "StrokeRoundRect" do
+    options :public
+    interface ["BRect rect", "float xRadius", "float yRadius", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "FillRoundRect" do
+    options :public
+    interface ["BRect rect", "float xRadius", "float yRadius", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BRect rect", "float xRadius", "float yRadius", "const BGradient& gradient"], nil, :ignore
+  end
+  function "StrokeEllipse" do
+    options :public
+    interface ["BPoint center", "float xRadius", "float yRadius", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BRect rect", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "FillEllipse" do
+    options :public
+    interface ["BPoint center", "float xRadius", "float yRadius", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BRect rect", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BPoint center", "float xRadius", "float yRadius", "const BGradient& gradient"], nil, :ignore
+    interface ["BRect rect", "const BGradient& gradient"], nil, :ignore
+  end
+  function "StrokeArc" do
+    options :public
+    interface ["BPoint center", "float xRadius", "float yRadius", "float startAngle", "float arcAngle", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BRect rect", "float startAngle", "float arcAngle", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "FillArc" do
+    options :public
+    interface ["BPoint center", "float xRadius", "float yRadius", "float startAngle", "float arcAngle", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BRect rect", "float startAngle", "float arcAngle", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BPoint center", "float xRadius", "float yRadius", "float startAngle", "float arcAngle", "const BGradient& gradient"], nil, :ignore
+    interface ["BRect rect", "float startAngle", "float arcAngle", "const BGradient& gradient"], nil, :ignore
+  end
+  function "StrokeBezier" do
+    options :public, :ignore
+    interface ["BPoint *controlPoints", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "FillBezier" do
+    options :public, :ignore
+    interface ["BPoint *controlPoints", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BPoint *controlPoints", "const BGradient& gradient"], nil
+  end
+  function "StrokeShape" do
+    options :public, :ignore
+    interface ["BShape *shape", "::pattern pattern = B_SOLID_HIGH"], nil
+  end
+  function "FillShape" do
+    options :public, :ignore
+    interface ["BShape *shape", "::pattern pattern = B_SOLID_HIGH"], nil
+    interface ["BShape *shape", "const BGradient& gradient"], nil
+  end
+  function "CopyBits" do
+    options :public
+    interface ["BRect src", "BRect dst"], nil
+  end
+  function "DrawBitmapAsync" do
+    options :public, :ignore
+    interface ["const BBitmap *aBitmap", "BRect bitmapRect", "BRect viewRect", "uint32 options"], nil
+    interface ["const BBitmap *aBitmap", "BRect bitmapRect", "BRect viewRect"], nil
+    interface ["const BBitmap *aBitmap", "BRect viewRect"], nil
+    interface ["const BBitmap *aBitmap", "BPoint where"], nil
+    interface ["const BBitmap *aBitmap"], nil
+  end
+  function "DrawBitmap" do
+    options :public, :ignore
+    interface ["const BBitmap *aBitmap", "BRect bitmapRect", "BRect viewRect", "uint32 options"], nil
+    interface ["const BBitmap *aBitmap", "BRect bitmapRect", "BRect viewRect"], nil
+    interface ["const BBitmap *aBitmap", "BRect viewRect"], nil
+    interface ["const BBitmap *aBitmap", "BPoint where"], nil
+    interface ["const BBitmap *aBitmap"], nil
+  end
+  function "DrawChar" do
+    options :public
+    interface ["char aChar"], nil
+    interface ["char aChar", "BPoint location"], nil
+  end
+  function "DrawString" do
+    options :public, :ignore
+    interface ["const char *string", "escapement_delta *delta = NULL"], nil
+    interface ["const char *string", "BPoint location", "escapement_delta *delta = NULL"], nil
+    interface ["const char *string", "int32 length", "escapement_delta *delta = NULL"], nil
+    interface ["const char *string", "int32 length", "BPoint location", "escapement_delta *delta = 0L"], nil
+    interface ["const char *string", "const BPoint *locations", "int32 locationCount"], nil
+    interface ["const char *string", "int32 length", "const BPoint *locations", "int32 locationCount"], nil
+  end
+  function "SetFont" do
+    options :public, :ignore
+    interface ["const BFont *font", "uint32 mask = B_FONT_ALL"], nil, :virtual
+  end
+  function "GetFont" do
+    options :public, :ignore
+    interface ["BFont *font"], nil, :const
+  end
+  function "TruncateString" do
+    options :public, :ignore
+    interface ["BString *in_out", "uint32 mode", "float width"], nil, :const
+  end
+  function "StringWidth" do
+    options :public, :ignore
+    interface ["const char *string"], "float", :const
+    interface ["const char *string", "int32 length"], "float", :const
+  end
+  function "GetStringWidths" do
+    options :public, :ignore
+    interface ["char *stringArray[]", "int32 lengthArray[]", "int32 numStrings", "float widthArray[]"], nil, :const
+  end
+  function "SetFontSize" do
+    options :public
+    interface ["float size"], nil
+  end
+  function "ForceFontAliasing" do
+    options :public
+    interface ["bool enable"], nil
+  end
+  function "GetFontHeight" do
+    options :public, :ignore
+    interface ["font_height *height"], nil, :const
+  end
+  function "Invalidate" do
+    options :public
+    interface ["BRect invalRect"], nil
+    interface ["const BRegion *invalRegion"], nil, :ignore
+    interface [], nil
+  end
+  function "DelayedInvalidate" do
+    options :public, :ignore
+    interface ["bigtime_t delay"], nil
+    interface ["bigtime_t delay", "BRect invalRect"], nil
+  end
+  function "SetDiskMode" do
+    options :public, :ignore
+    interface ["char *filename", "long offset"], nil
+  end
+  function "BeginPicture" do
+    options :public, :ignore
+    interface ["BPicture *a_picture"], nil
+  end
+  function "AppendToPicture" do
+    options :public, :ignore
+    interface ["BPicture *a_picture"], nil
+  end
+  function "EndPicture" do
+    options :public, :ignore
+    interface [], "BPicture *"
+  end
+  function "DrawPicture" do
+    options :public, :ignore
+    interface ["const BPicture *a_picture"], nil
+    interface ["const BPicture *a_picture", "BPoint where"], nil
+    interface ["const char *filename", "long offset", "BPoint where"], nil
+  end
+  function "DrawPictureAsync" do
+    options :public, :ignore
+    interface ["const BPicture *a_picture"], nil
+    interface ["const BPicture *a_picture", "BPoint where"], nil
+    interface ["const char *filename", "long offset", "BPoint where"], nil
+  end
+  function "BeginLayer" do
+    options :public
+    interface ["uint8 opacity"], nil
+  end
+  function "EndLayer" do
+    options :public
+    interface [], nil
+  end
+  function "SetEventMask" do
+    options :public
+    interface ["uint32 mask", "uint32 options = 0"], "status_t"
+  end
+  function "EventMask" do
+    options :public
+    interface [], "uint32"
+  end
+  function "SetMouseEventMask" do
+    options :public
+    interface ["uint32 mask", "uint32 options = 0"], "status_t"
+  end
+  function "SetFlags" do
+    options :public
+    interface ["uint32 flags"], nil, :virtual
+  end
+  function "Flags" do
+    options :public
+    interface [], "uint32", :const
+  end
+  function "SetResizingMode" do
+    options :public
+    interface ["uint32 mode"], nil, :virtual
+  end
+  function "ResizingMode" do
+    options :public
+    interface [], "uint32", :const
+  end
+  function "MoveBy" do
+    options :public
+    interface ["float dh", "float dv"], nil
+  end
+  function "MoveTo" do
+    options :public
+    interface ["BPoint where"], nil
+    interface ["float x", "float y"], nil
+  end
+  function "ResizeBy" do
+    options :public
+    interface ["float dh", "float dv"], nil
+  end
+  function "ResizeTo" do
+    options :public
+    interface ["float width", "float height"], nil
+    interface ["BSize size"], nil
+  end
+  function "ScrollBy" do
+    options :public
+    interface ["float dh", "float dv"], nil
+  end
+  function "ScrollTo" do
+    options :public
+    interface ["float x", "float y"], nil
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool focus = true"], nil, :virtual
+  end
+  function "IsFocus" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "Show" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "Hide" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "IsHidden" do
+    options :public
+    interface [], "bool", :const
+    interface ["const BView *looking_from"], "bool", :const
+  end
+  function "Flush" do
+    options :public
+    interface [], nil, :const
+  end
+  function "Sync" do
+    options :public
+    interface [], nil, :const
+  end
+  function "GetPreferredSize" do
+    options :public, :hook
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "ResizeToPreferred" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "ScrollBar" do
+    options :public, :ignore
+    interface ["orientation direction"], "BScrollBar *", :const
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 form", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "IsPrinting" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetScale" do
+    options :public
+    interface ["float scale"], nil, :const
+  end
+  function "Scale" do
+    options :public
+    interface [], "float", :const
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code code", "void *data"], "status_t", :virtual
+  end
+  function "DrawAfterChildren" do
+    options :public, :hook
+    interface ["BRect updateRect"], nil, :virtual
+  end
+  function "MinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "MaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "PreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "LayoutAlignment" do
+    options :public, :ignore
+    interface [], "BAlignment", :virtual
+  end
+  function "SetExplicitMinSize" do
+    options :public
+    interface ["BSize size"], nil
+  end
+  function "SetExplicitMaxSize" do
+    options :public
+    interface ["BSize size"], nil
+  end
+  function "SetExplicitPreferredSize" do
+    options :public
+    interface ["BSize size"], nil
+  end
+  function "SetExplicitSize" do
+    options :public
+    interface ["BSize size"], nil
+  end
+  function "SetExplicitAlignment" do
+    options :public, :ignore
+    interface ["BAlignment alignment"], nil
+  end
+  function "ExplicitMinSize" do
+    options :public
+    interface [], "BSize", :const
+  end
+  function "ExplicitMaxSize" do
+    options :public
+    interface [], "BSize", :const
+  end
+  function "ExplicitPreferredSize" do
+    options :public
+    interface [], "BSize", :const
+  end
+  function "ExplicitAlignment" do
+    options :public, :ignore
+    interface [], "BAlignment", :const
+  end
+  function "HasHeightForWidth" do
+    options :public
+    interface [], "bool", :virtual
+  end
+  function "GetHeightForWidth" do
+    options :public, :ignore
+    interface ["float width", "float *min", "float *max", "float *preferred"], nil, :virtual
+  end
+  function "InvalidateLayout" do
+    options :public
+    interface ["bool descendants = false"], nil
+  end
+  function "SetLayout" do
+    options :public, :ignore
+    interface ["BLayout *layout"], nil, :virtual
+  end
+  function "GetLayout" do
+    options :public, :ignore
+    interface [], "BLayout *", :const
+  end
+  function "EnableLayoutInvalidation" do
+    options :public
+    interface [], nil
+  end
+  function "DisableLayoutInvalidation" do
+    options :public
+    interface [], nil
+  end
+  function "IsLayoutInvalidationDisabled" do
+    options :public
+    interface [], "bool"
+  end
+  function "IsLayoutValid" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "ResetLayoutInvalidation" do
+    options :public
+    interface [], nil
+  end
+  function "LayoutContext" do
+    options :public, :ignore
+    interface [], "BLayoutContext *", :const
+  end
+  function "Layout" do
+    options :public
+    interface ["bool force"], nil
+  end
+  function "Relayout" do
+    options :public
+    interface [], nil
+  end
+  function "LayoutInvalidated" do
+    options :protected
+    interface ["bool descendants = false"], nil, :virtual
+  end
+  function "DoLayout" do
+    options :protected
+    interface [], nil, :virtual
+  end
+  function "SetToolTip" do
+    options :public
+    interface ["const char *text"], nil
+    interface ["BToolTip *tip"], nil, :ignore
+  end
+  function "ToolTip" do
+    options :public, :ignore
+    interface [], "BToolTip *", :const, :ignore
+  end
+  function "ShowToolTip" do
+    options :public, :ignore
+    interface ["BToolTip *tip = NULL"], nil, :ignore
+  end
+  function "HideToolTip" do
+    options :public
+    interface [], nil
+  end
+  function "GetToolTipAt" do
+    options :protected, :ignore
+    interface ["BPoint point", "BToolTip **_tip"], "bool", :virtual, :ignore
+  end
+  function "LayoutChanged" do
+    options :protected, :hook
+    interface [], nil, :virtual
+  end
+  function "ScrollWithMouseWheelDelta" do
+    options :protected, :ignore
+    interface ["BScrollBar *", "float"], "status_t"
+  end
+end

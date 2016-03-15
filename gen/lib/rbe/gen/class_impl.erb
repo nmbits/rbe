@@ -1,210 +1,67 @@
+% c = target
 
 #include "rbe.hpp"
 #include "convert.hpp"
-#include "funcall.hpp"
+#include "call_script.hpp"
 #include "protect.hpp"
-#include "call_with_gvl.hpp"
+#include "gvl.hpp"
 #include "lock.hpp"
 #include "debug.hpp"
+#include "member.hpp"
+#include "memorize.hpp"
 
-% c = target
+#include "<%= class_binding_header c.name %>"
 
-#include "<%= c.name %>.hpp"
-
-% c.references.each do |name|
-#include "<%= name %>.hpp"
+% c.dependencies.each do |name|
+#include "<%= class_binding_header name %>"
 % end
 
-% if c.mixin
-#include "<%= c.mixin %>.hpp"
+% if c.mixin_name
+#include "<%= class_binding_header c.mixin_name %>"
 % end
+
+#include <utility>
 
 namespace rbe {
-
-% c.auto_hooks
-namespace Hook {
-namespace <%= c.name %> {
-% c.hooks.each do |f|
-%   if f.custom_hook?
-/**** (custom hook)
-%   end
-<%= template :hook_impl, f, c %>
-%   if f.custom_hook?
- ****/
-%   end
-% end
-}
-}
-
-namespace B {
-
-// hooks
-
-% (c.hooks + c.super_hooks).each do |f|
-%   const = (f.const? ? " const" : "")
-%   arg_types = f.args.map{|a| a.type }.join(", ")
-%   args_def = f.args.each_with_index.map{|a, i| "#{a.type} arg#{i}" }.join(", ")
-
-<%= f.ret %>
-<%= c.name %>::<%= f.name %>(<%= args_def %>)<%= const %>
-{
-	RBE_TRACE("<%= c.name %>::<%= f.name %>");
-%   args_call = (["this"] + f.arity.times.map{|i| "arg#{i}"}).join(", ")
-%   if f.ret?
-	return Hook::<%= f.clazz.name %>::<%= f.name %>(<%= args_call %>);
-%   else
-	Hook::<%= f.clazz.name %>::<%= f.name %>(<%= args_call %>);
-%   end
-}
-% end
-
-// methods
-
-% c.function_names(:hook, :public, :protected).each do |name|
-%   functions = c.functions(name)
-%   if functions.find{|f| f.custom? || f.noimp? }
-/****
-%   end
-<%= template :method_impl, name, c, functions %>
-%   if functions.find{|f| f.custom? || f.noimp? }
- ****/
-%   end
-%   if functions.find{|f| f.noimp? }
-VALUE
-<%= c.name %>::rb_<%= ruby_name name %>(int argc, VALUE *argv, VALUE self)
-{
-	RBE_TRACE_METHOD_CALL("<%= c.name %>::rb_<%= ruby_name name %>", argc, argv, self);
-	rb_raise(rb_eNotImpError, "<%= c.name %>::<%= ruby_name name %> is not implemented");
-	return Qfalse;
-}
-%   end
-% end
-
-// variables
-
-% c.variables.each do |v|
-VALUE
-<%= c.name %>::rb_iv_<%= v.name %>_get(VALUE self)
-{
-	<%= c.api_name %> *_this = Convert<<%= c.api_name %> *>::FromValue(self);
-	return Convert<<%= v.type %>>::ToValue(_this-><%= v.name %>);
-}
-
-VALUE
-<%= c.name %>::rb_iv_<%= v.name %>_set(VALUE self, VALUE v)
-{
-	<%= c.api_name %> *_this = Convert<<%= c.api_name %> *>::FromValue(self);
-	_this-><%= v.name %> = Convert<<%= v.type %>>::FromValue(v);
-	return Qnil;
-}
-% end
+	namespace B {
+		VALUE <%= class_binding_name c.name %>::sClass = Qnil;
+		const rb_data_type_t <%= class_binding_name c.name %>::sDataType = {
+			"b/<%= underscore class_binding_name(c.name) %>",
+			{
+				(void (*)(void *)) &<%= class_binding_name c.name %>::rbe__gc_mark,
+				(void (*)(void *)) &<%= class_binding_name c.name %>::rbe__gc_free,
+				(size_t (*)(const void *)) &<%= class_binding_name c.name %>::rbe__gc_size
+			}
+		};
 
 % unless c.wrapper?
-VALUE
-<%= c.name %>::Wrap(<%= c.api_name %> *object)
-{
-	PointerOf<<%= c.api_name %>>::Class *ptr = object;
-%   if c.module?
-	VALUE ret = TypedData_Wrap_Struct(rb_cData, &sDataType, ptr);
-	rb_extend_object(ret, sClass);
-%   else
-	VALUE ret = TypedData_Wrap_Struct(sClass, &sDataType, ptr);
-%   end
-	ObjectRegistory::Instance()->Register(ret);
-	return ret;
-}
+		VALUE <%= class_binding_name c.name %>::Wrap(<%= c.name %> *obj)
+		{
+			PointerOf<<%= c.name %>>::Class *ptr = static_cast<PointerOf<<%= c.name %>>::Class *>(obj);
+			VALUE result = ObjectRegistory::Instance()->Get(ptr);
+			if (result == Qnil) {
+				result = TypedData_Wrap_Struct(sClass, &sDataType, ptr);
+				ObjectRegistory::Instance()->Register(result);
+			}
+			return result;
+		}
+
+% end
+<%= template :hooks_impl, c %>
+
+% c.find_functions(:ctor => false).each do |fn|
+%   next if fn.ignore? || fn.custom?
+<%= template :method_impl, c, fn %>
 % end
 
-// initialize method
+<%= template :variables_impl, c %>
 
-% if c.ctors.find{|x| x.custom? || c.module? }
-/****  (custom / module)
-% end
-<%= template :init_impl, c %>
-% if c.ctors.find{|x| x.custom? || c.module? }
- ****/
-% end
+% unless c.ctor.custom? || c.module?
+<%= template :ruby_init_impl, c %>
 
-% unless c.module?
-VALUE
-<%= c.name %>::rb_alloc_(VALUE clazz)
-{
-	return TypedData_Wrap_Struct(clazz, &sDataType, 0);
-}
 % end
+<%= template :ruby_intf_impl, c %>
 
-void
-<%= c.name %>::rb_mark_(void *ptr)
-{
-    RBE_PRINT(("<%= c.name %>::rb_mark_: %p\n", ptr));
-}
-
-% if c.custom_free?
-/****** (custom)
-% end
-void
-<%= c.name %>::rb_free_(void *ptr)
-{
-    RBE_PRINT(("<%= c.name %>::rb_free_: %p\n", ptr));
-    PRINT(("ptr = %x\n", ptr));
-	ObjectRegistory::Instance()->Unregister(ptr);
-	PointerOf<<%= c.api_name %>>::Class *obj =
-		static_cast<PointerOf<<%= c.api_name %>>::Class *>(ptr);
-	delete obj;
-}
-% if c.custom_free?
-******/
-%end
-
-size_t
-<%= c.name %>::rb_size_(const void *)
-{
-	return sizeof(<%= c.name %>);
-}
-
-void
-<%= c.name %>::rb_init_class(VALUE mod)
-{
-	RBE_TRACE("<%= c.name %>::rb_init_class()");
-% if c.module?
-	VALUE c = rb_define_module_under(mod, "<%= c.name %>");
-% elsif c.super_class
-	VALUE c = rb_define_class_under(mod, "<%= c.name %>", <%= c.super_class.name %>::Class());
-% else
-	VALUE c = rb_define_class_under(mod, "<%= c.name %>", rb_cObject);
-% end
-% if c.mixin
-	rb_include_module(c, rbe::B::<%= c.mixin %>::Class());
-% end
-	sClass = c;
-% unless c.module?
-	rb_define_alloc_func(c, (rb_alloc_func_t)<%= c.name %>::rb_alloc_);
-	rb_define_method(c, "initialize", RUBY_METHOD_FUNC(<%= c.name %>::rb_initialize), -1);
-% end
-% c.hooks.each do |f|
-	rb_define_method(c, "<%= ruby_name f.name %>", RUBY_METHOD_FUNC(<%= c.name %>::rb_<%= ruby_name f.name %>), -1);
-% end
-% c.function_names(:public).each do |name|
-	rb_define_method(c, "<%= ruby_name name %>", RUBY_METHOD_FUNC(<%= c.name %>::rb_<%= ruby_name name %>), -1);
-% end
-% c.function_names(:protected).each do |name|
-	rb_define_private_method(c, "<%= ruby_name name %>", RUBY_METHOD_FUNC(<%= c.name %>::rb_<%= ruby_name name %>), -1);
-% end
-% c.variables.each do |v|
-	rb_define_method(c, "<%= ruby_name v.name %>", RUBY_METHOD_FUNC(<%= c.name %>::rb_iv_<%= ruby_name v.name %>_get), 0);
-	rb_define_method(c, "<%= ruby_name v.name %>=", RUBY_METHOD_FUNC(<%= c.name %>::rb_iv_<%= ruby_name v.name %>_set), 1);
-% end
-}
-
-rb_data_type_t <%= c.name %>::sDataType = {
-	"b/<%= ruby_name c.name %>",
-	{
-		(void (*)(void *))&<%= c.name %>::rb_mark_,
-		(void (*)(void *))&<%= c.name %>::rb_free_,
-		(size_t (*)(const void *))&<%= c.name %>::rb_size_
-	}
-};
-
-VALUE <%= c.name %>::sClass = Qnil;
-
-/* namespace B */ } /* namespace rbe */ }
+<%= template :ruby_class_init, c %>
+	} // namespace B
+} // namespace rbe

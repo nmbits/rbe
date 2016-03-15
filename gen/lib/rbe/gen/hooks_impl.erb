@@ -1,0 +1,46 @@
+% c = target
+		// hooks
+% (c.hooks + c.super_hooks).each do |fn|
+%   next if fn.ignore?
+%   f = fn.interfaces.first
+		<%= f.proto true, class_binding_name(c.name), true %>
+		{
+			RBE_TRACE("<%= f.proto %>");
+			<%= hookst_call f %>;
+		}
+
+% end
+		// static hooks
+% c.hooks.each do |fn|
+%   next if fn.ignore?
+%   next if fn.custom_hook?
+%   f = fn.interfaces.first
+		<%= hookst_proto(f, true) %>
+		{
+			RBE_TRACE("<%= hookst_proto(f, true) %>");
+			if (ThreadException())
+%   if f.ret?
+				return <%= f.default %>;
+%   else
+				return;
+%   end
+%   intf_t = interface_type f
+%   inout_t = inout_type f
+%   if inout_t != 'void'
+			<%= inout_t %> inout<%= inout_args f %>;
+%   end
+%   if intf_t
+%     if inout_t != 'void'
+			<%= intf_t %> intf(inout);
+%     else
+			<%= intf_t %> intf;
+%     end
+%   end
+			int status = rbe::CallScript<<%= c.name %><%= intf_t ? ", " + intf_t : ""%> >(_this, "<%= underscore fn.name %>"<%= intf_t ? ", intf" : "" %>);
+			SetThreadException(status);
+%   if f.ret?
+			return (status ? <%= f.default %> : intf.Return());
+%   end
+		}
+
+% end

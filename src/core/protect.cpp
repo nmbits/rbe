@@ -1,12 +1,11 @@
 
 #include "protect.hpp"
 
-namespace rbe
-{
-	/* static */ VALUE
-	ProtectBase::_protect_0(VALUE v)
+namespace rbe {
+	VALUE Protect0::call0(VALUE v)
 	{
-		ProtectBase *prot = reinterpret_cast<ProtectBase *>(v);
-		return prot->Exec();
+		Protect0 *p = (Protect0 *)(v);
+		p->call1();
+		return Qnil;
 	}
 }

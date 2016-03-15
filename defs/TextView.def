@@ -1,0 +1,435 @@
+define_class "BTextView" do
+  kit "interface"
+  header_file "interface/TextView.h"
+  super_class_name "BView"
+  options :wrapper
+  function "BTextView" do
+    options :ctor, :public
+    interface ["BRect frame", "const char *name", "BRect textRect", "uint32 resizeMask", "uint32 flags = B_WILL_DRAW | B_PULSE_NEEDED"], nil
+    interface ["BRect frame", "const char *name", "BRect textRect", "const BFont *initialFont", "const rgb_color *initialColor", "uint32 resizeMask", "uint32 flags"], nil, :ignore
+    interface ["const char *name", "uint32 flags = B_WILL_DRAW | B_PULSE_NEEDED"], nil
+    interface ["const char *name", "const BFont *initialFont", "const rgb_color *initialColor", "uint32 flags"], nil, :ignore
+    interface ["BMessage *archive"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "AttachedToWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "Draw" do
+    options :public, :hook
+    interface ["BRect updateRect"], nil, :virtual
+  end
+  function "MouseDown" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseUp" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseMoved" do
+    options :public, :hook
+    interface ["BPoint where", "uint32 code", "const BMessage *dragMessage"], nil, :virtual
+  end
+  function "WindowActivated" do
+    options :public, :hook
+    interface ["bool active"], nil, :virtual
+  end
+  function "KeyDown" do
+    options :public, :hook
+    interface ["%pair const char *bytes", "int32 numBytes"], nil, :virtual
+  end
+  function "Pulse" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool focus = true"], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 form", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code code", "void *data"], "status_t", :virtual
+  end
+  function "SetText" do
+    options :public, :ignore
+    interface ["const char *text", "const text_run_array *runs = NULL"], nil
+    interface ["const char *text", "int32 length", "const text_run_array *runs = NULL"], nil
+    interface ["BFile *file", "int32 offset", "int32 length", "const text_run_array *runs = NULL"], nil
+  end
+  function "Insert" do
+    options :public, :ignore
+    interface ["const char *text", "const text_run_array *runs = NULL"], nil
+    interface ["const char *text", "int32 length", "const text_run_array *runs = NULL"], nil
+    interface ["int32 offset", "const char *text", "int32 length", "const text_run_array *runs = NULL"], nil
+  end
+  function "Delete" do
+    options :public
+    interface [], nil
+    interface ["int32 startOffset", "int32 endOffset"], nil
+  end
+  function "Text" do
+    options :public
+    interface [], "const char *", :const
+  end
+  function "TextLength" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "GetText" do
+    options :public, :ignore
+    interface ["int32 offset", "int32 length", "char *buffer"], nil, :const
+  end
+  function "ByteAt" do
+    options :public
+    interface ["int32 offset"], "uint8", :const
+  end
+  function "CountLines" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "CurrentLine" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "GoToLine" do
+    options :public
+    interface ["int32 lineNumber"], nil
+  end
+  function "Cut" do
+    options :public, :ignore
+    interface ["BClipboard *clipboard"], nil, :virtual
+  end
+  function "Copy" do
+    options :public, :ignore
+    interface ["BClipboard *clipboard"], nil, :virtual
+  end
+  function "Paste" do
+    options :public, :ignore
+    interface ["BClipboard *clipboard"], nil, :virtual
+  end
+  function "Clear" do
+    options :public
+    interface [], nil
+  end
+  function "AcceptsPaste" do
+    options :public, :ignore
+    interface ["BClipboard *clipboard"], "bool", :virtual
+  end
+  function "AcceptsDrop" do
+    options :public
+    interface ["const BMessage *message"], "bool", :virtual
+  end
+  function "Select" do
+    options :public
+    interface ["int32 startOffset", "int32 endOffset"], nil, :virtual
+  end
+  function "SelectAll" do
+    options :public
+    interface [], nil
+  end
+  function "GetSelection" do
+    options :public
+    interface ["%out int32 *_start", "%out int32 *_end"], nil, :const
+  end
+  function "SetFontAndColor" do
+    options :public, :ignore
+    interface ["const BFont *font", "uint32 mode = B_FONT_ALL", "const rgb_color *color = NULL"], nil
+    interface ["int32 startOffset", "int32 endOffset", "const BFont *font", "uint32 mode = B_FONT_ALL", "const rgb_color *color = NULL"], nil
+  end
+  function "GetFontAndColor" do
+    options :public, :ignore
+    interface ["int32 offset", "BFont *_font", "rgb_color *_color = NULL"], nil, :const
+    interface ["BFont *_font", "uint32 *_mode", "rgb_color *_color = NULL", "bool *_sameColor = NULL"], nil, :const
+  end
+  function "SetRunArray" do
+    options :public, :ignore
+    interface ["int32 startOffset", "int32 endOffset", "const text_run_array *runs"], nil
+  end
+  function "RunArray" do
+    options :public, :ignore
+    interface ["int32 startOffset", "int32 endOffset", "int32 *_size = NULL"], "text_run_array *", :const
+  end
+  function "LineAt" do
+    options :public
+    interface ["int32 offset"], "int32", :const
+    interface ["BPoint point"], "int32", :const
+  end
+  function "PointAt" do
+    options :public, :ignore
+    interface ["int32 offset", "float *_height = NULL"], "BPoint", :const
+  end
+  function "OffsetAt" do
+    options :public
+    interface ["BPoint point"], "int32", :const
+    interface ["int32 line"], "int32", :const
+  end
+  function "FindWord" do
+    options :public, :ignore
+    interface ["int32 offset", "int32 *_fromOffset", "int32 *_toOffset"], nil, :virtual
+  end
+  function "CanEndLine" do
+    options :public
+    interface ["int32 offset"], "bool", :virtual
+  end
+  function "LineWidth" do
+    options :public
+    interface ["int32 lineNumber = 0"], "float", :const
+  end
+  function "LineHeight" do
+    options :public
+    interface ["int32 lineNumber = 0"], "float", :const
+  end
+  function "TextHeight" do
+    options :public
+    interface ["int32 startLine", "int32 endLine"], "float", :const
+  end
+  function "GetTextRegion" do
+    options :public, :ignore
+    interface ["int32 startOffset", "int32 endOffset", "BRegion *outRegion"], nil, :const
+  end
+  function "ScrollToOffset" do
+    options :public
+    interface ["int32 offset"], nil, :virtual
+  end
+  function "ScrollToSelection" do
+    options :public
+    interface [], nil
+  end
+  function "Highlight" do
+    options :public
+    interface ["int32 startOffset", "int32 endOffset"], nil
+  end
+  function "SetTextRect" do
+    options :public
+    interface ["BRect rect"], nil
+  end
+  function "TextRect" do
+    options :public
+    interface [], "BRect", :const
+  end
+  function "SetInsets" do
+    options :public
+    interface ["float left", "float top", "float right", "float bottom"], nil
+  end
+  function "GetInsets" do
+    options :public
+    interface ["%out float *_left", "%out float *_top", "%out float *_right", "%out float *_bottom"], nil, :const
+  end
+  function "SetStylable" do
+    options :public
+    interface ["bool stylable"], nil
+  end
+  function "IsStylable" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetTabWidth" do
+    options :public
+    interface ["float width"], nil
+  end
+  function "TabWidth" do
+    options :public
+    interface [], "float", :const
+  end
+  function "MakeSelectable" do
+    options :public
+    interface ["bool selectable = true"], nil
+  end
+  function "IsSelectable" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "MakeEditable" do
+    options :public
+    interface ["bool editable = true"], nil
+  end
+  function "IsEditable" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetWordWrap" do
+    options :public
+    interface ["bool wrap"], nil
+  end
+  function "DoesWordWrap" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetMaxBytes" do
+    options :public
+    interface ["int32 max"], nil
+  end
+  function "MaxBytes" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "DisallowChar" do
+    options :public
+    interface ["uint32 character"], nil
+  end
+  function "AllowChar" do
+    options :public
+    interface ["uint32 character"], nil
+  end
+  function "SetAlignment" do
+    options :public, :ignore
+    interface ["alignment align"], nil
+  end
+  function "Alignment" do
+    options :public, :ignore
+    interface [], "alignment", :const
+  end
+  function "SetAutoindent" do
+    options :public
+    interface ["bool state"], nil
+  end
+  function "DoesAutoindent" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetColorSpace" do
+    options :public, :ignore
+    interface ["color_space colors"], nil
+  end
+  function "ColorSpace" do
+    options :public, :ignore
+    interface [], "color_space", :const
+  end
+  function "MakeResizable" do
+    options :public
+    interface ["bool resize", "BView *resizeView = NULL"], nil
+  end
+  function "IsResizable" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetDoesUndo" do
+    options :public
+    interface ["bool undo"], nil
+  end
+  function "DoesUndo" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "HideTyping" do
+    options :public
+    interface ["bool enabled"], nil
+  end
+  function "IsTypingHidden" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "ResizeToPreferred" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "GetPreferredSize" do
+    options :public
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "AllAttached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllDetached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllocRunArray" do
+    options :public, :static, :ignore
+    interface ["int32 entryCount", "int32 *outSize = NULL"], "text_run_array *"
+  end
+  function "CopyRunArray" do
+    options :public, :static, :ignore
+    interface ["const text_run_array *orig", "int32 countDelta = 0"], "text_run_array *"
+  end
+  function "FreeRunArray" do
+    options :public, :static, :ignore
+    interface ["text_run_array *array"], nil
+  end
+  function "FlattenRunArray" do
+    options :public, :static, :ignore
+    interface ["const text_run_array *runArray", "int32 *_size = NULL"], "void *"
+  end
+  function "UnflattenRunArray" do
+    options :public, :static, :ignore
+    interface ["const void *data", "int32 *_size = NULL"], "text_run_array *"
+  end
+  function "InsertText" do
+    options :protected, :ignore
+    interface ["const char *text", "int32 length", "int32 offset", "const text_run_array *runs"], nil, :virtual
+  end
+  function "DeleteText" do
+    options :protected
+    interface ["int32 fromOffset", "int32 toOffset"], nil, :virtual
+  end
+  function "Undo" do
+    options :public, :ignore
+    interface ["BClipboard *clipboard"], nil, :virtual
+  end
+  function "UndoState" do
+    options :public, :ignore
+    interface ["bool *isRedo"], "undo_state", :const
+  end
+  function "GetDragParameters" do
+    options :protected, :ignore
+    interface ["BMessage *drag", "BBitmap **_bitmap", "BPoint *point", "BHandler **_handler"], nil, :virtual
+  end
+  function "LayoutInvalidated" do
+    options :protected
+    interface ["bool descendants"], nil, :virtual
+  end
+  function "DoLayout" do
+    options :protected
+    interface [], nil, :virtual
+  end
+  function "MinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "MaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "PreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "HasHeightForWidth" do
+    options :public
+    interface [], "bool", :virtual
+  end
+  function "GetHeightForWidth" do
+    options :public
+    interface ["float width", "%out float *min", "%out float *max", "%out float *preferred"], nil, :virtual
+  end
+end

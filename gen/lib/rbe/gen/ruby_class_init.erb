@@ -1,0 +1,38 @@
+% c = target
+
+		VALUE <%= class_binding_name c.name %>::rbe__init_class(VALUE mod)
+		{
+			RBE_TRACE("<%= class_binding_name c.name %>::rbe__init_class()");
+			if (sClass != Qnil)
+				return sClass;
+% if c.module?
+			VALUE c = rb_define_module_under(mod, "<%= class_binding_name c.name %>");
+% elsif c.super_class_name
+			VALUE sc = <%= class_binding_name c.super_class_name %>::rbe__init_class(mod);
+			VALUE c = rb_define_class_under(mod, "<%= class_binding_name c.name %>", sc);
+% else
+			VALUE c = rb_define_class_under(mod, "<%= class_binding_name c.name %>", rb_cObject);
+% end
+% if c.mixin_name
+			VALUE mc = <%= class_binding_name c.mixin_name %>::rbe__init_class(mod);
+			rb_include_module(c, mc);
+% end
+			sClass = c;
+% unless c.module?
+			rb_define_alloc_func(c, (rb_alloc_func_t)<%= class_binding_name c.name %>::rbe__alloc);
+			rb_define_method(c, "initialize", RUBY_METHOD_FUNC(<%= class_binding_name c.name %>::rbe__initialize), -1);
+% end
+% c.find_functions(:ctor => false).each do |fn|
+%   next if fn.ignore?
+%   if fn.public?
+			rb_define_method(c, "<%= underscore fn.name %>", RUBY_METHOD_FUNC(<%= class_binding_name c.name %>::rbe_<%= underscore fn.name %>), -1);
+%   else
+			rb_define_private_method(c, "<%= underscore fn.name %>", RUBY_METHOD_FUNC(<%= class_binding_name c.name %>::rbe_<%= underscore fn.name %>), -1);
+%   end
+% end
+% c.variables.each do |v|
+			rb_define_method(c, "<%= underscore v.name %>", RUBY_METHOD_FUNC(<%= class_binding_name c.name %>::rbe_iv_<%= underscore v.name %>_get), 0);
+			rb_define_method(c, "<%= underscore v.name %>=", RUBY_METHOD_FUNC(<%= class_binding_name c.name %>::rbe_iv_<%= underscore v.name %>_set), 1);
+% end
+			return c;
+		}

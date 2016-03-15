@@ -1,127 +1,153 @@
-% name, c, functions = args
+% c, fn = args
 
-VALUE
-<%= c.name %>::rb_<%= ruby_name name %>(int argc, VALUE *argv, VALUE self)
-{
-	RBE_TRACE_METHOD_CALL("<%= c.name %>::rb_<%= ruby_name name %>", argc, argv, self);
-	VALUE vret = Qnil;
-
-	<%= c.api_name %> *_this = Convert<<%= c.api_name %> *>::FromValue(self);
-
-% if functions.find{|f| f.assert_locked? }
-	if (find_thread(NULL) != _this->LockingThread())
-		rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
+		VALUE
+		<%= class_binding_name c.name %>::rbe_<%= underscore fn.name %>(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("<%= c.name %>::rbe_<%= underscore fn.name %>", argc, argv, self);
+			VALUE vret = Qnil;
+% unless fn.static?
+			<%= c.name %> *_this = Convert<<%= c.name %> *>::FromValue(self);
 % end
-% if functions.find{|f| f.check_lock? }
-	if (_this->Looper() && _this->Looper()->LockingThread() != find_thread(NULL))
-		rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
+% if fn.assert_locked?
+			if (find_thread(NULL) != _this->LockingThread())
+				rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
 % end
-% if functions.find{|f| f.check_owner_lock? }
-	if (!_this->Looper() || _this->Looper()->LockingThread() != find_thread(NULL))
-		rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
+% if fn.check_locked?
+			if (_this->Looper() && _this->Looper()->LockingThread() != find_thread(NULL))
+				rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
 % end
-
-% if functions.find{|f| f.prelock? }
-	bool unlock = false;
-	if (find_thread(NULL) != _this->LockingThread()) {
-		status_t status =
-			Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
-		if (status != B_OK)
-			return Qnil;
-		unlock = true;
-	}
+% if fn.check_owner_locked?
+			if (!_this->Looper() || _this->Looper()->LockingThread() != find_thread(NULL))
+				rb_raise(rb_eThreadError, "the looper isn't locked by this thread");
 % end
-	int type_error_index = 0;
-% arity_max = 0
-% arity_min = 100
-%
-% functions.each do |f|
-%   method_arity = f.method_arity
-%   method_arity_min = f.method_arity_min
-%   method_arity_opt = method_arity - method_arity_min
-%
-%   arity_max = (arity_max < method_arity ? method_arity : arity_max)
-%   arity_min = (arity_min < method_arity_min ? arity_min : method_arity_min)
-%
-%   if method_arity_opt == 0
-	if (<%= method_arity %> == argc) {
-%   else
-	if (<%= method_arity_min %> <= argc && argc <= <%= method_arity %>) {
-%   end
-%
-%   argi = 0
-%   f.args.each_with_index do |a, i|
-
-%     if a.out
-		<%= a.deref_type %> tmp<%= i %>;
-		<%= a.type %> arg<%= i %> = &tmp<%= i %>;
-%     else
-%       nil_check = a.accept_nil ? "argv[#{argi}] != Qnil && " : ""
-%       if argi < method_arity_min
-		if (<%= nil_check %> !Convert< <%= a.type %>>::IsConvertable(argv[<%= argi %>])) {
-			type_error_index = <%= argi %>;
-			goto break_<%= f.index %>;
-		}
-		<%= a.type %> arg<%= i %> = Convert< <%= a.type %>>::FromValue(argv[<%= argi %>]);
-%       else
-		<%= a.type %> arg<%= i %>;
-		if (<%= argi %> < argc) {
-			if (<%= nil_check %> !Convert< <%= a.type %>>::IsConvertable(argv[<%= argi %>])) {
-				type_error_index = <%= argi %>;
-				goto break_<%= f.index %>;
+% if fn.prelock?
+%   need_unlock = true
+			bool unlock = false;
+			if (find_thread(NULL) != _this->LockingThread()) {
+				status_t status =
+					Util::LockLooperWithTimeout(_this, B_INFINITE_TIMEOUT);
+				if (status != B_OK)
+					return Qnil;
+				unlock = true;
 			}
-			arg<%= i %> = Convert< <%= a.type %>>::FromValue(argv[<%= argi %>]);
-		} else {
-			arg<%= i %> = <%= a.value %>;
-		}
-%       end
-%     end
-%     argi += 1
-%   end
-%   if f.ret?
-		<%= f.ret %> ret = _this-><%= c.api_name %>::<%= f.name %>(<%= f.arity.times.map{|j| "arg#{j}" }.join(", ") %>);
-		vret = Convert< <%= f.ret %>>::ToValue(ret);
-%   else
-		_this-><%= c.api_name %>::<%= f.name %>(<%= f.arity.times.map{|j| "arg#{j}" }.join(", ") %>);
-%   end
-%   if f.args.find{|a| a.out}
-		VALUE tmp_array = rb_ary_new();
-%     if f.ret?
-		rb_ary_push(tmp_array, vret);
-%     end
-%     f.args.each_with_index.find_all{|a, i| a.out}.each do |a, i|
-		rb_ary_push(tmp_array, Convert<<%= a.deref_type %>>::ToValue(tmp<%= i %>));
-%     end
-		vret = tmp_array;
-%   end
-%   if functions.find{|f| f.prelock? }
-		if (unlock)
-			_this->Unlock();
-%   end
-		if (FuncallState() > 0)
-			rb_jump_tag(FuncallState());
-
-		return vret;
-	}
- break_<%= f.index %>:
-
-% end
-% if functions.find{|f| f.prelock? }
-	if (unlock)
-	    _this->Unlock();
-% end
-% if arity_max == 0
-	rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
-% elsif arity_max == arity_min
-	if (argc != <%= arity_min %>)
-		rb_raise(rb_eArgError, "wrong number of arguments (%d for <%= arity_min %>)", argc);
-	else
-		rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
 % else
-	if (argc < <%= arity_min %> || argc > <%= arity_max %>)
-		rb_raise(rb_eArgError, "wrong number of arguments (%d for <%= (arity_min..arity_max).to_s %>)", argc);
-	else
-		rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+%   need_unlock = false
 % end
-	return Qnil;
-}
+% if fn.method_arity_max > 0
+			int type_error_index = 0;
+% end
+% if fn.static?
+%   dereference = ""
+% else
+%   dereference = "_this->"
+% end
+% fn.interfaces.each_with_index do |f, i|
+%   next if f.ignore?
+%   if f.method_arity == f.method_arity_min
+			if (<%= f.method_arity %> == argc) {
+%   else
+			if (<%= f.method_arity_min %> <= argc && argc <= <%= f.method_arity %>) {
+%   end
+%   use_break = false
+%   f.each_method_arg_with_type do |a, type, j|
+%     next if a.out?
+%     unless a.nillable?
+				if (<%= j %> < argc && argv[<%= j %>] == Qnil) {
+					type_error_index = <%= j %>;
+					goto break_<%= i %>;
+				}
+%     end
+%     use_break = true
+				if (<%= j %> < argc && !Convert<<%= type %> >::IsConvertable(argv[<%= j %>])) {
+					type_error_index = <%= j %>;
+					goto break_<%= i %>;
+				}
+%   end
+%   f.each_method_arg_with_type do |a, type, j, b|
+%     if a.out?
+				<%= a.type.dereferenced %> _tmp_<%= a.name %>;
+				<%= a.type %> <%= a.name %> = &_tmp_<%= a.name %>;
+%     elsif a.optional?
+				<%= a.type %> <%= a.name %> = (<%= j %> < argc ? Convert<<%= a.type %> >::FromValue(argv[<%= j %>]) : <%= a.value %>);
+%     elsif a.pair?
+				<%= type %> pair_<%= a.name %>_<%= b.name %> = Convert<<%= type %> >::FromValue(argv[<%= j %>]);
+				<%= a.type %> <%= a.name %> = pair_<%= a.name %>_<%= b.name %>.first;
+				<%= b.type %> <%= b.name %> = pair_<%= a.name %>_<%= b.name %>.second;
+%     else
+				<%= a.type %> <%= a.name %> = Convert<<%= type %> >::FromValue(argv[<%= j %>]);
+%     end
+%     if a.memorize? || a.forget?
+				bool prev_member_<%= a.name %> = <%= a.name %> && Util::IsMemberOf(<%= a.name %>, _this);
+%     end
+%   end
+
+%   if f.ret?
+				<%= f.ret %> ret;
+				std::function<void ()> f = [&]() {
+					ret = <%= dereference %><%= c.name %>::<%= fn.name %>(<%= input_args_no_paren f %>);
+				};
+				CallWithoutGVL<std::function<void ()>, void> g(f);
+				g();
+%   else
+				std::function<void ()> f = [&]() {
+					<%= dereference %><%= c.name %>::<%= fn.name %>(<%= input_args_no_paren f %>);
+				};
+				CallWithoutGVL<std::function<void ()>, void> g(f);
+				g();
+%   end
+%   f.each_method_arg_with_type do |a, type, j|
+%     if a.memorize?
+				if (<%= a.name %> && !prev_member_<%= a.name %> && Util::IsMemberOf(<%= a.name %>, _this))
+					Memorize(self, argv[<%= j %>]);
+%     elsif a.forget?
+				if (prev_member_<%= a.name %> && !Util::IsMemberOf(<%= a.name %>, _this))
+					Forget(self, argv[<%= j %>]);
+%     end
+%   end
+%   if need_unlock
+				if (unlock)
+					_this->Unlock();
+%   end
+				rb_thread_check_ints();
+				if (ThreadException() > 0) {
+					rb_jump_tag(ThreadException());
+				}
+%   if f.ret?
+				vret = Convert<<%= f.ret %>>::ToValue(ret);
+%   end
+%   if f.args.find {|a| a.out? }
+				VALUE tmp_array = rb_ary_new();
+%     if f.ret?
+				rb_ary_push(tmp_array, vret);
+%     end
+%     f.args.find_all{|a| a.out? }.each do |a|
+				rb_ary_push(tmp_array, Convert<<%= a.type.dereferenced %>>::ToValue(_tmp_<%= a.name %>));
+%     end
+				vret = tmp_array;
+%   end
+				return vret;
+			}
+%   if use_break
+		break_<%= i %>:
+%   end
+
+% end
+% if need_unlock
+			if (unlock)
+			    _this->Unlock();
+% end
+% if fn.method_arity_max == 0
+			rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
+% elsif fn.method_arity_max == fn.method_arity_min
+			if (argc != <%= fn.method_arity_max %>)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for <%= fn.method_arity_min %>)", argc);
+			else
+				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+% else
+			if (argc < <%= fn.method_arity_min %> || argc > <%= fn.method_arity_max %>)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for (<%= (fn.method_arity_min..fn.method_arity_max).to_s %>))", argc);
+			else
+				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+% end
+			return Qnil;
+		}

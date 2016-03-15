@@ -2,38 +2,38 @@
 module RBe
   module Cpp
     class Class
-      attr_accessor :name, :ctors, :kit, :haiku_header, :mixin
+      attr_accessor :name, :kit, :super_class_name, :class_list, :header_file, :mixin_name
+      attr_reader :variables, :options
 
-      @@registory = {}
-
-      def self.[](name)
-        @@registory[name]
-      end
-
-      def self.all_classes
-        @@registory.values
-      end
-
-      def self.delete_class(name)
-        @@registory.delete name
-      end
-
-      def initialize(name)
+      def initialize(name, super_class_name = nil, class_list = nil)
         @name = name
+        @super_class_name = super_class_name
+        @options = {}
         @variables = []
-        @inner_variables = []
-        @functions = {}
-        @static_functions = {}
-        @ctors = []
-        @@registory[name] = self
+        @functions = []
+        @class_list = class_list
       end
 
-      def super_class=(name)
-        @super_class = name
+      def set_option(key, value = true)
+        @options[key] = value
+      end
+
+      def option(key)
+        @options[key]
+      end        
+
+      [:wrapper, :ancestors, :module, :custom_free].each do |sym|
+        define_method(sym.to_s + "?") { option sym }
       end
 
       def super_class
-        @@registory[@super_class]
+        raise "class_list is not specified" unless @class_list
+        @class_list[@super_class_name]
+      end
+
+      def mixin
+        raise "class_list is not specified" unless @class_list
+        @class_list[@mixin_name]
       end
 
       def ancestors
@@ -42,158 +42,71 @@ module RBe
       end
 
       def root_class
-        unless @root
-          s = super_class
-          @root = s.nil? ? self : s.root_class
-        end
-        @root
+        @root ||= (s = super_class) ? s.root_class : self
       end
 
-      def wrapper?
-        @wrapper
-      end
-
-      def wrapper=(b)
-        @wrapper = b
-      end
-
-      def module=(b)
-        @module = b
-      end
-
-      def module?
-        @module
-      end
-
-      def custom_free=(b)
-        @custom_free = b
-      end
-
-      def custom_free?
-        @custom_free
-      end
-
-      def references
-        unless @references
-          names = Hash.new
-          function_names.each do |name|
-            functions(name).each do |f|
-              next if f.noimp? || f.custom?
-              if /B([A-Z][a-zA-Z]+)/ =~ f.ret
-                names[$1] = true
-              end
-              f.args.each do |a|
-                if /B([A-Z][a-zA-Z]+)/ =~ a.type
-                  names[$1] = true
-                end
-              end
-            end
+      def dependencies
+        names = {}
+        @functions.each do |f|
+          next if f.ignore? || f.custom?
+          f.dependencies.each do |name|
+            names[name] = true
           end
-          names.delete "Behavior" # TODO
-          @references = names.keys
         end
-        @references
+        names[@super_class_name] = true if @super_class_name
+        names.delete "Behavior" # TODO
+        names.keys
       end
 
       def add_variable(v)
-        @variables.push v
+        @variables << v
       end
 
-      def variables
-        @variables
-      end
-
-      def add_inner_variable(v)
-        @inner_variables.push v
-      end
-
-      def inner_variables
-        @inner_variables
-      end
-
-      def add_ctor(function)
-        function.index = @ctors.size
+      def add_function(function)
+        raise "function #{function.name} is already a member of a class" if function.clazz
         function.clazz = self
-        @ctors.push function
+        @functions << function
       end
 
-      def add_function(function, access)
-        add_function_common(function, access, @functions)
+      def find_functions(condition = {})
+        @functions.find_all {|f| f.match condition }
+      end
+      
+      def function_by_name(name)
+        @functions.find {|f| f.name == name }
       end
 
-      def add_static_function(function, access)
-        add_function_common(function, access, @static_functions)
-      end
-
-      def add_function_common(function, access, hash)
-        list = (hash[function.name] ||= [access])
-        function.index = list.size
-        function.clazz = self
-        list.push function
-      end
-      private :add_function_common
-
-      def function_names(*accesses)
-        a = []
-        @functions.each do |k, v|
-          a.push k if accesses.empty? || accesses.include?(v[0])
-        end
-        a
-      end
-
-      def set_hook(name)
-        list = @functions[name]
-        list[0] = :hook if list
-      end
-
-      def functions(name)
-        list = @functions[name]
-        ret = list[1..list.size-1]
-        ret
-      end
-
-      def remove_functions(name)
-        @functions.delete name
+      def remove_function_by_name(name)
+        @functions.delete_if {|f| f.name == name }
       end
 
       def hooks
-        function_names(:hook).map{|name| @functions[name][1]}
+        find_functions :hook => true
       end
 
+      def ctor
+        functions = find_functions :ctor => true
+        if functions.empty?
+          raise "#{@name} do not have ctor"
+        else
+          functions.first
+        end
+      end
+      
       def super_hooks
-        ret = {}
-        clazz = super_class
-        hook_names = hooks.map{|f| f.name}
-        while clazz != nil
-          clazz.hooks.each do |hook|
-            if !ret.include?(hook.name) && !hook_names.include?(hook.name)
-              ret[hook.name] = hook
-            end
-          end
-          clazz = clazz.super_class
-        end
-        ret.values
-      end
-
-      # If a member function is a member of super_hooks,
-      # mark it as hook.
-      def auto_hooks
-        s = super_hooks.map{|hook| hook.name}
-        function_names.each do |name|
-          if s.include? name
-            set_hook name
+        return [] unless super_class
+        parent_hooks = super_class.hooks
+        super_class.super_hooks.each do |hook|
+          unless parent_hooks.find {|f| f.name == hook.name }
+            parent_hooks.push hook
           end
         end
+        parent_hooks.delete_if {|f| function_by_name f.name }
+        parent_hooks
       end
 
-      # for code generation
-
-      def header_file
-        "#{kit}/#{name}.h"
-      end
-
-      def api_name
-        "B#{name}"
+      def binding_base_name
+        @name.sub(/^B/, '')
       end
     end
   end

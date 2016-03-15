@@ -10,7 +10,7 @@
 #undef protected
 
 #include "Looper.hpp"
-#include "Looper_c.hpp"
+#include "util_looper.hpp"
 #include "Window.hpp"
 #include "View.hpp"
 #include "Message.hpp"
@@ -19,35 +19,26 @@
 #include "lock.hpp"
 #include "convert.hpp"
 
+#include <functional>
+
 namespace rbe
 {
-	namespace Hook
-	{
-		namespace Window
-		{
-			void
-			DispatchMessage(BWindow *_this, BMessage *message, BHandler *handler)
-			{
-				RBE_TRACE("Window::DispatchMessage");
-				if (!message)
-					return;
-	
-				RBE_PRINT(("message = %p, handler = %p\n", message, handler));
-				Hook::Looper::DispatchMessage(_this, message, handler);
-			}
-		}
-	}
-
 	namespace B
 	{
+		void
+		Window::DispatchMessageST(BWindow *_this, BMessage *message, BHandler *handler)
+		{
+			RBE_TRACE("Window::DispatchMessageST");
+			Util::DispatchMessageCommon(_this, message, handler);
+		}
+
 		//
 		// B::Window.new rect, name, window_type, flags, workspace = B::CURRENT_WORKSPACE
 		// B::Window.new rect, name, [look, feel], flags, workspace = B::CURRENT_WORKSPACE
 		// B::Window.new message
 		//
-
 		VALUE
-		Window::rb_initialize(int argc, VALUE *argv, VALUE self)
+		Window::rbe__initialize(int argc, VALUE *argv, VALUE self)
 		{
 			VALUE vargs[5];
 			rb_scan_args(argc, argv, "14", &vargs[0], &vargs[1], &vargs[2], &vargs[3], &vargs[4]);
@@ -55,7 +46,7 @@ namespace rbe
 			Window *_this = NULL;
 
 			if (!be_app)
-				rb_raise(rb_eRuntimeError, "You need a valid B::Application object before interacting with tha app_server");
+				rb_raise(rb_eRuntimeError, "a valid B::Application object is needed before interacting with tha app_server");
 
 			switch (argc) {
 			case 1:
@@ -71,12 +62,12 @@ namespace rbe
 			case 5:
 				{
 					if (!Convert<BRect>::IsConvertable(vargs[0])) break;
-					if (!Convert<const char *>::IsConvertable(vargs[1])) break;
+					if (!Convert<char *>::IsConvertable(vargs[1])) break;
 					if (!Convert<uint32>::IsConvertable(vargs[3])) break;
 					if (argc == 5 && !Convert<uint32>::IsConvertable(vargs[4])) break;
 
 					BRect rect = Convert<BRect>::FromValue(vargs[0]);
-					const char * name = Convert<const char *>::FromValue(vargs[1]);
+					char * name = Convert<char *>::FromValue(vargs[1]);
 					uint32 flags = Convert<uint32>::FromValue(vargs[3]);
 					uint32 workspace = (4 < argc ? Convert<uint32>::FromValue(vargs[4]) : B_CURRENT_WORKSPACE);
 
@@ -113,90 +104,35 @@ namespace rbe
 		}
 
 		VALUE
-		Window::rb_run(int argc, VALUE *argv, VALUE self)
+		Window::rbe_run(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Window::rb_run", argc, argv, self);
-			return Util::Looper::rb_run_common(argc, argv, self);
+			RBE_TRACE_METHOD_CALL("Window::rbe_run", argc, argv, self);
+			return Util::rbe_run_common(argc, argv, self);
 		}
 
 		VALUE
-		Window::rb_show(int argc, VALUE *argv, VALUE self)
+		Window::rbe_show(int argc, VALUE *argv, VALUE self)
 		{
-			RBE_TRACE_METHOD_CALL("Window::rb_show", argc, argv, self);
+			RBE_TRACE_METHOD_CALL("Window::rbe_show", argc, argv, self);
 
 			if (argc > 0)
 				rb_raise(rb_eArgError, "wrong number of argument (%d for 0)", argc);
 
 			BWindow *_this = Convert<BWindow *>::FromValue(self);
 			if (!_this->fRunCalled)
-				Util::Looper::rb_run_common(0, NULL, self);
-			status_t status = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
+				Window::rbe_run(0, NULL, self);
+			std::function<status_t (bigtime_t)> f = [&](bigtime_t tm) -> status_t {
+				return _this->LockWithTimeout(tm);
+			};
+			status_t status = Util::LockWithTimeoutCommon(f, B_INFINITE_TIMEOUT);
 			if (status == B_OK) {
 				_this->Show(); // TODO might block ?
 				_this->Unlock();
 			}
-			if (FuncallState() > 0)
-				rb_jump_tag(FuncallState());
+			if (ThreadException() > 0)
+				rb_jump_tag(ThreadException());
 
 			return Qnil;
-		}
-
-		VALUE
-		Window::rb_add_child(int argc, VALUE *argv, VALUE self)
-		{
-			RBE_TRACE_METHOD_CALL("Window::rb_add_child", argc, argv, self);
-
-			BWindow *_this = Convert<BWindow *>::FromValue(self);
-
-			VALUE vview1, vview2;
-			rb_scan_args(argc, argv, "11", &vview1, &vview2);
-
-			if (!Convert<BView *>::IsConvertable(vview1))
-				rb_raise(rb_eTypeError, "B::View required for arg 0");
-			if (argc == 2 && !NIL_P(vview2) && !Convert<BView *>::IsConvertable(vview2))
-				rb_raise(rb_eTypeError, "B::View required for arg 1");
-			BView *view1 = Convert<BView *>::FromValue(vview1);
-			if (view1->Parent() != NULL)
-				rb_raise(rb_eArgError, "arg 0 already has a parent");
-			BView *view2 = (NIL_P(vview2) ? NULL : Convert<BView *>::FromValue(vview2));
-			if (view2 && (view2->Window() != _this || view2->Parent() != NULL))
-				rb_raise(rb_eArgError, "invalid arg 1");
-			// pre lock
-			status_t status = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
-			if (status == B_OK) {
-				_this->AddChild(view1, view2);
-				_this->Unlock();
-			}
-			if (view1->Window() == _this)
-				MemorizeObject(self, vview1);
-			if (FuncallState() > 0)
-				rb_jump_tag(FuncallState());
-			return Qnil;
-		}
-
-		VALUE
-		Window::rb_remove_child(int argc, VALUE *argv, VALUE self)
-		{
-			if (argc != 1)
-				rb_raise(rb_eArgError, "wrong number of argument (%d for 1)", argc);
-			VALUE vview = *argv;
-			if (!Convert<BView *>::FromValue(vview))
-				rb_raise(rb_eTypeError, "arg 0 should be a view");
-			BWindow *_this = Convert<BWindow *>::FromValue(self);
-			BView *view = Convert<BView *>::FromValue(vview);
-			status_t status = Util::lock::LockWithTimeout(_this, B_INFINITE_TIMEOUT);
-			VALUE vret = Qfalse;
-			if (status == B_OK) {
-				bool result = _this->RemoveChild(view);
-				_this->Unlock();
-				if (result) {
-					ForgetObject(self, vview);
-					vret = Qtrue;
-				}
-			}
-			if (FuncallState() > 0)
-				rb_jump_tag(FuncallState());
-			return vret;
 		}
 	}
 }

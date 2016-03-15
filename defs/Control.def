@@ -1,0 +1,141 @@
+define_class "BControl" do
+  kit "interface"
+  header_file "interface/Control.h"
+  super_class_name "BView"
+  mixin_name "Invoker"
+  options :wrapper
+  function "BControl" do
+    options :ctor, :public
+    interface ["BRect frame", "const char *name", "const char *label", "BMessage *message", "uint32 resizingMode", "uint32 flags"], nil
+    interface ["const char *name", "const char *label", "BMessage *message", "uint32 flags"], nil
+    interface ["BMessage *data"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *data"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *data", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "WindowActivated" do
+    options :public, :hook
+    interface ["bool active"], nil, :virtual
+  end
+  function "AttachedToWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllAttached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllDetached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool focus = true"], nil, :virtual
+  end
+  function "KeyDown" do
+    options :public, :hook
+    interface ["%pair const char *bytes", "int32 numBytes"], nil, :virtual
+  end
+  function "MouseDown" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseUp" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseMoved" do
+    options :public, :hook
+    interface ["BPoint where", "uint32 code", "const BMessage *dragMessage"], nil, :virtual
+  end
+  function "SetLabel" do
+    options :public
+    interface ["const char *string"], nil, :virtual
+  end
+  function "Label" do
+    options :public
+    interface [], "const char *", :const
+  end
+  function "SetValue" do
+    options :public
+    interface ["int32 value"], nil, :virtual
+  end
+  function "Value" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "SetEnabled" do
+    options :public
+    interface ["bool enabled"], nil, :virtual
+  end
+  function "IsEnabled" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "GetPreferredSize" do
+    options :public, :hook
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "ResizeToPreferred" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "Invoke" do
+    options :public
+    interface ["BMessage *message = NULL"], "status_t", :virtual
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 what", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *message"], "status_t", :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "SetIcon" do
+    options :public, :ignore
+    interface ["const BBitmap *bitmap", "uint32 flags = 0"], "status_t", :virtual
+  end
+  function "SetIconBitmap" do
+    options :public, :ignore
+    interface ["const BBitmap *bitmap", "uint32 which", "uint32 flags = 0"], "status_t"
+  end
+  function "IconBitmap" do
+    options :public, :ignore
+    interface ["uint32 which"], "const BBitmap *", :const
+  end
+  function "IsFocusChanging" do
+    options :protected
+    interface [], "bool", :const
+  end
+  function "IsTracking" do
+    options :protected
+    interface [], "bool", :const
+  end
+  function "SetTracking" do
+    options :protected
+    interface ["bool state"], nil
+  end
+  function "SetValueNoUpdate" do
+    options :protected
+    interface ["int32 value"], nil
+  end
+end

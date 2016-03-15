@@ -1,0 +1,33 @@
+% c = target
+		// Ruby C API interfaces
+
+		VALUE <%= class_binding_name c.name %>::rbe__alloc(VALUE clazz)
+		{
+			return TypedData_Wrap_Struct(clazz, &sDataType, 0);
+		}
+
+		void <%= class_binding_name c.name %>::rbe__gc_mark(void *ptr)
+		{
+		    RBE_PRINT(("<%= class_binding_name c.name %>::rb__gc_mark: %p\n", ptr));
+		}
+
+%   if c.custom_free?
+		/****** (custom)
+%   end
+		void <%= class_binding_name c.name %>::rbe__gc_free(void *ptr)
+		{
+		    RBE_PRINT(("<%= c.name %>::rb__gc_free: %p\n", ptr));
+		    PRINT(("ptr = %p\n", ptr));
+			ObjectRegistory::Instance()->Unregister(ptr);
+			PointerOf<<%= c.name %>>::Class *obj =
+				static_cast<PointerOf<<%= c.name %>>::Class *>(ptr);
+			delete obj;
+		}
+%   if c.custom_free?
+		******/
+%   end
+
+		size_t <%= class_binding_name c.name %>::rbe__gc_size(const void *)
+		{
+			return sizeof(<%= class_binding_name c.name %>);
+		}

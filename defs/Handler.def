@@ -1,0 +1,111 @@
+define_class "BHandler" do
+  kit "app"
+  super_class_name "BArchivable"
+  header_file "app/Handler.h"
+  options :wrapper
+  function "BHandler" do
+    options :ctor, :public
+    interface ["const char *name = NULL"], nil
+    interface ["BMessage *data"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *data"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *data", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "Looper" do
+    options :public
+    interface [], "BLooper *", :const
+  end
+  function "SetName" do
+    options :public
+    interface ["const char *name"], nil
+  end
+  function "Name" do
+    options :public
+    interface [], "const char *", :const
+  end
+  function "SetNextHandler" do
+    options :public
+    interface ["BHandler *handler"], nil, :virtual
+  end
+  function "NextHandler" do
+    options :public
+    interface [], "BHandler *", :const
+  end
+  function "AddFilter" do
+    options :public, :ignore
+    interface ["BMessageFilter *filter"], nil, :virtual
+  end
+  function "RemoveFilter" do
+    options :public, :ignore
+    interface ["BMessageFilter *filter"], "bool", :virtual
+  end
+  function "SetFilterList" do
+    options :public, :ignore
+    interface ["BList *filters"], nil, :virtual
+  end
+  function "FilterList" do
+    options :public, :ignore
+    interface [], "BList *"
+  end
+  function "LockLooper" do
+    options :public, :custom
+    interface [], "bool"
+  end
+  function "LockLooperWithTimeout" do
+    options :public, :custom
+    interface ["bigtime_t timeout"], "status_t"
+  end
+  function "UnlockLooper" do
+    options :public, :custom
+    interface [], nil
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 what", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "StartWatching" do
+    options :public, :ignore
+    interface ["BMessenger target", "uint32 what"], "status_t"
+    interface ["BHandler *observer", "uint32 what"], "status_t"
+  end
+  function "StartWatchingAll" do
+    options :public, :ignore
+    interface ["BMessenger target"], "status_t"
+    interface ["BHandler *observer"], "status_t"
+  end
+  function "StopWatching" do
+    options :public, :ignore
+    interface ["BMessenger target", "uint32 what"], "status_t"
+    interface ["BHandler *observer", "uint32 what"], "status_t"
+  end
+  function "StopWatchingAll" do
+    options :public, :ignore
+    interface ["BMessenger target"], "status_t"
+    interface ["BHandler *observer"], "status_t"
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "SendNotices" do
+    options :public
+    interface ["uint32 what", "const BMessage *notice = NULL"], nil, :virtual
+  end
+  function "IsWatched" do
+    options :public
+    interface [], "bool", :const
+  end
+end

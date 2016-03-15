@@ -2,10 +2,12 @@
 $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
-# B.DEBUG = true
+B.DEBUG = true
+DEBUG = true
 
 class MyWindow < B::Window
   def quit_requested
+    p :quit_requested
     B.app.post_message(B::QUIT_REQUESTED)
     true
   end
@@ -18,6 +20,7 @@ class MyView < B::View
   end
 
   def mouse_up(*a)
+  	p :mouse_up
     resize_to_preferred
   end
 
@@ -27,6 +30,7 @@ class MyView < B::View
   end
 
   def mouse_moved(point, flag, message)
+    p :mouse_moved
     @points << point
     @points.shift if @points.length > 20
     invalidate
@@ -51,7 +55,7 @@ class MyApp < B::Application
   end
   
   def ready_to_run
-    # set_pulse_rate 1000000
+    set_pulse_rate 1000000
     set_name "This is Ruby"
     create_window
   end

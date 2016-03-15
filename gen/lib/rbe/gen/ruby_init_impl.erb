@@ -1,0 +1,60 @@
+% c = target
+% fn = c.ctor
+% ctors = fn.interfaces
+		// initialize emthod
+
+		VALUE <%= class_binding_name c.name %>::rbe__initialize(int argc, VALUE *argv, VALUE self)
+		{
+% if fn.arity_max == 0
+%   if c.wrapper?
+			<%= c.name %> *_this = new <%= class_binding_name c.name %>();
+%   else
+			<%= c.name %> *_this = new <%= c.name %>();
+%   end
+			DATA_PTR(self) = (void *)(dynamic_cast<typename PointerOf<<%= c.name %>>::Class *>(_this));
+			return self;
+% else
+			VALUE vargs[<%= fn.arity_max %>];
+			<%= c.name %> *_this = NULL;
+
+			rb_scan_args(argc, argv, "<%= fn.arity_min %><%= fn.num_optional_args %>", <%= fn.arity_max.times.map {|i| "&vargs[#{i}]" }.join(", ") %>);
+
+%   ctors.each_with_index do |f, i|
+%     next if f.ignore?
+%     if f.arity_min == f.arity
+			if (<%= f.arity %> == argc) {
+%     else
+			if (<%= f.arity_min %> <= argc && argc <= <%= f.arity %>) {
+%     end
+%     f.args.each_with_index do |a, j|
+%       if j >= f.arity_min
+				if (<%= j %> < argc && !Convert<<%= a.type %>>::IsConvertable(vargs[<%= j %>])) goto break_<%= i %>;
+%       else
+				if (!Convert<<%= a.type %>>::IsConvertable(vargs[<%= j %>])) goto break_<%= i %>;
+%       end
+%     end
+%     use_label = f.args.length > 0
+%     f.args.each_with_index do |a, j|
+%       if a.optional?
+				<%= a.type %> <%= a.name %> = (<%= j %> < argc ? Convert<<%= a.type %>>::FromValue(vargs[<%= j %>]) : <%= a.value %>);
+%       else
+				<%= a.type %> <%= a.name %> = Convert<<%= a.type %>>::FromValue(vargs[<%= j %>]);
+%       end
+%     end
+				_this = new <%= c.wrapper? ? class_binding_name(c.name) : c.name %>(<%= input_args_no_paren f %>);
+				goto fin;
+			}
+%     if use_label
+		break_<%= i %>:
+%     end
+
+%   end
+		fin:
+			if (_this == NULL)
+				rb_raise(rb_eTypeError, "wrong type of arguments");
+% end
+			PointerOf<<%= c.name %>>::Class *ptr = static_cast<PointerOf<<%= c.name %>>::Class *>(_this);
+			DATA_PTR(self) = static_cast<void *>(ptr);
+			ObjectRegistory::Instance()->Register(self);
+			return self;
+		}

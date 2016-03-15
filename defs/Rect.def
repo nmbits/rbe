@@ -1,0 +1,135 @@
+define_class "BRect" do
+  kit "interface"
+  header_file "interface/Rect.h"
+  variable "float left"
+  variable "float top"
+  variable "float right"
+  variable "float bottom"
+  function "BRect" do
+    options :ctor, :public
+    interface [], nil
+    interface ["const BRect& other"], nil
+    interface ["float left", "float top", "float right", "float bottom"], nil
+    interface ["BPoint leftTop", "BPoint rightBottom"], nil
+    interface ["BPoint leftTop", "BSize size"], nil
+    interface ["float side"], nil
+  end
+  function "Set" do
+    options :public
+    interface ["float left", "float top", "float right", "float bottom"], nil
+  end
+  function "PrintToStream" do
+    options :public
+    interface [], nil, :const
+  end
+  function "LeftTop" do
+    options :public
+    interface [], "BPoint", :const
+  end
+  function "RightBottom" do
+    options :public
+    interface [], "BPoint", :const
+  end
+  function "LeftBottom" do
+    options :public
+    interface [], "BPoint", :const
+  end
+  function "RightTop" do
+    options :public
+    interface [], "BPoint", :const
+  end
+  function "SetLeftTop" do
+    options :public
+    interface ["const BPoint point"], nil
+  end
+  function "SetRightBottom" do
+    options :public
+    interface ["const BPoint point"], nil
+  end
+  function "SetLeftBottom" do
+    options :public
+    interface ["const BPoint point"], nil
+  end
+  function "SetRightTop" do
+    options :public
+    interface ["const BPoint point"], nil
+  end
+  function "InsetBy" do
+    options :public
+    interface ["BPoint inset"], nil
+    interface ["float dx", "float dy"], nil
+  end
+  function "OffsetBy" do
+    options :public
+    interface ["BPoint delta"], nil
+    interface ["float dx", "float dy"], nil
+  end
+  function "OffsetTo" do
+    options :public
+    interface ["BPoint offset"], nil
+    interface ["float x", "float y"], nil
+  end
+  function "InsetBySelf" do
+    options :public, :ignore
+    interface ["BPoint inset"], "BRect&"
+    interface ["float dx", "float dy"], "BRect&"
+  end
+  function "InsetByCopy" do
+    options :public
+    interface ["BPoint inset"], "BRect", :const
+    interface ["float dx", "float dy"], "BRect", :const
+  end
+  function "OffsetBySelf" do
+    options :public, :ignore
+    interface ["BPoint offset"], "BRect&"
+    interface ["float dx", "float dy"], "BRect&"
+  end
+  function "OffsetByCopy" do
+    options :public
+    interface ["BPoint offset"], "BRect", :const
+    interface ["float dx", "float dy"], "BRect", :const
+  end
+  function "OffsetToSelf" do
+    options :public, :ignore
+    interface ["BPoint offset"], "BRect&"
+    interface ["float x", "float y"], "BRect&"
+  end
+  function "OffsetToCopy" do
+    options :public
+    interface ["BPoint offset"], "BRect", :const
+    interface ["float x", "float y"], "BRect", :const
+  end
+  function "IsValid" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "Width" do
+    options :public
+    interface [], "float", :const
+  end
+  function "IntegerWidth" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "Height" do
+    options :public
+    interface [], "float", :const
+  end
+  function "IntegerHeight" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "Size" do
+    options :public
+    interface [], "BSize", :const
+  end
+  function "Intersects" do
+    options :public
+    interface ["BRect rect"], "bool", :const
+  end
+  function "Contains" do
+    options :public
+    interface ["BPoint point"], "bool", :const
+    interface ["BRect rect"], "bool", :const
+  end
+end

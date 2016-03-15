@@ -1,0 +1,161 @@
+define_class "BButton" do
+  kit "interface"
+  header_file "interface/Button.h"
+  super_class_name "BControl"
+  options :wrapper
+  function "BButton" do
+    options :ctor, :public
+    interface ["BRect frame", "const char *name", "const char *label", "BMessage *message", "uint32 resizingMode = B_FOLLOW_LEFT_TOP", "uint32 flags = B_WILL_DRAW | B_NAVIGABLE | B_FULL_UPDATE_ON_RESIZE"], nil
+    interface ["const char *name", "const char *label", "BMessage *message", "uint32 flags = B_WILL_DRAW | B_NAVIGABLE | B_FULL_UPDATE_ON_RESIZE"], nil
+    interface ["const char *label", "BMessage *message = NULL"], nil
+    interface ["BMessage *data"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *data"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *data", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Draw" do
+    options :public, :hook
+    interface ["BRect updateRect"], nil, :virtual
+  end
+  function "MouseDown" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "AttachedToWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "KeyDown" do
+    options :public, :hook
+    interface ["%pair const char *bytes", "int32 numBytes"], nil, :virtual
+  end
+  function "MakeDefault" do
+    options :public
+    interface ["bool flag"], nil, :virtual
+  end
+  function "SetLabel" do
+    options :public
+    interface ["const char *string"], nil, :virtual
+  end
+  function "IsDefault" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsFlat" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetFlat" do
+    options :public
+    interface ["bool flat"], nil
+  end
+  function "Behavior" do
+    options :public, :ignore
+    interface [], "BBehavior", :const
+  end
+  function "SetBehavior" do
+    options :public, :ignore
+    interface ["BBehavior behavior"], nil
+  end
+  function "PopUpMessage" do
+    options :public
+    interface [], "BMessage *", :const
+  end
+  function "SetPopUpMessage" do
+    options :public
+    interface ["BMessage *message"], nil
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "WindowActivated" do
+    options :public, :hook
+    interface ["bool active"], nil, :virtual
+  end
+  function "MouseMoved" do
+    options :public, :hook
+    interface ["BPoint where", "uint32 code", "const BMessage *dragMessage"], nil, :virtual
+  end
+  function "MouseUp" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "DetachedFromWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "SetValue" do
+    options :public
+    interface ["int32 value"], nil, :virtual
+  end
+  function "GetPreferredSize" do
+    options :public, :hook
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "ResizeToPreferred" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "Invoke" do
+    options :public
+    interface ["BMessage *message = NULL"], "status_t", :virtual
+  end
+  function "FrameMoved" do
+    options :public, :hook
+    interface ["BPoint newPosition"], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool focus = true"], nil, :virtual
+  end
+  function "AllAttached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllDetached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 what", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *message"], "status_t", :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "MinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "MaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "PreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "SetIcon" do
+    options :public, :ignore
+    interface ["const BBitmap *icon", "uint32 flags = 0"], "status_t", :virtual
+  end
+  function "LayoutInvalidated" do
+    options :protected
+    interface ["bool descendants = false"], nil, :virtual
+  end
+end

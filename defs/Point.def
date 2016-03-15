@@ -1,0 +1,24 @@
+define_class "BPoint" do
+  kit "interface"
+  header_file "interface/Point.h"
+  variable "float x"
+  variable "float y"
+  function "BPoint" do
+    options :ctor, :public
+    interface [], nil
+    interface ["float x", "float y"], nil
+    interface ["const BPoint& p"], nil
+  end
+  function "Set" do
+    options :public
+    interface ["float x", "float y"], nil
+  end
+  function "ConstrainTo" do
+    options :public
+    interface ["BRect rect"], nil
+  end
+  function "PrintToStream" do
+    options :public
+    interface [], nil, :const
+  end
+end

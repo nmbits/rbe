@@ -1,53 +1,46 @@
 #ifndef RBE_PROTECT_HPP
-#define RBE_PROTECT_HPP
+#define RBE_PROTECT_HPP 1
 
 #include <ruby.h>
 
 namespace rbe
 {
-	class ProtectBase
+	struct Protect0
 	{
-	private:
 		int fState;
-		VALUE fResult;
 
-	protected:
-		ProtectBase() : fState(0), fResult(Qnil) {}
+		Protect0()
+			: fState(0)
+		{}
 
-	public:
-		virtual ~ProtectBase() {}
+		static VALUE call0(VALUE v);
 
-		int State() const { return fState; }
-
-	private:
-		static VALUE _protect_0(VALUE v);
-
-	protected:
-		virtual VALUE Exec() = 0;
-
-	public:
 		void operator()()
 		{
-			fResult = rb_protect(_protect_0,
-								 (VALUE)((void *)this), &fState);
+			rb_protect(Protect0::call0, (VALUE)this, &fState);
 		}
+
+		int State() const
+		{
+			return fState;
+		}
+
+		virtual void call1() = 0;
 	};
 
-	template<typename F>
-	class Protect : public ProtectBase
+	template<typename _F>
+	struct Protect : public Protect0
 	{
-	private:
-		F &fFunction;
+		_F &fFunction;
 
-	public:
-		Protect(F &fn) : fFunction(fn) {}
-		virtual ~Protect() {}
+		Protect(_F &f)
+			: Protect0()
+			, fFunction(f)
+		{}
 
-	protected:
-		virtual VALUE Exec()
+		virtual void call1()
 		{
 			fFunction();
-			return Qnil;
 		}
 	};
 }

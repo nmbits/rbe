@@ -1,0 +1,16 @@
+% c = target
+		// variables
+% c.variables.each do |v|
+		VALUE <%= class_binding_name c.name %>::rbe_iv_<%= v.name %>_get(VALUE self)
+		{
+			<%= c.name %> *_this = Convert<<%= c.name %> *>::FromValue(self);
+			return Convert<<%= v.type %>>::ToValue(_this-><%= v.name %>);
+		}
+
+		VALUE <%= class_binding_name c.name %>::rbe_iv_<%= v.name %>_set(VALUE self, VALUE v)
+		{
+			<%= c.name %> *_this = Convert<<%= c.name %> *>::FromValue(self);
+			_this-><%= v.name %> = Convert<<%= v.type %>>::FromValue(v);
+			return Qnil;
+		}
+% end

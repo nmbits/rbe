@@ -21,12 +21,12 @@ namespace rbe {
 			TracePrinter(const char *func, int argc, VALUE *argv, VALUE self)
 				: fFunc(func)
 			{
-				PRINT(("(%d)\t", find_thread(NULL)));
-				PRINT(("%s start: self = 0x%x(%s):%p, argc = %d", func, self, rb_obj_classname(self), DATA_PTR(self), argc));
+				PRINT(("(%ld)\t", find_thread(NULL)));
+				PRINT(("%s start: self = 0x%lx(%s):%p, argc = %d", func, self, rb_obj_classname(self), DATA_PTR(self), argc));
 				if (argc > 0) {
 					PRINT((" argv = "));
 					for (int i = 0; i < argc; i++) {
-						PRINT(("%x (%s) ", argv[i], rb_obj_classname(argv[i])));
+						PRINT(("%lx (%s) ", argv[i], rb_obj_classname(argv[i])));
 					}
 				}
 				PRINT(("\n"));
@@ -35,13 +35,13 @@ namespace rbe {
 			TracePrinter(const char *func)
 				: fFunc(func)
 			{
-				PRINT(("(%d)\t", find_thread(NULL)));
+				PRINT(("(%ld)\t", find_thread(NULL)));
 				PRINT(("%s start\n", func));
 			}
 
 			~TracePrinter()
 			{
-				PRINT(("(%d)\t", find_thread(NULL)));
+				PRINT(("(%ld)\t", find_thread(NULL)));
 				PRINT(("%s end\n", fFunc));
 			}
 		};
@@ -53,7 +53,7 @@ namespace rbe {
 #define RBE_TRACE(func)							\
 	::rbe::debug::TracePrinter __rbe_trace__((func))
 #define RBE_PRINT(m) \
-	PRINT(("(%d)\t", find_thread(NULL))); PRINT(m)
+	PRINT(("(%ld)\t", find_thread(NULL))); PRINT(m)
 #else
 #define RBE_TRACE_METHOD_CALL(func, argc, argv, self) \
 	do{}while(false)

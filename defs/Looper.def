@@ -1,0 +1,170 @@
+define_class "BLooper" do
+  kit "app"
+  header_file "app/Looper.h"
+  super_class_name "BHandler"
+  options :wrapper
+  function "BLooper" do
+    options :ctor, :public
+    interface ["const char *name = NULL", "int32 priority = B_NORMAL_PRIORITY", "int32 portCapacity = B_LOOPER_PORT_DEFAULT_CAPACITY"], nil
+    interface ["BMessage *data"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *data"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *data", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "PostMessage" do
+    options :public
+    interface ["uint32 command"], "status_t"
+    interface ["BMessage *message"], "status_t"
+    interface ["uint32 command", "BHandler *handler", "BHandler *replyTo = NULL"], "status_t"
+    interface ["BMessage *message", "BHandler *handler", "BHandler *replyTo = NULL"], "status_t"
+  end
+  function "DispatchMessage" do
+    options :public, :hook, :custom_hook
+    interface ["BMessage *message", "BHandler *handler"], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "CurrentMessage" do
+    options :public
+    interface [], "BMessage *", :const
+  end
+  function "DetachCurrentMessage" do
+    options :public, :ignore
+    interface [], "BMessage *"
+  end
+  function "DispatchExternalMessage" do
+    options :public, :ignore
+    interface ["BMessage *message", "BHandler *handler", "bool& _detached"], nil
+  end
+  function "MessageQueue" do
+    options :public
+    interface [], "BMessageQueue *", :const
+  end
+  function "IsMessageWaiting" do
+    options :public, :assert_locked
+    interface [], "bool", :const
+  end
+  function "AddHandler" do
+    options :public, :assert_locked
+    interface ["%memorize BHandler *handler"], nil
+  end
+  function "RemoveHandler" do
+    options :public, :assert_locked
+    interface ["%forget BHandler *handler"], "bool"
+  end
+  function "CountHandlers" do
+    options :public, :assert_locked
+    interface [], "int32", :const
+  end
+  function "HandlerAt" do
+    options :public, :assert_locked
+    interface ["int32 index"], "BHandler *", :const
+  end
+  function "IndexOf" do
+    options :public, :assert_locked
+    interface ["BHandler *handler"], "int32", :const
+  end
+  function "PreferredHandler" do
+    options :public
+    interface [], "BHandler *", :const
+  end
+  function "SetPreferredHandler" do
+    options :public
+    interface ["BHandler *handler"], nil
+  end
+  function "Run" do
+    options :public, :custom
+    interface [], "thread_id", :virtual
+  end
+  function "Quit" do
+    options :public, :custom
+    interface [], nil, :virtual
+  end
+  function "QuitRequested" do
+    options :public, :hook
+    interface [], "bool = true", :virtual
+  end
+  function "Lock" do
+    options :public, :custom
+    interface [], "bool"
+  end
+  function "Unlock" do
+    options :public, :assert_locked
+    interface [], nil
+  end
+  function "IsLocked" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "LockWithTimeout" do
+    options :public, :custom
+    interface ["bigtime_t timeout"], "status_t"
+  end
+  function "Thread" do
+    options :public, :ignore
+    interface [], "thread_id", :const
+  end
+  function "Team" do
+    options :public
+    interface [], "team_id", :const
+  end
+  function "LooperForThread" do
+    options :public, :static
+    interface ["thread_id thread"], "BLooper *"
+  end
+  function "LockingThread" do
+    options :public
+    interface [], "thread_id", :const
+  end
+  function "CountLocks" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "CountLockRequests" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "Sem" do
+    options :public, :ignore
+    interface [], "sem_id", :const
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 what", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "AddCommonFilter" do
+    options :public, :assert_locked, :ignore
+    interface ["BMessageFilter *filter"], nil, :virtual
+  end
+  function "RemoveCommonFilter" do
+    options :public, :assert_locked, :ignore
+    interface ["BMessageFilter *filter"], "bool", :virtual
+  end
+  function "SetCommonFilterList" do
+    options :public, :assert_locked, :ignore
+    interface ["BList *filters"], nil, :virtual
+  end
+  function "CommonFilterList" do
+    options :public, :ignore
+    interface [], "BList *", :const
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "MessageFromPort" do
+    options :protected, :ignore
+    interface ["bigtime_t = B_INFINITE_TIMEOUT"], "BMessage *"
+  end
+end

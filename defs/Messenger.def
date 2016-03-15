@@ -1,0 +1,52 @@
+define_class "BMessenger" do
+  kit "app"
+  header_file "app/Messenger.h"
+  function "BMessenger" do
+    options :ctor, :public, :custom
+    interface [], nil
+    interface ["const char *signature", "team_id team = -1", "status_t *result = NULL"], nil
+    interface ["const BHandler *handler", "const BLooper *looper = NULL", "status_t *result = NULL"], nil
+    interface ["const BMessenger& other"], nil
+  end
+  function "IsTargetLocal" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "Target" do
+    options :public, :ignore
+    interface ["BLooper **looper"], "BHandler *", :const
+  end
+  function "LockTarget" do
+    options :public, :custom
+    interface [], "bool", :const
+  end
+  function "LockTargetWithTimeout" do
+    options :public, :custom
+    interface ["bigtime_t timeout"], "status_t", :const
+  end
+  function "SendMessage" do
+    options :public, :custom
+    interface ["uint32 command", "BHandler *replyTo = NULL"], "status_t", :const
+    interface ["BMessage *message", "BHandler *replyTo = NULL", "bigtime_t timeout = B_INFINITE_TIMEOUT"], "status_t", :const
+    interface ["BMessage *message", "BMessenger replyTo", "bigtime_t timeout = B_INFINITE_TIMEOUT"], "status_t", :const
+    interface ["uint32 command", "BMessage *reply"], "status_t", :const
+    interface ["BMessage *message", "BMessage *reply", "bigtime_t deliveryTimeout = B_INFINITE_TIMEOUT", "bigtime_t replyTimeout = B_INFINITE_TIMEOUT"], "status_t", :const
+  end
+  function "SetTo" do
+    options :public
+    interface ["const char *signature", "team_id team = -1"], "status_t"
+    interface ["const BHandler *handler", "const BLooper *looper = NULL"], "status_t"
+  end
+  function "IsValid" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "Team" do
+    options :public
+    interface [], "team_id", :const
+  end
+  function "HashValue" do
+    options :public
+    interface [], "uint32", :const
+  end
+end

@@ -1,0 +1,49 @@
+define_class "BMessageQueue" do
+  kit "app"
+  header_file "app/MessageQueue.h"
+  function "BMessageQueue" do
+    options :ctor, :public
+    interface [], nil
+  end
+  function "AddMessage" do
+    options :public
+    interface ["BMessage *message"], nil
+  end
+  function "RemoveMessage" do
+    options :public
+    interface ["BMessage *message"], nil
+  end
+  function "CountMessages" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "IsEmpty" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "FindMessage" do
+    options :public
+    interface ["int32 index"], "BMessage *", :const
+    interface ["uint32 what", "int32 index = 0"], "BMessage *", :const
+  end
+  function "Lock" do
+    options :public
+    interface [], "bool"
+  end
+  function "Unlock" do
+    options :public
+    interface [], nil
+  end
+  function "IsLocked" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "NextMessage" do
+    options :public
+    interface [], "BMessage *"
+  end
+  function "IsNextMessage" do
+    options :public
+    interface ["const BMessage *message"], "bool", :const
+  end
+end

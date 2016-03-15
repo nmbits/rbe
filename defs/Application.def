@@ -1,0 +1,145 @@
+define_class "BApplication" do
+  kit "app"
+  header_file "app/Application.h"
+  super_class_name "BLooper"
+  options :wrapper
+  function "BApplication" do
+    options :ctor, :public, :custom
+    interface ["const char *signature"], nil
+    interface ["const char *signature", "status_t *error"], nil, :ignore
+    interface ["BMessage *data"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *data"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *data", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "InitCheck" do
+    options :public
+    interface [], "status_t", :const
+  end
+  function "Run" do
+    options :public, :custom
+    interface [], "thread_id", :virtual
+  end
+  function "Quit" do
+    options :public, :custom
+    interface [], nil, :virtual
+  end
+  function "QuitRequested" do
+    options :public, :hook, :custom
+    interface [], "bool = false", :virtual
+  end
+  function "Pulse" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "ReadyToRun" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "ArgvReceived" do
+    options :public, :hook, :custom_hook, :custom
+    interface ["int32 argc", "char **argv"], nil, :virtual
+  end
+  function "AppActivated" do
+    options :public, :hook
+    interface ["bool active"], nil, :virtual
+  end
+  function "RefsReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "AboutRequested" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 form", "const char *property"], "BHandler *", :virtual
+  end
+  function "ShowCursor" do
+    options :public
+    interface [], nil
+  end
+  function "HideCursor" do
+    options :public
+    interface [], nil
+  end
+  function "ObscureCursor" do
+    options :public
+    interface [], nil
+  end
+  function "IsCursorHidden" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetCursor" do
+    options :public, :ignore
+    interface ["const void *cursor"], nil
+    interface ["const BCursor *cursor", "bool sync = true"], nil
+  end
+  function "CountWindows" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "WindowAt" do
+    options :public
+    interface ["int32 index"], "BWindow *", :const
+  end
+  function "CountLoopers" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "LooperAt" do
+    options :public
+    interface ["int32 index"], "BLooper *", :const
+  end
+  function "IsLaunching" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "Signature" do
+    options :public
+    interface [], "const char *", :const
+  end
+  function "GetAppInfo" do
+    options :public, :ignore
+    interface ["app_info *info"], "status_t", :const
+  end
+  function "AppResources" do
+    options :public, :static, :ignore
+    interface [], "BResources *"
+  end
+  function "DispatchMessage" do
+    options :public, :hook, :custom_hook
+    interface ["BMessage *message", "BHandler *handler"], nil, :virtual
+  end
+  function "SetPulseRate" do
+    options :public
+    interface ["bigtime_t rate"], nil
+  end
+  function "RegisterLooper" do
+    options :public
+    interface ["BLooper *looper"], "status_t"
+  end
+  function "UnregisterLooper" do
+    options :public
+    interface ["BLooper *looper"], "status_t"
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+end
