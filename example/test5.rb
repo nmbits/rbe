@@ -2,7 +2,7 @@
 $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
-B.DEBUG = false
+B.DEBUG = true
 
 class MyWindow < B::Window
   def quit_requested
@@ -25,10 +25,7 @@ class MyApp < B::Application
     @window = MyWindow.new(rect, "Test", B::DOCUMENT_WINDOW, 0)
     message = B::Message.new 0xf0f0
     button = B::Button.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "test", "test", message
-	def button.mouse_moved(*a)
-	  p :mouse_moved
-	  super
-	end
+
 	def button.message_received(*a)
 	  p :message_received
 	  super
