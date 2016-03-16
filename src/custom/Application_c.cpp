@@ -55,7 +55,8 @@ namespace rbe
 				break;
 	
 			default:
-				Util::DispatchMessageCommon(_this, msg, handler);
+				if (!Util::DispatchMessageCommon(_this, msg, handler))
+					_this->BApplication::DispatchMessage(msg, handler);
 			}
 			if (ThreadException() || interrupted)
 				_this->BApplication::Quit();

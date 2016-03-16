@@ -45,7 +45,42 @@ namespace rbe
 		Looper::DispatchMessageST(BLooper *looper, BMessage *message, BHandler *handler)
 		{
 			RBE_TRACE(("Looper::DispatchMessageST"));
-			Util::DispatchMessageCommon(looper, message, handler);
+
+			bool terminate = false;
+
+			switch(message->what) {
+			case _QUIT_:
+				terminate = true;
+				return;
+
+			case B_QUIT_REQUESTED:
+				if (handler == looper) {
+					// from HAIKU's BLooper#_QuitRequested()
+					terminate = looper->QuitRequested();
+					if (terminate)
+						break;
+					bool shutdown;
+					if (message->IsSourceWaiting()
+						|| (message->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
+						BMessage replyMessage(B_REPLY);
+						replyMessage.AddBool("result", terminate);
+						replyMessage.AddInt32("thread", find_thread(NULL));
+						message->SendReply(&replyMessage);
+					}
+				}
+				break;
+
+			case RBE_MESSAGE_UBF:
+				terminate = true;
+				break;
+
+			default:
+				if (!Util::DispatchMessageCommon(looper, message, handler))
+					looper->BLooper::DispatchMessage(message, handler);
+			}
+
+			if (terminate || ThreadException())
+				looper->fTerminating = true;
 		}
 
 		VALUE

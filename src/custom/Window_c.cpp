@@ -29,7 +29,44 @@ namespace rbe
 		Window::DispatchMessageST(BWindow *_this, BMessage *message, BHandler *handler)
 		{
 			RBE_TRACE("Window::DispatchMessageST");
-			Util::DispatchMessageCommon(_this, message, handler);
+
+			bool terminate = false;
+
+			switch(message->what) {
+			case _QUIT_:
+				terminate = true;
+				return;
+
+			case B_QUIT_REQUESTED:
+				if (handler == _this) {
+					// from HAIKU's BLooper#_QuitRequested()
+					terminate = _this->QuitRequested();
+					if (terminate)
+						break;
+					bool shutdown;
+					if (message->IsSourceWaiting()
+						|| (message->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
+						BMessage replyMessage(B_REPLY);
+						replyMessage.AddBool("result", terminate);
+						replyMessage.AddInt32("thread", find_thread(NULL));
+						message->SendReply(&replyMessage);
+					}
+				}
+				break;
+
+			case RBE_MESSAGE_UBF:
+				terminate = true;
+				break;
+
+			default:
+				if (!Util::DispatchMessageCommon(_this, message, handler))
+					_this->BWindow::DispatchMessage(message, handler);
+			}
+
+			if (terminate || ThreadException()) {
+				Util::RemoveChildrenIfWindow(_this);
+				_this->fTerminating = true;
+			}
 		}
 
 		//

@@ -21,7 +21,7 @@
 namespace rbe {
 	namespace Util {
 
-		static inline void
+		void
 		RemoveChildrenIfWindow(BLooper *looper)
 		{
 			BWindow *window = dynamic_cast<BWindow *>(looper);
@@ -31,8 +31,7 @@ namespace rbe {
 			}
 		}
 
-		static inline
-		void DispatchMessage0(BLooper *looper, BMessage *message, BHandler *handler)
+		bool DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler)
 		{
 			bool under_control = true;
 			VALUE self = Qnil;
@@ -40,7 +39,7 @@ namespace rbe {
 			VALUE vmessage = Qnil;
 
 			if (ThreadException())
-				return;
+				return false;
 
 			std::function<void ()> c = [&]() {
 				rb_funcall(self, rb_intern("dispatch_message"), 2, vmessage, vhandler);
@@ -52,83 +51,21 @@ namespace rbe {
 					under_control = false;
 					return;
 				}
+				looper->DetachCurrentMessage();
 				self = Convert<BLooper *>::ToValue(looper);
 				vmessage = Convert<BMessage *>::ToValue(message);
 				if (vmessage == Qnil)
 					vmessage = B::Message::Wrap(message);
 				Memorize(self, vmessage);
 				Protect<std::function<void ()> > p(c);
+				Forget(self, vmessage);
 				p();
 				SetThreadException(p.State());
-				Forget(self, vmessage);
 			};
 
 			CallWithGVL<std::function<void ()> > g(f);
 			g();
-
-			if (!under_control) {
-				// the handler is not under control of RBe
-				BAlert *alert = dynamic_cast<BAlert *>(looper);
-				if (alert) {
-					alert->BAlert::DispatchMessage(message, handler);
-					return;
-				}
-				BWindow *window = dynamic_cast<BWindow *>(looper);
-				if (window) {
-					window->BWindow::DispatchMessage(message, handler);
-					return;
-				}
-				BApplication *app = dynamic_cast<BApplication *>(looper);
-				if (app) {
-					app->BApplication::DispatchMessage(message, handler);
-					return;
-				}
-				looper->BLooper::DispatchMessage(message, handler);
-			}
-		}
-
-		void
-		DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler)
-		{
-			RBE_TRACE(("Util::DispatchMessageCommon"));
-			looper->DetachCurrentMessage();
-
-			bool terminate = false;
-
-			switch(message->what) {
-			case _QUIT_:
-				terminate = true;
-				return;
-
-			case B_QUIT_REQUESTED:
-				if (handler == looper) {
-					// from HAIKU's BLooper#_QuitRequested()
-					bool terminate = looper->QuitRequested();
-					if (terminate)
-						break;
-					bool shutdown;
-					if (message->IsSourceWaiting()
-						|| (message->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
-						BMessage replyMessage(B_REPLY);
-						replyMessage.AddBool("result", terminate);
-						replyMessage.AddInt32("thread", find_thread(NULL));
-						message->SendReply(&replyMessage);
-					}
-				}
-				break;
-
-			case RBE_MESSAGE_UBF:
-				terminate = true;
-				break;
-
-			default:
-				DispatchMessage0(looper, message, handler);
-			}
-
-			if (terminate || ThreadException()) {
-				RemoveChildrenIfWindow(looper);
-				looper->fTerminating = true;
-			}
+			return under_control;
 		}
 
 		static VALUE

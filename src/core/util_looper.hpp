@@ -13,7 +13,8 @@
 
 namespace rbe {
 	namespace Util {
-		void DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler);
+		void RemoveChildrenIfWindow(BLooper *looper);
+		bool DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler);
 		VALUE rbe_run_common(int argc, VALUE *argv, VALUE self);
 
 		static inline void AssertLocked(BLooper *looper, thread_id tid = find_thread(NULL))
