@@ -60,7 +60,7 @@ define_class "BControl" do
   end
   function "MouseMoved" do
     options :public, :hook
-    interface ["BPoint where", "uint32 code", "const BMessage *dragMessage"], nil, :virtual
+    interface ["BPoint where", "uint32 code", "%nillable const BMessage *dragMessage"], nil, :virtual
   end
   function "SetLabel" do
     options :public

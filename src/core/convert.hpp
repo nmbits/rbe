@@ -684,6 +684,8 @@ namespace rbe
 
 		static bool IsConvertable(VALUE v)
 		{
+			if (NIL_P(v))
+				return true;
 			return (rb_obj_is_kind_of(v, wrapper_t::Class()) ? true : false);
 		}
 	};
