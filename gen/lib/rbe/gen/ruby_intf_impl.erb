@@ -18,7 +18,7 @@
 		{
 		    RBE_PRINT(("<%= c.name %>::rb__gc_free: %p\n", ptr));
 		    PRINT(("ptr = %p\n", ptr));
-			ObjectRegistory::Instance()->Unregister(ptr);
+			ObjectRegistory::Instance()->Delete(ptr);
 			PointerOf<<%= c.name %>>::Class *obj =
 				static_cast<PointerOf<<%= c.name %>>::Class *>(ptr);
 			delete obj;

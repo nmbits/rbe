@@ -94,7 +94,7 @@ namespace rbe {
 				static_cast<PointerOf<BLooper>::Class *>(looper);
 			VALUE v = ObjectRegistory::Instance()->Get(ptr);
 			DATA_PTR(v) = NULL;
-			ObjectRegistory::Instance()->Unregister(ptr);
+			ObjectRegistory::Instance()->Delete(ptr);
 			delete looper;
 
 			rb_thread_check_ints();

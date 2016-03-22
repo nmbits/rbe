@@ -1,5 +1,8 @@
 
 #include "registory.hpp"
+#include "ownership.hpp"
+
+#include <list>
 
 namespace rbe
 {
@@ -12,6 +15,7 @@ namespace rbe
 
 	ObjectRegistory::~ObjectRegistory()
 	{
+		sInstance = NULL;
 	}
 
 	/* static */ bool
@@ -30,16 +34,47 @@ namespace rbe
 	}
 
 	void
-	ObjectRegistory::Register(VALUE value)
+	ObjectRegistory::Add(VALUE value)
 	{
 		void *key = DATA_PTR(value);
-		registory_t::value_type pair(key, value);
+		Entry e;
+		e.value = value;
+		e.owner = Qnil;
+		registory_t::value_type pair(key, e);
 		fRegistory.insert(pair);
 	}
 
 	void
-	ObjectRegistory::Unregister(void *ptr)
+	ObjectRegistory::NotifyDeletion(VALUE vowner, VALUE value)
 	{
+		void *owner = DATA_PTR(vowner);
+		registory_t::iterator owner_itr = fRegistory.find(owner);
+		if (owner_itr == fRegistory.end())
+			return;
+		Entry &e = owner_itr->second;
+		std::list<gc::Ownership0 *>::iterator list_itr = e.tickets.begin();
+		while (list_itr != e.tickets.end()) {
+			gc::Ownership0 *ownership = *list_itr;
+			if (ownership->Value() == value) {
+				ownership->Deleting(owner);
+				delete ownership;
+				list_itr = owner_itr->second.tickets.erase(list_itr);
+			} else {
+				list_itr ++;
+			}
+		}
+	}
+
+	void
+	ObjectRegistory::Delete(void *ptr)
+	{
+		registory_t::iterator itr = fRegistory.find(ptr);
+		if (itr == fRegistory.end())
+			return;
+		VALUE value = itr->second.value;
+		VALUE vowner = itr->second.owner;
+		if (vowner != Qnil)
+			NotifyDeletion(vowner, value);
 		fRegistory.erase(ptr);
 	}
 
@@ -49,7 +84,53 @@ namespace rbe
 		registory_t::const_iterator itr = fRegistory.find(ptr);
 		VALUE ret = Qnil;
 		if (itr != fRegistory.end())
-			ret = itr->second;
+			ret = itr->second.value;
 		return ret;
+	}
+
+	void
+	ObjectRegistory::Own(VALUE vowner, gc::Ownership0 *ticket)
+	{
+		VALUE value = ticket->Value();
+		void *pvalue = DATA_PTR(value);
+		void *owner = DATA_PTR(vowner);
+		registory_t::iterator value_itr = fRegistory.find(pvalue);
+		if (value_itr == fRegistory.end())
+			return;
+		registory_t::iterator owner_itr = fRegistory.find(owner);
+		if (owner_itr == fRegistory.end())
+			return;
+		owner_itr->second.tickets.push_back(ticket);
+		value_itr->second.owner = vowner;
+	}
+
+	void
+	ObjectRegistory::Release(void *owner, void *object)
+	{
+		registory_t::iterator obj_itr = fRegistory.find(object);
+		if (obj_itr == fRegistory.end())
+			return;
+		registory_t::iterator owner_itr = fRegistory.find(owner);
+		if (owner_itr == fRegistory.end())
+			return;
+		std::list<gc::Ownership0 *>::iterator list_itr = owner_itr->second.tickets.begin();
+		while (list_itr != owner_itr->second.tickets.end()) {
+			gc::Ownership0 *ownership = *list_itr;
+			VALUE value = ownership->Value();
+			if (DATA_PTR(value) == object)
+				list_itr = owner_itr->second.tickets.erase(list_itr);
+			else
+				list_itr ++;
+		}
+		obj_itr->second.owner = Qnil;
+	}
+
+	void
+	ObjectRegistory::Mark(void *object)
+	{
+		registory_t::iterator itr = fRegistory.find(object);
+		std::list<gc::Ownership0 *>::iterator list_itr = itr->second.tickets.begin();
+		while (list_itr != itr->second.tickets.end())
+			(*list_itr)->Mark();
 	}
 }

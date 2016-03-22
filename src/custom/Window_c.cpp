@@ -136,7 +136,7 @@ namespace rbe
 
 			PointerOf<BWindow>::Class *ptr = static_cast<PointerOf<BWindow>::Class *>(_this);
 			DATA_PTR(self) = static_cast<void *>(ptr);
-			ObjectRegistory::Instance()->Register(self);
+			ObjectRegistory::Instance()->Add(self);
 			return self;
 		}
 

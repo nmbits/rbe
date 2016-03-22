@@ -41,7 +41,7 @@ namespace rbe {
 			VALUE result = ObjectRegistory::Instance()->Get(ptr);
 			if (result == Qnil) {
 				result = TypedData_Wrap_Struct(sClass, &sDataType, ptr);
-				ObjectRegistory::Instance()->Register(result);
+				ObjectRegistory::Instance()->Add(result);
 			}
 			return result;
 		}

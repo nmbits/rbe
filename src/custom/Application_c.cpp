@@ -88,7 +88,7 @@ namespace rbe
 			}
 			PointerOf<BApplication>::Class *p = _this;
 			DATA_PTR(self) = p;
-			ObjectRegistory::Instance()->Register(self);
+			ObjectRegistory::Instance()->Add(self);
 			return self;
 		}
 

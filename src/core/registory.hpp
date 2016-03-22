@@ -4,13 +4,25 @@
 
 #include <ruby.h>
 #include <map>
+#include <list>
 
 namespace rbe
 {
+	namespace gc {
+		class Ownership0;
+	}
+
 	class ObjectRegistory
 	{
 	private:
-		typedef std::map<void *, VALUE> registory_t;
+		struct Entry
+		{
+			VALUE value;
+			std::list<gc::Ownership0 *> tickets;
+			VALUE owner;
+		};
+
+		typedef std::map<void *, Entry> registory_t;
 
 		registory_t fRegistory;
 
@@ -23,11 +35,15 @@ namespace rbe
 
 	private:
 		ObjectRegistory();
+		void NotifyDeletion(VALUE owner, VALUE value);
 
 	public:
-		void Register(VALUE value);
-		void Unregister(void *ptr);
+		void Add(VALUE value);
+		void Delete(void *ptr);
 		VALUE Get(void *ptr);
+		void Own(VALUE vowner, gc::Ownership0 *ownership);
+		void Release(void *owner, void *target);
+		void Mark(void *object);
 	};
 }
 
