@@ -76,7 +76,7 @@
 %     else
 				<%= a.type %> <%= a.name %> = Convert<<%= type %> >::FromValue(argv[<%= j %>]);
 %     end
-%     if a.memorize? || a.forget?
+%     if a.own? || a.release?
 				bool prev_member_<%= a.name %> = <%= a.name %> && Util::IsMemberOf(<%= a.name %>, _this);
 %     end
 %   end
@@ -96,12 +96,15 @@
 				g();
 %   end
 %   f.each_method_arg_with_type do |a, type, j|
-%     if a.memorize?
-				if (<%= a.name %> && !prev_member_<%= a.name %> && Util::IsMemberOf(<%= a.name %>, _this))
-					Memorize(self, argv[<%= j %>]);
-%     elsif a.forget?
-				if (prev_member_<%= a.name %> && !Util::IsMemberOf(<%= a.name %>, _this))
-					Forget(self, argv[<%= j %>]);
+%     if a.own?
+				if (<%= a.name %> && !prev_member_<%= a.name %> && Util::IsMemberOf(<%= a.name %>, _this)) {
+					gc::Ownership0 *ownership = new gc::Ownership_<%= c.name %>_<%= a.type.dereferenced %>(argv[<%= j %>]);
+					ObjectRegistory::Instance()->Own(self, ownership);
+				}
+%     elsif a.release?
+				if (prev_member_<%= a.name %> && !Util::IsMemberOf(<%= a.name %>, _this)) {
+					ObjectRegistory::Instance()->Release(DATA_PTR(self), DATA_PTR(argv[<%= j %>]));
+				}
 %     end
 %   end
 %   if need_unlock

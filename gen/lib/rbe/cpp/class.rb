@@ -108,6 +108,15 @@ module RBe
       def binding_base_name
         @name.sub(/^B/, '')
       end
+
+      def is_kind_of(class_name)
+        return true if @name == class_name
+        return true if @mixin_name == class_name
+        ancestors.each do |c|
+          return true if c.name == class_name
+        end
+        return false
+      end
     end
   end
 end

@@ -9,6 +9,7 @@
 		void <%= class_binding_name c.name %>::rbe__gc_mark(void *ptr)
 		{
 		    RBE_PRINT(("<%= class_binding_name c.name %>::rb__gc_mark: %p\n", ptr));
+		    ObjectRegistory::Instance()->Mark(ptr);
 		}
 
 %   if c.custom_free?

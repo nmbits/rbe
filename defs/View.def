@@ -47,12 +47,12 @@ define_class "BView" do
   end
   function "AddChild" do
     options :public
-    interface ["%memorize BView *child", "BView *before = NULL"], nil
+    interface ["%own BView *child", "BView *before = NULL"], nil
     interface ["BLayoutItem *child"], "bool", :ignore
   end
   function "RemoveChild" do
     options :public
-    interface ["%forget BView *child"], "bool"
+    interface ["%release BView *child"], "bool"
   end
   function "CountChildren" do
     options :public

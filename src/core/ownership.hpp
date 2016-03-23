@@ -6,6 +6,14 @@
 #include "type_map.hpp"
 #include "convert.hpp"
 
+#include "Looper.hpp"
+#include "Invoker.hpp"
+#include "View.hpp"
+#include "Message.hpp"
+#include "Window.hpp"
+#include "Control.hpp"
+#include "Font.hpp"
+
 namespace rbe
 {
 	namespace gc
@@ -49,7 +57,24 @@ namespace rbe
 			: public Ownership<BInvoker, BMessage>
 		{
 		public:
+			Ownership_BInvoker_BMessage(VALUE v)
+				: Ownership<BInvoker, BMessage>(v)
+			{}
 			virtual void Deleting(BInvoker *o, BMessage *t)
+			{
+				o->fMessage = NULL;
+			}
+		};
+
+		class Ownership_BControl_BMessage
+			: public Ownership<BControl, BMessage>
+		{
+		public:
+			Ownership_BControl_BMessage(VALUE v)
+				: Ownership<BControl, BMessage>(v)
+			{}
+
+			virtual void Deleting(BControl *o, BMessage *t)
 			{
 				o->fMessage = NULL;
 			}
@@ -59,6 +84,9 @@ namespace rbe
 			: public Ownership<BView, BView>
 		{
 		public:
+			Ownership_BView_BView(VALUE v)
+				: Ownership<BView, BView>(v)
+			{}
 			virtual void Deleting(BView *l, BView *t)
 			{
 				l->RemoveChild(t);
@@ -68,6 +96,40 @@ namespace rbe
 		class Ownership_BView_BFont
 			: public Ownership<BView, BFont>
 		{
+		public:
+			Ownership_BView_BFont(VALUE v)
+				: Ownership<BView, BFont>(v)
+			{}
+			virtual void Deleting(BView *l, BView *t)
+			{
+				// TODO
+			}
+		};
+
+		class Ownership_BLooper_BHandler
+			: public Ownership<BLooper, BHandler>
+		{
+		public:
+			Ownership_BLooper_BHandler(VALUE v)
+				: Ownership<BLooper, BHandler>(v)
+			{}
+			virtual void Deleting(BLooper *o, BHandler *t)
+			{
+				o->RemoveHandler(t);
+			}
+		};
+
+		class Ownership_BWindow_BView
+			: public Ownership<BWindow, BView>
+		{
+		public:
+			Ownership_BWindow_BView(VALUE v)
+				: Ownership<BWindow, BView>(v)
+			{}
+			virtual void Deleting(BWindow *o, BView *t)
+			{
+				o->RemoveChild(t);
+			}
 		};
 	}
 }

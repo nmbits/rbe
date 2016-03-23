@@ -130,7 +130,9 @@ namespace rbe
 	{
 		registory_t::iterator itr = fRegistory.find(object);
 		std::list<gc::Ownership0 *>::iterator list_itr = itr->second.tickets.begin();
-		while (list_itr != itr->second.tickets.end())
+		while (list_itr != itr->second.tickets.end()) {
 			(*list_itr)->Mark();
+			list_itr ++;
+		}
 	}
 }

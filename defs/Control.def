@@ -6,8 +6,8 @@ define_class "BControl" do
   options :wrapper
   function "BControl" do
     options :ctor, :public
-    interface ["BRect frame", "const char *name", "const char *label", "BMessage *message", "uint32 resizingMode", "uint32 flags"], nil
-    interface ["const char *name", "const char *label", "BMessage *message", "uint32 flags"], nil
+    interface ["BRect frame", "const char *name", "const char *label", "%own BMessage *message", "uint32 resizingMode", "uint32 flags"], nil
+    interface ["const char *name", "const char *label", "%own BMessage *message", "uint32 flags"], nil
     interface ["BMessage *data"], nil
   end
   function "Instantiate" do

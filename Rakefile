@@ -47,7 +47,7 @@ end
 
 task :populate_class_init_file_task do |t|
   class_init_filename = File.join(OUT_DIR, "_class_init.cpp")
-  file class_init_filename => [OUT_DIR] + DEFS do |t|
+  file class_init_filename => LIBS + [OUT_DIR] + DEFS do |t|
     puts "generating #{class_init_filename}"
     File.open t.name, "w" do |f|
       f.write RBe::Gen::Generator.generate(:init_classes_impl, CLASS_LIST.list)
@@ -63,7 +63,7 @@ end
   task pop_task_name do |t|
     DEFS.each do |name|
       filename = File.join(OUT_DIR, File.basename(name)).sub(/\.def$/, ext)
-      file filename => [name, OUT_DIR] do |u|
+      file filename => [name, OUT_DIR] + LIBS do |u|
         puts "generating #{filename}"
         class_name = 'B' + File.basename(u.name).sub(/\..*$/, '')
         c = CLASS_LIST[class_name]
@@ -72,7 +72,6 @@ end
           f.write RBe::Gen::Generator.generate(template, c)
         end
       end
-      file filename => LIBS unless LIBS.empty?
       task task_name => filename
     end
   end

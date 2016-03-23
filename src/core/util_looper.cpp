@@ -56,9 +56,7 @@ namespace rbe {
 				vmessage = Convert<BMessage *>::ToValue(message);
 				if (vmessage == Qnil)
 					vmessage = B::Message::Wrap(message);
-				Memorize(self, vmessage);
 				Protect<std::function<void ()> > p(c);
-				Forget(self, vmessage);
 				p();
 				SetThreadException(p.State());
 			};

@@ -27,12 +27,12 @@ define_class "BWindow" do
   end
   function "AddChild" do
     options :public, :prelock
-    interface ["%memorize BView *child", "BView *before = NULL"], nil
+    interface ["%own BView *child", "BView *before = NULL"], nil
     interface ["BLayoutItem *child"], nil, :ignore
   end
   function "RemoveChild" do
     options :public, :prelock
-    interface ["%forget BView *child"], "bool"
+    interface ["%release BView *child"], "bool"
   end
   function "CountChildren" do
     options :public, :prelock
