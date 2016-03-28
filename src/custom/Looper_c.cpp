@@ -93,6 +93,20 @@ namespace rbe
 				looper->fTerminating = true;
 		}
 
+		void
+		Looper::QuitST(BLooper *looper)
+		{
+			RBE_TRACE(("Looper::QuitST"));
+
+			std::function<void ()> f = [&]() {
+				VALUE self = Convert<BLooper *>::ToValue(looper);
+				rbe_quit(0, NULL, self);
+			};
+
+			CallWithGVL<std::function<void ()> > g(f);
+			g();
+		}
+
 		VALUE
 		Looper::rbe_run(int argc, VALUE *argv, VALUE self)
 		{
@@ -119,7 +133,7 @@ namespace rbe
 				return Qnil;
 
 			if (_this->Thread() == tid)
-				rb_raise(eQuitLooper, "Looper::rb_quit");
+				rb_raise(eQuitLooper, "Looper::rbe_quit");
 
 			std::function<void ()> f = [&]() {
 				_this->BLooper::Quit();

@@ -84,7 +84,7 @@ define_class "BLooper" do
     interface [], "thread_id", :virtual
   end
   function "Quit" do
-    options :public, :custom
+    options :public, :custom, :hook, :custom_hook
     interface [], nil, :virtual
   end
   function "QuitRequested" do
