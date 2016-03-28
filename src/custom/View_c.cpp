@@ -8,6 +8,7 @@
 #include "convert.hpp"
 #include "gvl.hpp"
 #include "lock.hpp"
+#include "deleting.hpp"
 
 #define protected public
 #define private public
@@ -19,6 +20,21 @@
 
 namespace rbe
 {
+	namespace gc
+	{
+		template<>
+		void Deleting<BView, BView>(BView *o, BView *t)
+		{
+			o->RemoveChild(t);
+		}
+
+		template<>
+		void Deleting<BView, BFont>(BView *o, BFont *t)
+		{
+			// TODO
+		}
+	}
+
 	// static inline VALUE
 	// rbe_key_up_down(int argc, VALUE *argv, VALUE self, bool up)
 	// {

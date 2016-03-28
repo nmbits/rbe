@@ -103,6 +103,14 @@ module RBe
       def input_args_no_paren(interface)
         interface.args.map{|a| a.name }.join(', ')
       end
+
+      def owner_name(owner, target_name)
+        if owner.is_kind_of "BInvoker"
+          "BInvoker"
+        else
+          owner.name
+        end
+      end
     end
   end
 end

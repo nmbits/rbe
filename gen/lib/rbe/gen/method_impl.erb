@@ -97,8 +97,9 @@
 %   end
 %   f.each_method_arg_with_type do |a, type, j|
 %     if a.own?
+%       oname = owner_name(c, a.type)
 				if (<%= a.name %> && !prev_member_<%= a.name %> && Util::IsMemberOf(<%= a.name %>, _this)) {
-					gc::Ownership0 *ownership = new gc::Ownership_<%= c.name %>_<%= a.type.dereferenced %>(argv[<%= j %>]);
+					gc::Ownership0 *ownership = new gc::Ownership<<%= oname %>, <%= a.type.dereferenced %>>(argv[<%= j %>]);
 					ObjectRegistory::Instance()->Own(self, ownership);
 				}
 %     elsif a.release?

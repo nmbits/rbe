@@ -18,11 +18,21 @@
 #include "rbe.hpp"
 #include "lock.hpp"
 #include "convert.hpp"
+#include "deleting.hpp"
 
 #include <functional>
 
 namespace rbe
 {
+	namespace gc
+	{
+		template<>
+		void Deleting<BWindow, BView>(BWindow *o, BView *t)
+		{
+			o->RemoveChild(t);
+		}
+	}
+
 	namespace B
 	{
 		void

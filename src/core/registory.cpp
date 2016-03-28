@@ -1,6 +1,7 @@
 
 #include "registory.hpp"
 #include "ownership.hpp"
+#include "debug.hpp"
 
 #include <list>
 
@@ -91,15 +92,23 @@ namespace rbe
 	void
 	ObjectRegistory::Own(VALUE vowner, gc::Ownership0 *ticket)
 	{
+		RBE_TRACE(("ObjectRegistory::Own"));
+		RBE_PRINT(("vowner %lx (%p)\n", vowner, DATA_PTR(vowner)));
+		RBE_PRINT(("ownership %lx (%p)\n", ticket->Value(), DATA_PTR(ticket->Value())));
+
 		VALUE value = ticket->Value();
 		void *pvalue = DATA_PTR(value);
 		void *owner = DATA_PTR(vowner);
 		registory_t::iterator value_itr = fRegistory.find(pvalue);
-		if (value_itr == fRegistory.end())
+		if (value_itr == fRegistory.end()) {
+			RBE_PRINT(("The value is not registered\n"));
 			return;
+		}
 		registory_t::iterator owner_itr = fRegistory.find(owner);
-		if (owner_itr == fRegistory.end())
+		if (owner_itr == fRegistory.end()) {
+			RBE_PRINT(("The owner is not registered\n"));
 			return;
+		}
 		owner_itr->second.tickets.push_back(ticket);
 		value_itr->second.owner = vowner;
 	}

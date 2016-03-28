@@ -40,14 +40,20 @@
 %       else
 				<%= a.type %> <%= a.name %> = Convert<<%= a.type %>>::FromValue(vargs[<%= j %>]);
 %       end
+%     end
+				_this = new <%= c.wrapper? ? class_binding_name(c.name) : c.name %>(<%= input_args_no_paren f %>);
+				PointerOf<<%= c.name %>>::Class *ptr = static_cast<PointerOf<<%= c.name %>>::Class *>(_this);
+				DATA_PTR(self) = static_cast<void *>(ptr);
+				ObjectRegistory::Instance()->Add(self);
+%     f.args.each_with_index do |a, j|
 %       if a.own?
+%         oname = owner_name(c, a.type)
 				if (!NIL_P(argv[<%= j %>])) {
-					gc::Ownership0 *ownership = new gc::Ownership_<%= c.name %>_<%= a.type.dereferenced %>(argv[<%= j %>]);
+					gc::Ownership0 *ownership = new gc::Ownership<<%= oname %>, <%= a.type.dereferenced %>>(argv[<%= j %>]);
 					ObjectRegistory::Instance()->Own(self, ownership);
 				}
 %       end
 %     end
-				_this = new <%= c.wrapper? ? class_binding_name(c.name) : c.name %>(<%= input_args_no_paren f %>);
 				goto fin;
 			}
 %     if use_label
@@ -59,8 +65,5 @@
 			if (_this == NULL)
 				rb_raise(rb_eTypeError, "wrong type of arguments");
 % end
-			PointerOf<<%= c.name %>>::Class *ptr = static_cast<PointerOf<<%= c.name %>>::Class *>(_this);
-			DATA_PTR(self) = static_cast<void *>(ptr);
-			ObjectRegistory::Instance()->Add(self);
 			return self;
 		}

@@ -13,6 +13,7 @@
 #include "Window.hpp"
 #include "Control.hpp"
 #include "Font.hpp"
+#include "deleting.hpp"
 
 namespace rbe
 {
@@ -43,92 +44,12 @@ namespace rbe
 			{}
 			virtual ~Ownership() {}
 
-			virtual void Deleting(_O *, _T *) = 0;
 			virtual void Deleting(void *vpowner)
 			{
 				class PointerOf<_O>::Class *powner = (class PointerOf<_O>::Class *) vpowner;
 				_O *owner = static_cast<_O *>(powner);
 				_T *target = Convert<_T *>::FromValue(Value());
-				Deleting(owner, target);
-			}
-		};
-	
-		class Ownership_BInvoker_BMessage
-			: public Ownership<BInvoker, BMessage>
-		{
-		public:
-			Ownership_BInvoker_BMessage(VALUE v)
-				: Ownership<BInvoker, BMessage>(v)
-			{}
-			virtual void Deleting(BInvoker *o, BMessage *t)
-			{
-				o->fMessage = NULL;
-			}
-		};
-
-		class Ownership_BControl_BMessage
-			: public Ownership<BControl, BMessage>
-		{
-		public:
-			Ownership_BControl_BMessage(VALUE v)
-				: Ownership<BControl, BMessage>(v)
-			{}
-
-			virtual void Deleting(BControl *o, BMessage *t)
-			{
-				o->fMessage = NULL;
-			}
-		};
-	
-		class Ownership_BView_BView
-			: public Ownership<BView, BView>
-		{
-		public:
-			Ownership_BView_BView(VALUE v)
-				: Ownership<BView, BView>(v)
-			{}
-			virtual void Deleting(BView *l, BView *t)
-			{
-				l->RemoveChild(t);
-			}
-		};
-	
-		class Ownership_BView_BFont
-			: public Ownership<BView, BFont>
-		{
-		public:
-			Ownership_BView_BFont(VALUE v)
-				: Ownership<BView, BFont>(v)
-			{}
-			virtual void Deleting(BView *l, BView *t)
-			{
-				// TODO
-			}
-		};
-
-		class Ownership_BLooper_BHandler
-			: public Ownership<BLooper, BHandler>
-		{
-		public:
-			Ownership_BLooper_BHandler(VALUE v)
-				: Ownership<BLooper, BHandler>(v)
-			{}
-			virtual void Deleting(BLooper *o, BHandler *t)
-			{
-				o->RemoveHandler(t);
-			}
-		};
-
-		class Ownership_BWindow_BView
-			: public Ownership<BWindow, BView>
-		{
-		public:
-			Ownership_BWindow_BView(VALUE v)
-				: Ownership<BWindow, BView>(v)
-			{}
-			virtual void Deleting(BWindow *o, BView *t)
-			{
-				o->RemoveChild(t);
+				gc::Deleting<_O, _T>(owner, target);
 			}
 		};
 	}

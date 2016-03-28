@@ -183,5 +183,11 @@ namespace rbe
 				rb_jump_tag(ThreadException());
 			return Convert<bool>::ToValue(result);
 		}
+
+		void Application::rbe__gc_free(void *ptr)
+		{
+		    RBE_PRINT(("B::Application::rb__gc_free: %p\n", ptr));
+		    RBE_PRINT(("do nothing\n"));
+		}
 	}
 }

@@ -2,7 +2,7 @@ define_class "BApplication" do
   kit "app"
   header_file "app/Application.h"
   super_class_name "BLooper"
-  options :wrapper
+  options :wrapper, :custom_free
   function "BApplication" do
     options :ctor, :public, :custom
     interface ["const char *signature"], nil

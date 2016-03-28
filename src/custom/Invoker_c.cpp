@@ -13,9 +13,24 @@
 #include "registory.hpp"
 #include "type_map.hpp"
 #include "debug.hpp"
+#include "deleting.hpp"
 
 namespace rbe
 {
+	namespace gc
+	{
+		template<>
+		void Deleting<BInvoker, BMessage>(BInvoker *o, BMessage *t)
+		{
+			RBE_TRACE(("rbe::gc::Deleting<BInvoker, BMessage>()"));
+			RBE_PRINT(("BMessage = %p\n", t));
+			RBE_PRINT(("BInvoker = %p\n", o));
+			RBE_PRINT(("o->fMessage = %p\n", o->fMessage));
+			if (o->fMessage == t)
+				o->fMessage = NULL;
+		}
+	}
+
 	namespace B
 	{
 		void Invoker::rbe__gc_free(void *ptr)

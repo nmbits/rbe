@@ -2,7 +2,7 @@ define_class "BControl" do
   kit "interface"
   header_file "interface/Control.h"
   super_class_name "BView"
-  mixin_name "Invoker"
+  mixin_name "BInvoker"
   options :wrapper
   function "BControl" do
     options :ctor, :public
