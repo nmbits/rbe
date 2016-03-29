@@ -41,9 +41,9 @@ class MyApp < B::Application
     create_window
   end
   
-  def quit_requested
-    true
-  end
+#  def quit_requested
+#    true
+#  end
 
   def pulse
     GC.start

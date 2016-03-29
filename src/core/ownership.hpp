@@ -30,7 +30,7 @@ namespace rbe
 			{}
 			virtual ~Ownership0() {}
 
-			virtual void Deleting(void *owner) = 0;
+			virtual void Deleting(VALUE vowner) = 0;
 			void Mark() { rb_gc_mark(mValue); }
 			VALUE Value() { return mValue; }
 		};
@@ -44,10 +44,9 @@ namespace rbe
 			{}
 			virtual ~Ownership() {}
 
-			virtual void Deleting(void *vpowner)
+			virtual void Deleting(VALUE vowner)
 			{
-				class PointerOf<_O>::Class *powner = (class PointerOf<_O>::Class *) vpowner;
-				_O *owner = static_cast<_O *>(powner);
+				_O *owner = Convert<_O *>::FromValue(vowner);
 				_T *target = Convert<_T *>::FromValue(Value());
 				gc::Deleting<_O, _T>(owner, target);
 			}

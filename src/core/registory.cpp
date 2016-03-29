@@ -57,7 +57,7 @@ namespace rbe
 		while (list_itr != e.tickets.end()) {
 			gc::Ownership0 *ownership = *list_itr;
 			if (ownership->Value() == value) {
-				ownership->Deleting(owner);
+				ownership->Deleting(vowner);
 				delete ownership;
 				list_itr = owner_itr->second.tickets.erase(list_itr);
 			} else {

@@ -82,7 +82,7 @@ namespace rbe {
 % unless c.wrapper?
 			static VALUE Wrap(<%= c.name %> *obj);
 % end
-		private:
+		public:
 			//
 			// Member functions for Ruby
 			//

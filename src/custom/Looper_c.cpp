@@ -60,6 +60,7 @@ namespace rbe
 
 			switch(message->what) {
 			case _QUIT_:
+			case RBE_MESSAGE_UBF:
 				terminate = true;
 				return;
 
@@ -67,8 +68,10 @@ namespace rbe
 				if (handler == looper) {
 					// from HAIKU's BLooper#_QuitRequested()
 					terminate = looper->QuitRequested();
-					if (terminate)
+					if (terminate) {
+						looper->Quit();
 						break;
+					}
 					bool shutdown;
 					if (message->IsSourceWaiting()
 						|| (message->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
@@ -78,10 +81,6 @@ namespace rbe
 						message->SendReply(&replyMessage);
 					}
 				}
-				break;
-
-			case RBE_MESSAGE_UBF:
-				terminate = true;
 				break;
 
 			default:
@@ -103,8 +102,8 @@ namespace rbe
 				rbe_quit(0, NULL, self);
 			};
 
-			CallWithGVL<std::function<void ()> > g(f);
-			g();
+			int state = ProtectedCallWithGVL(f);
+			SetThreadException(state);
 		}
 
 		VALUE

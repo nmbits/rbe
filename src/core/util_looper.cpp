@@ -24,38 +24,42 @@ namespace rbe {
 		void
 		RemoveChildrenIfWindow(BLooper *looper)
 		{
+			RBE_TRACE("RemoveChildrenIfWindow");
+			RBE_PRINT(("  looper = %p\n", looper));
 			BWindow *window = dynamic_cast<BWindow *>(looper);
 			if (window) {
-				while (window->CountChildren())
-					window->RemoveChild(window->ChildAt(0));
+				RBE_PRINT(("    is window\n"));
+				while (window->CountChildren()) {
+					BView *view = window->ChildAt(0);
+					RBE_PRINT(("     removing %p\n", view));
+					window->RemoveChild(view);
+				}
 			}
 		}
 
 		bool DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler)
 		{
 			bool under_control = true;
-			VALUE self = Qnil;
-			VALUE vhandler = Qnil;
-			VALUE vmessage = Qnil;
 
 			if (ThreadException())
 				return false;
 
-			std::function<void ()> c = [&]() {
-				rb_funcall(self, rb_intern("dispatch_message"), 2, vmessage, vhandler);
-			};
-
 			std::function<void ()> f = [&]() {
-				vhandler = Convert<BHandler *>::ToValue(handler);
+				VALUE vhandler = Convert<BHandler *>::ToValue(handler);
 				if (handler != NULL && vhandler == Qnil) {
 					under_control = false;
 					return;
 				}
+				VALUE self = Convert<BLooper *>::ToValue(looper);
 				looper->DetachCurrentMessage();
-				self = Convert<BLooper *>::ToValue(looper);
-				vmessage = Convert<BMessage *>::ToValue(message);
+				VALUE vmessage = Convert<BMessage *>::ToValue(message);
 				if (vmessage == Qnil)
 					vmessage = B::Message::Wrap(message);
+
+				std::function<void ()> c = [&]() {
+					rb_funcall(self, rb_intern("dispatch_message"), 2, vmessage, vhandler);
+				};
+
 				Protect<std::function<void ()> > p(c);
 				p();
 				SetThreadException(p.State());
@@ -81,6 +85,7 @@ namespace rbe {
 			std::function<void ()> task0 = [&]() {
 				CallWithoutGVL<std::function<void ()>, BLooper> g(task1, looper);
 				g();
+				rb_thread_check_ints();
 				if (ThreadException())
 					rb_jump_tag(ThreadException());
 			};
@@ -91,11 +96,10 @@ namespace rbe {
 			PointerOf<BLooper>::Class *ptr =
 				static_cast<PointerOf<BLooper>::Class *>(looper);
 			VALUE v = ObjectRegistory::Instance()->Get(ptr);
-			DATA_PTR(v) = NULL;
 			ObjectRegistory::Instance()->Delete(ptr);
+			DATA_PTR(v) = NULL;
+			RemoveChildrenIfWindow(looper);
 			delete looper;
-
-			rb_thread_check_ints();
 
 			if (p.State() != 0) {
 				VALUE errinfo = rb_errinfo();

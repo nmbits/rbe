@@ -18,7 +18,7 @@ define_class "BWindow" do
     interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
   end
   function "Quit" do
-    options :public
+    options :public, :custom, :hook, :custom_hook
     interface [], nil, :virtual
   end
   function "Close" do

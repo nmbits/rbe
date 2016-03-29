@@ -49,11 +49,11 @@ namespace rbe
 			case _QUIT_:
 				_this->BApplication::DispatchMessage(msg, handler);
 				break;
-	
+
 			case RBE_MESSAGE_UBF:
 				interrupted = true;
 				break;
-	
+
 			default:
 				if (!Util::DispatchMessageCommon(_this, msg, handler))
 					_this->BApplication::DispatchMessage(msg, handler);
@@ -147,7 +147,7 @@ namespace rbe
 			std::function<void ()> f = [&]() {
 				_this->BApplication::Quit();
 			};
-			
+
 			if (find_thread(NULL) != _this->Thread()) {
 				CallWithoutGVL<std::function<void ()>, void> g(f);
 				g();
@@ -173,13 +173,13 @@ namespace rbe
 
 			bool result = false;
 			std::function<void ()> f = [&]() {
-				_this->BApplication::QuitRequested();
+				result = _this->BApplication::QuitRequested();
 			};
-			
+
 			CallWithoutGVL<std::function<void ()>, void> g(f);
 			g();
 			rb_thread_check_ints();
-	        if (ThreadException())
+			if (ThreadException())
 				rb_jump_tag(ThreadException());
 			return Convert<bool>::ToValue(result);
 		}

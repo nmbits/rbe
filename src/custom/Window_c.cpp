@@ -79,6 +79,20 @@ namespace rbe
 			}
 		}
 
+		void
+		Window::QuitST(BWindow *_this)
+		{
+			RBE_TRACE(("Window::QuitST"));
+
+			std::function<void ()> f = [&]() {
+				VALUE self = Convert<BWindow *>::ToValue(_this);
+				rbe_quit(0, NULL, self);
+			};
+
+			int state = ProtectedCallWithGVL(f);
+			SetThreadException(state);
+		}
+
 		//
 		// B::Window.new rect, name, window_type, flags, workspace = B::CURRENT_WORKSPACE
 		// B::Window.new rect, name, [look, feel], flags, workspace = B::CURRENT_WORKSPACE
@@ -179,6 +193,26 @@ namespace rbe
 			if (ThreadException() > 0)
 				rb_jump_tag(ThreadException());
 
+			return Qnil;
+		}
+
+		VALUE
+		Window::rbe_quit(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("Window::rbe_quit", argc, argv, self);
+			if (argc > 0)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
+			BWindow *_this = Convert<BWindow *>::FromValue(self);
+			if (!_this->IsLocked())
+				rb_raise(rb_eThreadError, "You must lock a looper before calling quit()");
+			if (!_this->Lock())
+				return Qnil;
+			while (!_this->IsHidden())
+				_this->Hide();
+			Util::RemoveChildrenIfWindow(_this);
+			if (_this->fFlags & B_QUIT_ON_WINDOW_CLOSE)
+				be_app->PostMessage(B_QUIT_REQUESTED);
+			B::Looper::rbe_quit(0, NULL, self);
 			return Qnil;
 		}
 	}
