@@ -41,6 +41,9 @@ namespace rbe {
 		{
 			RBE_TRACE("Util::DispatchMessageCommon");
 			RBE_PRINT(("  looper: %p, message: %p, handler: %p\n", looper, message, handler));
+			int32 value1 = message->what;
+			int32 value2 = value1 << 24 | (value1 & 0x0000ff00) << 8 | (value1 & 0x00ff0000) >> 8 | (value1 & 0xff000000) >> 24;
+			RBE_PRINT(("  what: %.4s\n", (char *)&value2));
 
 			bool under_control = true;
 
@@ -48,18 +51,21 @@ namespace rbe {
 				return false;
 
 			std::function<void ()> f = [&]() {
-				VALUE vhandler = Convert<BHandler *>::ToValue(handler);
-				if (handler != NULL && vhandler == Qnil) {
-					under_control = false;
-					return;
-				}
-				VALUE self = Convert<BLooper *>::ToValue(looper);
 				looper->DetachCurrentMessage();
 				VALUE vmessage = Convert<BMessage *>::ToValue(message);
 				if (vmessage == Qnil)
 					vmessage = B::Message::Wrap(message);
 
+				VALUE vhandler = Convert<BHandler *>::ToValue(handler);
+				if (handler != NULL && vhandler == Qnil) {
+					under_control = false;
+					return;
+				}
+
+				VALUE self = Convert<BLooper *>::ToValue(looper);
+
 				std::function<void ()> c = [&]() {
+					RBE_PRINT(("  calling dispatch_message\n"));
 					rb_funcall(self, rb_intern("dispatch_message"), 2, vmessage, vhandler);
 				};
 
