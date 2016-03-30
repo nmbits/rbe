@@ -5,10 +5,12 @@
 
 #include <set>
 #include <map>
+#include <functional>
 
 #include "registory.hpp"
 #include "Application.hpp"
 #include "debug.hpp"
+#include "gvl.hpp"
 
 namespace rbe
 {
@@ -40,6 +42,18 @@ namespace rbe
 		return Qnil;
 	}
 
+	VALUE
+	rbe_s_debugger(VALUE clazz, VALUE str)
+	{
+		char *text = StringValueCStr(str);
+		std::function<void ()> f = [&]() {
+			debugger(text);
+		};
+		CallWithoutGVL<std::function<void ()>, void> g(f);
+		g();
+		return Qnil;
+	}
+
 	void
 	global_mark(void *ptr)
 	{
@@ -65,6 +79,8 @@ namespace rbe
 								   RUBY_METHOD_FUNC(rbe_s_be_app_get), 0);
 		rb_define_singleton_method(gModule, "DEBUG=",
 									RUBY_METHOD_FUNC(rbe_s_debug_set), 1);
+		rb_define_singleton_method(gModule, "debugger",
+									RUBY_METHOD_FUNC(rbe_s_debugger), 1);
 		gMarker = Data_Wrap_Struct(rb_cData, global_mark, global_free, 0);
 		rb_global_variable(&gMarker);
 		eQuitLooper = rb_define_class_under(gModule, "QuitLooper", rb_eException);

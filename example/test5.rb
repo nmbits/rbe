@@ -2,7 +2,7 @@
 $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
-B.DEBUG = true
+B.DEBUG = false
 
 class MyWindow < B::Window
   def quit_requested
@@ -12,6 +12,9 @@ class MyWindow < B::Window
 
   def message_received(message)
     message.print_to_stream
+    if message.what == 0xf0f0
+      B.debugger "debug"
+    end
   rescue => e
     p e
   ensure
@@ -24,7 +27,7 @@ class MyApp < B::Application
     rect = B::Rect.new(20.0, 20.0, 300.0, 300.0)
     @window = MyWindow.new(rect, "Test", B::DOCUMENT_WINDOW, 0)
     message = B::Message.new 0xf0f0
-    button = B::Button.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "test", "test", message
+    button = B::Button.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "debug me", "debug me", message
 
     def button.message_received(*a)
       p :message_received
