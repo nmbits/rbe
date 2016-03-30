@@ -42,24 +42,38 @@ namespace rbe
 		Application::DispatchMessageST(BApplication *_this, BMessage *msg, BHandler *handler)
 		{
 			RBE_TRACE("Application::DispatchMessage");
-			RBE_PRINT(("msg = %p\n", msg));
-			bool interrupted = false;
+
+			if (handler != _this) {
+				Looper::DispatchMessageST(_this, msg, handler);
+				return;
+			}
 	
 			switch (msg->what) {
-			case _QUIT_:
-				_this->BApplication::DispatchMessage(msg, handler);
-				break;
-
 			case RBE_MESSAGE_UBF:
-				interrupted = true;
-				break;
+				_this->fTerminating = true;
 
 			default:
 				if (!Util::DispatchMessageCommon(_this, msg, handler))
 					_this->BApplication::DispatchMessage(msg, handler);
+				break;
 			}
-			if (ThreadException() || interrupted)
-				_this->BApplication::Quit();
+
+			if (ThreadException())
+				_this->fTerminating = true;
+		}
+
+		void
+		Application::QuitST(BApplication *_this)
+		{
+			RBE_TRACE(("Application::QuitST"));
+
+			std::function<void ()> f = [&]() {
+				VALUE self = Convert<BApplication *>::ToValue(_this);
+				rbe_quit(0, NULL, self);
+			};
+
+			int state = ProtectedCallWithGVL(f);
+			SetThreadException(state);
 		}
 
 		VALUE
@@ -153,7 +167,7 @@ namespace rbe
 				g();
 				rb_thread_check_ints();
 			} else {
-				f();
+				_this->fTerminating = true;
 			}
 			return Qnil;
 		}

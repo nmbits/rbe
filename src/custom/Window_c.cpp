@@ -40,32 +40,9 @@ namespace rbe
 		{
 			RBE_TRACE("Window::DispatchMessageST");
 
-			bool terminate = false;
-
 			switch(message->what) {
-			case _QUIT_:
-				terminate = true;
-				return;
-
-			case B_QUIT_REQUESTED:
-				if (handler == _this) {
-					// from HAIKU's BLooper#_QuitRequested()
-					terminate = _this->QuitRequested();
-					if (terminate)
-						break;
-					bool shutdown;
-					if (message->IsSourceWaiting()
-						|| (message->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
-						BMessage replyMessage(B_REPLY);
-						replyMessage.AddBool("result", terminate);
-						replyMessage.AddInt32("thread", find_thread(NULL));
-						message->SendReply(&replyMessage);
-					}
-				}
-				break;
-
 			case RBE_MESSAGE_UBF:
-				terminate = true;
+				_this->fTerminating = true;
 				break;
 
 			default:
@@ -73,10 +50,8 @@ namespace rbe
 					_this->BWindow::DispatchMessage(message, handler);
 			}
 
-			if (terminate || ThreadException()) {
-				Util::RemoveChildrenIfWindow(_this);
+			if (ThreadException())
 				_this->fTerminating = true;
-			}
 		}
 
 		void
@@ -182,6 +157,7 @@ namespace rbe
 			BWindow *_this = Convert<BWindow *>::FromValue(self);
 			if (!_this->fRunCalled)
 				Window::rbe_run(0, NULL, self);
+			RBE_PRINT(("  _this->Thread(): %ld\n", _this->Thread()));
 			std::function<status_t (bigtime_t)> f = [&](bigtime_t tm) -> status_t {
 				return _this->LockWithTimeout(tm);
 			};
@@ -190,6 +166,7 @@ namespace rbe
 				_this->Show(); // TODO might block ?
 				_this->Unlock();
 			}
+			RBE_PRINT(("  _this->Thread(): %ld\n", _this->Thread()));
 			if (ThreadException() > 0)
 				rb_jump_tag(ThreadException());
 
@@ -210,6 +187,7 @@ namespace rbe
 			while (!_this->IsHidden())
 				_this->Hide();
 			Util::RemoveChildrenIfWindow(_this);
+			RBE_PRINT(("  _this->Thread(): %ld\n", _this->Thread()));
 			if (_this->fFlags & B_QUIT_ON_WINDOW_CLOSE)
 				be_app->PostMessage(B_QUIT_REQUESTED);
 			B::Looper::rbe_quit(0, NULL, self);

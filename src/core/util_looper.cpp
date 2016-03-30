@@ -39,6 +39,9 @@ namespace rbe {
 
 		bool DispatchMessageCommon(BLooper *looper, BMessage *message, BHandler *handler)
 		{
+			RBE_TRACE("Util::DispatchMessageCommon");
+			RBE_PRINT(("  looper: %p, message: %p, handler: %p\n", looper, message, handler));
+
 			bool under_control = true;
 
 			if (ThreadException())
@@ -73,7 +76,10 @@ namespace rbe {
 		static VALUE
 		looper_thread_func0(void *data)
 		{
+			RBE_TRACE("looper_thread_func0");
+			RBE_PRINT(("  thread = %ld\n", find_thread(NULL)));
 			BLooper *looper = static_cast<BLooper *>(data);
+			looper->fThread = find_thread(NULL);
 
 			rename_thread(find_thread(NULL), looper->Name());
 
@@ -129,7 +135,13 @@ namespace rbe {
 			// assume rb_thread_create never fail!
 			_this->fRunCalled = true;
 			VALUE thval = rb_thread_create((VALUE (*)(ANYARGS))looper_thread_func0, (void *)_this);
-	
+			std::function<void ()> f = [&]() {
+				while (_this->fThread < 0)
+					snooze(10000);
+			};
+			CallWithoutGVL<std::function<void ()>, void> g(f);
+			g();
+
 			rb_iv_set(thval, "__rbe_looper", self); // life line
 			rb_iv_set(self, "__rbe_thread", thval); // to support Thread()
 

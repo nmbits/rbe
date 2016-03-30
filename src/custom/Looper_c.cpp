@@ -56,31 +56,9 @@ namespace rbe
 		{
 			RBE_TRACE(("Looper::DispatchMessageST"));
 
-			bool terminate = false;
-
 			switch(message->what) {
-			case _QUIT_:
 			case RBE_MESSAGE_UBF:
-				terminate = true;
-				return;
-
-			case B_QUIT_REQUESTED:
-				if (handler == looper) {
-					// from HAIKU's BLooper#_QuitRequested()
-					terminate = looper->QuitRequested();
-					if (terminate) {
-						looper->Quit();
-						break;
-					}
-					bool shutdown;
-					if (message->IsSourceWaiting()
-						|| (message->FindBool("_shutdown_", &shutdown) == B_OK && shutdown)) {
-						BMessage replyMessage(B_REPLY);
-						replyMessage.AddBool("result", terminate);
-						replyMessage.AddInt32("thread", find_thread(NULL));
-						message->SendReply(&replyMessage);
-					}
-				}
+				looper->fTerminating = true;
 				break;
 
 			default:
@@ -88,7 +66,7 @@ namespace rbe
 					looper->BLooper::DispatchMessage(message, handler);
 			}
 
-			if (terminate || ThreadException())
+			if (ThreadException())
 				looper->fTerminating = true;
 		}
 
@@ -130,6 +108,9 @@ namespace rbe
 
 			if (!_this->fRunCalled)
 				return Qnil;
+
+			RBE_PRINT(("  _this->Thread(): %ld\n", _this->Thread()));
+			RBE_PRINT(("  caller:          %ld\n", tid));
 
 			if (_this->Thread() == tid)
 				rb_raise(eQuitLooper, "Looper::rbe_quit");

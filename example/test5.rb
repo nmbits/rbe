@@ -26,10 +26,10 @@ class MyApp < B::Application
     message = B::Message.new 0xf0f0
     button = B::Button.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "test", "test", message
 
-	def button.message_received(*a)
-	  p :message_received
-	  super
-	end
+    def button.message_received(*a)
+      p :message_received
+      super
+    end
 
     @window.add_child button
     @window.show
