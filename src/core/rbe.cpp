@@ -19,7 +19,7 @@ namespace rbe
 	int32 g_tls_thread_exception = 0;
 
 	VALUE
-	rb_s_be_app_get(VALUE clazz)
+	rbe_s_be_app_get(VALUE clazz)
 	{
 		RBE_TRACE_METHOD_CALL("rbe::rb_s_be_app_get", 0, NULL, clazz);
 		if (!be_app)
@@ -29,7 +29,7 @@ namespace rbe
 	}
 
 	VALUE
-	rb_s_debug_set(VALUE clazz, VALUE v)
+	rbe_s_debug_set(VALUE clazz, VALUE v)
 	{
 		if (RTEST(v)) {
 			SET_DEBUG_ENABLED(true);
@@ -44,7 +44,7 @@ namespace rbe
 	global_mark(void *ptr)
 	{
 		RBE_TRACE("rbe::global_mark");
-		VALUE app = rb_s_be_app_get(gModule);
+		VALUE app = rbe_s_be_app_get(gModule);
 		if (!NIL_P(app))
 			rb_gc_mark(app);
 	}
@@ -62,9 +62,9 @@ namespace rbe
 		RBE_TRACE("rbe::init_rbe");
 		gModule = rb_define_module("B");
 		rb_define_singleton_method(gModule, "app",
-								   RUBY_METHOD_FUNC(rb_s_be_app_get), 0);
+								   RUBY_METHOD_FUNC(rbe_s_be_app_get), 0);
 		rb_define_singleton_method(gModule, "DEBUG=",
-									RUBY_METHOD_FUNC(rb_s_debug_set), 1);
+									RUBY_METHOD_FUNC(rbe_s_debug_set), 1);
 		gMarker = Data_Wrap_Struct(rb_cData, global_mark, global_free, 0);
 		rb_global_variable(&gMarker);
 		eQuitLooper = rb_define_class_under(gModule, "QuitLooper", rb_eException);
