@@ -6,15 +6,21 @@
 			return TypedData_Wrap_Struct(clazz, &sDataType, 0);
 		}
 
+% if c.custom_mark?
+		/****** (custom)
+% end
 		void <%= class_binding_name c.name %>::rbe__gc_mark(void *ptr)
 		{
 		    RBE_PRINT(("<%= class_binding_name c.name %>::rb__gc_mark: %p\n", ptr));
 		    ObjectRegistory::Instance()->Mark(ptr);
 		}
+% if c.custom_mark?
+		******/
+% end
 
-%   if c.custom_free?
+% if c.custom_free?
 		/****** (custom)
-%   end
+% end
 		void <%= class_binding_name c.name %>::rbe__gc_free(void *ptr)
 		{
 		    RBE_PRINT(("<%= c.name %>::rb__gc_free: %p\n", ptr));
@@ -24,9 +30,9 @@
 				static_cast<PointerOf<<%= c.name %>>::Class *>(ptr);
 			delete obj;
 		}
-%   if c.custom_free?
+% if c.custom_free?
 		******/
-%   end
+% end
 
 		size_t <%= class_binding_name c.name %>::rbe__gc_size(const void *)
 		{

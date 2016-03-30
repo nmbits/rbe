@@ -36,6 +36,8 @@
 #include <utility>
 #include <string.h>
 
+#define RBE_IV_MOD_INVOKER "__rbe_iv_mod_invoker"
+
 namespace rbe
 {
 	template<typename _T> struct Convert;
@@ -628,16 +630,13 @@ namespace rbe
 				answer = dynamic_cast<BInvoker *>(archivable);
 			}
 			if (answer == NULL && rb_obj_is_kind_of(v, B::Invoker::Class())) {
-				VALUE modproxy = rb_iv_get(v, "__rbe_modproxy_Invoker");
+				VALUE modproxy = rb_iv_get(v, RBE_IV_MOD_INVOKER);
 				if (NIL_P(modproxy)) {
 					answer = new BInvoker;
 					modproxy = B::Invoker::Wrap(answer);
-					rb_iv_set(v, "__rbe_modproxy_Invoker", modproxy);
-					rb_iv_set(modproxy, "__rbe_modproxy_Invoker_reverse", v);
+					rb_iv_set(v, RBE_IV_MOD_INVOKER, modproxy);
 				} else {
-					PointerOf<BInvoker>::Class *ptr =
-						static_cast<PointerOf<BInvoker>::Class *>(DATA_PTR(modproxy));
-					answer = static_cast<BInvoker *>(ptr);
+					answer = static_cast<BInvoker *>(DATA_PTR(modproxy));
 				}
 			}
 			return answer;

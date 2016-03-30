@@ -126,8 +126,10 @@ namespace rbe
 		while (list_itr != owner_itr->second.tickets.end()) {
 			gc::Ownership0 *ownership = *list_itr;
 			VALUE value = ownership->Value();
-			if (DATA_PTR(value) == object)
+			if (DATA_PTR(value) == object) {
+				delete ownership;
 				list_itr = owner_itr->second.tickets.erase(list_itr);
+			}
 			else
 				list_itr ++;
 		}

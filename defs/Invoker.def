@@ -1,12 +1,12 @@
 define_class "BInvoker" do
   kit "app"
   header_file "app/Invoker.h"
-  options :module, :custom_free
+  options :module, :custom_free, :custom_mark
   function "BInvoker" do
     options :ctor, :public
     interface [], nil
-    interface ["BMessage *message", "const BHandler *handler", "const BLooper *looper = NULL"], nil
-    interface ["BMessage *message", "BMessenger target"], nil
+    interface ["%own BMessage *message", "const BHandler *handler", "%nillable const BLooper *looper = NULL"], nil
+    interface ["%own BMessage *message", "BMessenger target"], nil
   end
   function "SetMessage" do
     options :public, :custom
@@ -21,8 +21,8 @@ define_class "BInvoker" do
     interface [], "uint32", :const
   end
   function "SetTarget" do
-    options :public, :custom
-    interface ["const BHandler *handler", "const BLooper *looper = NULL"], "status_t", :virtual
+    options :public
+    interface ["const BHandler *handler", "%nillable const BLooper *looper = NULL"], "status_t", :virtual
     interface ["BMessenger messenger"], "status_t", :virtual
   end
   function "IsTargetLocal" do
@@ -38,7 +38,7 @@ define_class "BInvoker" do
     interface [], "BMessenger", :const
   end
   function "SetHandlerForReply" do
-    options :public, :custom
+    options :public
     interface ["BHandler *handler"], "status_t", :virtual
   end
   function "HandlerForReply" do
@@ -47,7 +47,7 @@ define_class "BInvoker" do
   end
   function "Invoke" do
     options :public
-    interface ["BMessage *message = NULL"], "status_t", :virtual
+    interface ["%nillable BMessage *message = NULL"], "status_t", :virtual
   end
   function "InvokeNotify" do
     options :public

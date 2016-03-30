@@ -22,7 +22,7 @@ module RBe
         @options[key]
       end        
 
-      [:wrapper, :ancestors, :module, :custom_free].each do |sym|
+      [:wrapper, :ancestors, :module, :custom_free, :custom_mark].each do |sym|
         define_method(sym.to_s + "?") { option sym }
       end
 
