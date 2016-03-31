@@ -1,0 +1,104 @@
+define_class "BMenuItem" do
+  kit "interface"
+  header_file "interface/MenuItem.h"
+  super_class_name "BArchivable"
+  mixin_name "BInvoker"
+  function "BMenuItem" do
+    options :ctor, :public
+    interface ["const char *label", "%own BMessage *message", "char shortcut = 0", "uint32 modifiers = 0"], nil
+    interface ["BMenu *menu", "BMessage *message = NULL"], nil, :ignore
+    interface ["BMessage *data"], nil, :ignore
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "SetLabel" do
+    options :public
+    interface ["const char *name"], nil, :virtual
+  end
+  function "SetEnabled" do
+    options :public
+    interface ["bool enable"], nil, :virtual
+  end
+  function "SetMarked" do
+    options :public
+    interface ["bool mark"], nil, :virtual
+  end
+  function "SetTrigger" do
+    options :public
+    interface ["char trigger"], nil, :virtual
+  end
+  function "SetShortcut" do
+    options :public
+    interface ["char shortcut", "uint32 modifiers"], nil, :virtual
+  end
+  function "Label" do
+    options :public
+    interface [], "const char *", :const
+  end
+  function "IsEnabled" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsMarked" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "Trigger" do
+    options :public
+    interface [], "char", :const
+  end
+  function "Shortcut" do
+    options :public, :ignore
+    interface ["uint32 *_modifiers = NULL"], "char", :const
+  end
+  function "Submenu" do
+    options :public, :ignore
+    interface [], "BMenu *", :const
+  end
+  function "Menu" do
+    options :public, :ignore
+    interface [], "BMenu *", :const
+  end
+  function "Frame" do
+    options :public
+    interface [], "BRect", :const
+  end
+  function "GetContentSize" do
+    options :protected
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "TruncateLabel" do
+    options :protected, :ignore
+    interface ["float maxWidth", "char *newLabel"], nil, :virtual
+  end
+  function "DrawContent" do
+    options :protected
+    interface [], nil, :virtual
+  end
+  function "Draw" do
+    options :protected
+    interface [], nil, :virtual
+  end
+  function "Highlight" do
+    options :protected
+    interface ["bool highlight"], nil, :virtual
+  end
+  function "IsSelected" do
+    options :protected
+    interface [], "bool", :const
+  end
+  function "ContentLocation" do
+    options :protected
+    interface [], "BPoint", :const
+  end
+  function "Invoke" do
+    options :protected
+    interface ["%nillable BMessage *message = NULL"], "status_t", :virtual
+  end
+end
