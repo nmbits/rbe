@@ -33,17 +33,6 @@ namespace rbe
 		}
 	}
 
-	static VALUE get_invoker_value(VALUE obj)
-	{
-		if (TYPE(obj) == T_DATA && rb_obj_is_kind_of(obj, B::Archivable::Class())) {
-			BArchivable *archivable = static_cast<BArchivable *>(DATA_PTR(obj));
-			BInvoker *invoker = dynamic_cast<BInvoker *>(archivable);
-			if (invoker)
-				return obj;
-		}
-		return rb_iv_get(obj, RBE_IV_MOD_INVOKER);
-	}
-
 	namespace B
 	{
 		void Invoker::rbe__gc_free(void *ptr)
@@ -83,12 +72,12 @@ namespace rbe
 		{
 			RBE_TRACE_METHOD_CALL("Invoker::rbe_set_message", argc, argv, self);
 			VALUE vret = Qnil;
-		
+
 			if (argc != 1)
 				rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)", argc);
 
-			VALUE vinvoker = get_invoker_value(self);
-			BInvoker *invoker = Convert<BInvoker *>::FromValue(vinvoker);
+			BInvoker *invoker = Convert<BInvoker *>::FromValue(self);
+			VALUE vinvoker = Convert<BInvoker *>::ToValue(invoker);
 
 			VALUE vmessage = *argv;
 			if (!NIL_P(vmessage) && !Convert<BMessage *>::IsConvertable(vmessage))

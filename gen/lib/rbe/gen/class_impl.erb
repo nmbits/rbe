@@ -42,7 +42,11 @@ namespace rbe {
 			PointerOf<<%= c.name %>>::Class *ptr = static_cast<PointerOf<<%= c.name %>>::Class *>(obj);
 			VALUE result = ObjectRegistory::Instance()->Get(ptr);
 			if (result == Qnil) {
+% if c.module?
+				result = TypedData_Wrap_Struct(rb_cData, &sDataType, ptr);
+% else
 				result = TypedData_Wrap_Struct(sClass, &sDataType, ptr);
+% end
 				ObjectRegistory::Instance()->Add(result);
 			}
 			return result;
