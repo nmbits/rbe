@@ -607,20 +607,17 @@ namespace rbe
 		typedef WrapperOf<BInvoker>::Class wrapper_t;
 		typedef PointerOf<BInvoker>::Class pointer_t;
 
-//		static VALUE ToValue(BInvoker *invoker)
-//		{
-//			if (!invoker)
-//				return Qnil;
-//
-//			BArchivable *archivable = dynamic_cast<BArchivable *>(invoker);
-//			if (archivable) {
-//				PointerOf<BArchivable>::Class *ptr =
-//					static_cast<PointerOf<BArchivable>::Class *>(archivable);
-//				return ObjectRegistory::Instance()->Get(static_cast<void *>(ptr));
-//			}
-//			pointer_t *ptr = static_cast<pointer_t *>(invoker);
-//			return ObjectRegistory::Instance()->Get(static_cast<void *>(ptr));
-//		}
+		static VALUE ToValue(BInvoker *invoker)
+		{
+			if (!invoker)
+				return Qnil;
+
+			BArchivable *archivable = dynamic_cast<BArchivable *>(invoker);
+			if (archivable)
+				return ObjectRegistory::Instance()->Get(static_cast<void *>(archivable));
+			pointer_t *ptr = static_cast<pointer_t *>(invoker);
+			return ObjectRegistory::Instance()->Get(static_cast<void *>(ptr));
+		}
 
 		static BInvoker *FromValue(VALUE v)
 		{
