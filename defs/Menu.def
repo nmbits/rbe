@@ -4,7 +4,7 @@ define_class "BMenu" do
   super_class_name "BView"
   options :wrapper
   function "BMenu" do
-    options :ctor, :public
+    options :ctor, :public, :unsupported
     interface ["const char *name", "menu_layout layout = B_ITEMS_IN_COLUMN"], nil
     interface ["const char *name", "float width", "float height"], nil
     interface ["BMessage *archive"], nil
@@ -233,12 +233,12 @@ define_class "BMenu" do
     interface [], "menu_layout", :const
   end
   function "Show" do
-    options :protected
+    options :protected, :unsupported
     interface [], nil, :virtual
     interface ["bool selectFirstItem"], nil
   end
   function "Hide" do
-    options :protected
+    options :protected, :unsupported
     interface [], nil
   end
   function "Track" do

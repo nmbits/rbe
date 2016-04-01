@@ -9,6 +9,11 @@ module RBe
       attr_reader :name, :interfaces, :options
       attr_accessor :index, :clazz, :ret_default
 
+      OPTIONS = [:hook, :custom, :custom_hook, :ignore,
+                 :assert_locked, :check_locked, :check_owner_locked, :prelock,
+                 :ctor, :const, :virtual, :static, :public,
+                 :unsupported]
+
       def initialize(name)
         @clazz = nil
         @name = name
@@ -22,9 +27,7 @@ module RBe
         @options[name] = value
       end
 
-      [:hook, :custom, :custom_hook, :ignore,
-       :assert_locked, :check_locked, :check_owner_locked, :prelock,
-       :ctor, :const, :virtual, :static, :public].each do |sym|
+      OPTIONS.each do |sym|
         define_method(sym.to_s + "?") do
           @options[sym]
         end

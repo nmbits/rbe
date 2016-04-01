@@ -1,0 +1,10 @@
+% c = target
+% fn = c.ctor
+% ctors = fn.interfaces
+		// initialize emthod
+
+		VALUE <%= class_binding_name c.name %>::rbe__initialize(int argc, VALUE *argv, VALUE self)
+		{
+			rb_raise(rb_eNotImpError, "To instatiate B::<%= class_binding_name c.name %> is prohivited.");
+			return self;
+		}

@@ -57,13 +57,21 @@ namespace rbe {
 
 % c.find_functions(:ctor => false).each do |fn|
 %   next if fn.ignore? || fn.custom?
+%   if fn.unsupported?
+<%= template :method_unsupported, c, fn %>
+%   else
 <%= template :method_impl, c, fn %>
+%   end
 % end
 
 <%= template :variables_impl, c %>
 
 % unless c.ctor.custom? || c.module?
+%   if c.ctor.unsupported?
+<%= template :ruby_init_unsupported, c %>
+%   else
 <%= template :ruby_init_impl, c %>
+%   end
 
 % end
 <%= template :ruby_intf_impl, c %>
