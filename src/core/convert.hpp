@@ -18,6 +18,7 @@
 #include <interface/Button.h>
 #include <interface/TextView.h>
 #include <interface/Font.h>
+#include <interface/Menu.h>
 
 #undef private
 #undef protected
@@ -475,6 +476,9 @@ namespace rbe
 
 	// interface/Button.h
 	RBE_COMPATIBLE_CONVERT(BButton::BBehavior, unsigned long);
+
+	// interface/Menu.h
+	RBE_COMPATIBLE_CONVERT(menu_layout, unsigned long);
 
 	// app/Cursor.h
 	RBE_COMPATIBLE_CONVERT(BCursorID, unsigned long);

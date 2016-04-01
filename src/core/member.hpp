@@ -8,6 +8,8 @@
 #include <app/Invoker.h>
 #include <interface/View.h>
 #include <interface/Window.h>
+#include <interface/Menu.h>
+#include <interface/MenuItem.h>
 #undef private
 #undef protected
 
@@ -38,6 +40,11 @@ namespace rbe
 		static inline bool IsMemberOf(BView *c, BView *p)
 		{
 			return (c->Parent() == p ? true : false);
+		}
+
+		static inline bool IsMemberOf(BMenuItem *c, BMenu *p)
+		{
+			return (c->Menu() == p);
 		}
 	}
 }

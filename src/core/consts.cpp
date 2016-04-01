@@ -13,6 +13,7 @@
 
 #include <interface/Window.h>
 #include <interface/View.h>
+#include <interface/Menu.h>
 
 #undef private
 #undef protected
@@ -260,6 +261,11 @@ namespace rbe {
 		RBE_CONST_ULONG(FOLLOW_BOTTOM);
 		RBE_CONST_ULONG(FOLLOW_TOP_BOTTOM);
 		RBE_CONST_ULONG(FOLLOW_V_CENTER);
+
+		// interface/Menu.h
+		RBE_CONST_ULONG(ITEMS_IN_ROW);
+		RBE_CONST_ULONG(ITEMS_IN_COLUMN);
+		RBE_CONST_ULONG(ITEMS_IN_MATRIX);
 
 		// Button
 		// rb_define_const(B::Button::Class(), "BUTTON_BEHAVIOR", INT2FIX(BButton::B_BUTTON_BEHAVIOR));

@@ -1,0 +1,264 @@
+define_class "BMenu" do
+  kit "interface"
+  header_file "interface/Menu.h"
+  super_class_name "BView"
+  options :wrapper
+  function "BMenu" do
+    options :ctor, :public
+    interface ["const char *name", "menu_layout layout = B_ITEMS_IN_COLUMN"], nil
+    interface ["const char *name", "float width", "float height"], nil
+    interface ["BMessage *archive"], nil
+    interface ["BRect frame", "const char *name", "uint32 resizeMask", "uint32 flags", "menu_layout layout", "bool resizeToFit"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "AttachedToWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllAttached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllDetached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "Draw" do
+    options :public, :hook
+    interface ["BRect updateRect"], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "KeyDown" do
+    options :public, :hook
+    interface ["const char *bytes", "int32 numBytes"], nil, :virtual
+  end
+  function "MinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "MaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "PreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "GetPreferredSize" do
+    options :public, :hook
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "ResizeToPreferred" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "DoLayout" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "FrameMoved" do
+    options :public, :hook
+    interface ["BPoint newPosition"], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "InvalidateLayout" do
+    options :public
+    interface [], nil
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool focus = true"], nil, :virtual
+  end
+  function "AddItem" do
+    options :public
+    interface ["%own BMenuItem *item"], "bool"
+    interface ["%own BMenuItem *item", "int32 index"], "bool"
+    interface ["%own BMenuItem *item", "BRect frame"], "bool"
+    interface ["%own BMenu *menu"], "bool", :ignore
+    interface ["%own BMenu *menu", "int32 index"], "bool", :ignore
+    interface ["%own BMenu *menu", "BRect frame"], "bool", :ignore
+  end
+  function "AddList" do
+    options :public, :ignore
+    interface ["BList *list", "int32 index"], "bool"
+  end
+  function "AddSeparatorItem" do
+    options :public, :ignore
+    interface [], "bool"
+  end
+  function "RemoveItem" do
+    options :public
+    interface ["%release BMenuItem *item"], "bool"
+    interface ["int32 index"], "BMenuItem *", :ignore
+    interface ["%release BMenu *menu"], "bool"
+  end
+  function "RemoveItems" do
+    options :public, :ignore
+    interface ["int32 index", "int32 count", "bool deleteItems = false"], "bool"
+  end
+  function "ItemAt" do
+    options :public
+    interface ["int32 index"], "BMenuItem *", :const
+  end
+  function "SubmenuAt" do
+    options :public
+    interface ["int32 index"], "BMenu *", :const
+  end
+  function "CountItems" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "IndexOf" do
+    options :public
+    interface ["BMenuItem *item"], "int32", :const
+    interface ["BMenu *menu"], "int32", :const
+  end
+  function "FindItem" do
+    options :public
+    interface ["uint32 command"], "BMenuItem *", :const
+    interface ["const char *name"], "BMenuItem *", :const
+  end
+  function "SetTargetForItems" do
+    options :public
+    interface ["BHandler *target"], "status_t", :virtual
+    interface ["BMessenger messenger"], "status_t", :virtual
+  end
+  function "SetEnabled" do
+    options :public
+    interface ["bool enable"], nil, :virtual
+  end
+  function "SetRadioMode" do
+    options :public
+    interface ["bool on"], nil, :virtual
+  end
+  function "SetTriggersEnabled" do
+    options :public
+    interface ["bool enable"], nil, :virtual
+  end
+  function "SetMaxContentWidth" do
+    options :public
+    interface ["float maxWidth"], nil, :virtual
+  end
+  function "SetLabelFromMarked" do
+    options :public
+    interface ["bool on"], nil
+  end
+  function "IsLabelFromMarked" do
+    options :public
+    interface [], "bool"
+  end
+  function "IsEnabled" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsRadioMode" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "AreTriggersEnabled" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsRedrawAfterSticky" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "MaxContentWidth" do
+    options :public
+    interface [], "float", :const
+  end
+  function "FindMarked" do
+    options :public
+    interface [], "BMenuItem *"
+  end
+  function "FindMarkedIndex" do
+    options :public
+    interface [], "int32"
+  end
+  function "Supermenu" do
+    options :public
+    interface [], "BMenu *", :const
+  end
+  function "Superitem" do
+    options :public
+    interface [], "BMenuItem *", :const
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 form", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "LayoutInvalidated" do
+    options :protected
+    interface ["bool descendants"], nil, :virtual
+  end
+  function "ScreenLocation" do
+    options :protected
+    interface [], "BPoint", :virtual
+  end
+  function "SetItemMargins" do
+    options :protected
+    interface ["float left", "float top", "float right", "float bottom"], nil
+  end
+  function "GetItemMargins" do
+    options :protected
+    interface ["%out float *_left", "%out float *_top", "%out float *_right", "%out float *_bottom"], nil, :const
+  end
+  function "Layout" do
+    options :protected
+    interface [], "menu_layout", :const
+  end
+  function "Show" do
+    options :protected
+    interface [], nil, :virtual
+    interface ["bool selectFirstItem"], nil
+  end
+  function "Hide" do
+    options :protected
+    interface [], nil
+  end
+  function "Track" do
+    options :protected, :ignore
+    interface ["bool startOpened = false", "BRect *specialRect = NULL"], "BMenuItem *"
+  end
+  function "AddDynamicItem" do
+    options :public, :ignore
+    interface ["add_state state"], "bool", :virtual
+  end
+  function "DrawBackground" do
+    options :public
+    interface ["BRect updateRect"], nil, :virtual
+  end
+  function "SetTrackingHook" do
+    options :public, :ignore
+    interface ["menu_tracking_hook hook", "void *state"], nil
+  end
+  function "_DrawItems" do
+    options :protected, :ignore
+    interface ["BRect updateRect"], nil
+  end
+end
