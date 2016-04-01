@@ -64,13 +64,27 @@ end
     DEFS.each do |name|
       filename = File.join(OUT_DIR, File.basename(name)).sub(/\.def$/, ext)
       file filename => [name, OUT_DIR] + LIBS do |u|
-        puts "generating #{filename}"
+        print "generating #{filename}"
         class_name = 'B' + File.basename(u.name).sub(/\..*$/, '')
         c = CLASS_LIST[class_name]
         raise "class #{class_name} not found" unless c
-        File.open u.name, "w" do |f|
+        tmpname = u.name + ".tmp"
+        File.open tmpname, "w" do |f|
           f.write RBe::Gen::Generator.generate(template, c)
         end
+        if !File.exist? u.name
+          File.rename tmpname, u.name
+        else
+          diffq = `diff -q #{u.name} #{tmpname}`
+          if diffq.empty?
+            print " ... unchanged"
+            File.unlink tmpname
+          else
+            File.unlink u.name
+            File.rename tmpname, u.name
+          end
+        end
+        puts
       end
       task task_name => filename
     end
