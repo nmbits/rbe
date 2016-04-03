@@ -30,6 +30,10 @@ namespace rbe
 				VALUE vwindow = Convert<BWindow *>::ToValue(_this->fWindow);
 				rb_gc_mark(vwindow);
 			}
+			if (_this->fSuper != NULL) {
+				VALUE vmenu = Convert<BMenu *>::ToValue(_this->fSuper);
+				rb_gc_mark(vmenu);
+			}
 			ObjectRegistory::Instance()->Mark(ptr);
 		}
 
