@@ -18,7 +18,11 @@ class MyApp < B::Application
     @window = MyWindow.new(rect, "Test", B::DOCUMENT_WINDOW, 0)
     menu = B::Menu.new "test"
     10.times do |i|
-      item = B::MenuItem.new("item #{i}", B::Message.new(i+10))
+      if i % 3 == 2
+        item = B::SeparatorItem.new
+      else
+        item = B::MenuItem.new("item #{i}", B::Message.new(i+10))
+      end
       menu.add_item item
       item.set_marked true if i % 2 == 0
     end
@@ -49,7 +53,7 @@ class MyApp < B::Application
   end
 
   def pulse
-    GC.start
+    # GC.start
   end
 end
 

@@ -1,0 +1,30 @@
+define_class "BSeparatorItem" do
+  kit "interface"
+  header_file "interface/SeparatorItem.h"
+  super_class_name "BMenuItem"
+  function "BSeparatorItem" do
+    options :ctor, :public
+    interface [], nil
+    interface ["BMessage *data"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *data"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *data", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "SetEnabled" do
+    options :public
+    interface ["bool enable"], nil, :virtual
+  end
+  function "GetContentSize" do
+    options :protected
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "Draw" do
+    options :protected
+    interface [], nil, :virtual
+  end
+end
