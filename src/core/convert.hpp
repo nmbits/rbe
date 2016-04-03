@@ -19,6 +19,7 @@
 #include <interface/TextView.h>
 #include <interface/Font.h>
 #include <interface/Menu.h>
+#include <interface/MenuBar.h>
 
 #undef private
 #undef protected
@@ -479,6 +480,9 @@ namespace rbe
 
 	// interface/Menu.h
 	RBE_COMPATIBLE_CONVERT(menu_layout, unsigned long);
+
+	// interface/MenuBar.h
+	RBE_COMPATIBLE_CONVERT(menu_bar_border, unsigned long);
 
 	// app/Cursor.h
 	RBE_COMPATIBLE_CONVERT(BCursorID, unsigned long);

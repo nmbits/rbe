@@ -1,0 +1,124 @@
+define_class "BMenuBar" do
+  kit "interface"
+  header_file "interface/MenuBar.h"
+  super_class_name "BMenu"
+  options :wrapper
+  function "BMenuBar" do
+    options :ctor, :public
+    interface ["BRect frame", "const char *name", "uint32 resizingMode = B_FOLLOW_LEFT_RIGHT | B_FOLLOW_TOP", "menu_layout layout = B_ITEMS_IN_ROW", "bool resizeToFit = true"], nil
+    interface ["const char *name", "menu_layout layout = B_ITEMS_IN_ROW", "uint32 flags = B_WILL_DRAW | B_FRAME_EVENTS"], nil
+    interface ["BMessage *archive"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "AttachedToWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllAttached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllDetached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "WindowActivated" do
+    options :public, :hook
+    interface ["bool state"], nil, :virtual
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool state = true"], nil, :virtual
+  end
+  function "ResizeToPreferred" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "GetPreferredSize" do
+    options :public, :hook
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "MinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "MaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "PreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "FrameMoved" do
+    options :public, :hook
+    interface ["BPoint newPosition"], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "Show" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "Hide" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "Draw" do
+    options :public, :hook
+    interface ["BRect updateRect"], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "MouseDown" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseUp" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 form", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "SetBorder" do
+    options :public
+    interface ["menu_bar_border border"], nil, :virtual
+  end
+  function "Border" do
+    options :public
+    interface [], "menu_bar_border", :const
+  end
+  function "SetBorders" do
+    options :public
+    interface ["uint32 borders"], nil
+  end
+  function "Borders" do
+    options :public
+    interface [], "uint32", :const
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code code", "void *data"], "status_t", :virtual
+  end
+end
