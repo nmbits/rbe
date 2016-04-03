@@ -46,6 +46,11 @@ namespace rbe
 		{
 			return (c->Menu() == p);
 		}
+
+		static inline bool IsMemberOf(BMenu *c, BMenuItem *p)
+		{
+			return p->fSubmenu == c;
+		}
 	}
 }
 

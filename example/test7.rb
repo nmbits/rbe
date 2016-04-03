@@ -22,6 +22,13 @@ class MyApp < B::Application
       menu.add_item item
       item.set_marked true if i % 2 == 0
     end
+	submenu = B::Menu.new "submenu"
+	10.times do |i|
+      item = B::MenuItem.new("item #{i}", B::Message.new(i+10))
+      submenu.add_item item
+	end
+	menu.add_item submenu
+
     @window.add_child menu
     @window.show
   end

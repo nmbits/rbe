@@ -136,6 +136,16 @@ namespace rbe
 		obj_itr->second.owner = Qnil;
 	}
 
+	VALUE
+	ObjectRegistory::Owner(VALUE object)
+	{
+		void *ptr = DATA_PTR(object);
+		registory_t::iterator obj_itr = fRegistory.find(ptr);
+		if (obj_itr == fRegistory.end())
+			return Qnil;
+		return obj_itr->second.owner;
+	}
+
 	void
 	ObjectRegistory::Mark(void *object)
 	{

@@ -87,13 +87,13 @@ define_class "BMenu" do
     interface ["bool focus = true"], nil, :virtual
   end
   function "AddItem" do
-    options :public
+    options :public, :custom
     interface ["%own BMenuItem *item"], "bool"
     interface ["%own BMenuItem *item", "int32 index"], "bool"
     interface ["%own BMenuItem *item", "BRect frame"], "bool"
-    interface ["%own BMenu *menu"], "bool", :ignore
-    interface ["%own BMenu *menu", "int32 index"], "bool", :ignore
-    interface ["%own BMenu *menu", "BRect frame"], "bool", :ignore
+    interface ["%own BMenu *menu"], "bool"
+    interface ["%own BMenu *menu", "int32 index"], "bool"
+    interface ["%own BMenu *menu", "BRect frame"], "bool"
   end
   function "AddList" do
     options :public, :ignore
@@ -104,7 +104,7 @@ define_class "BMenu" do
     interface [], "bool"
   end
   function "RemoveItem" do
-    options :public
+    options :public, :custom
     interface ["%release BMenuItem *item"], "bool"
     interface ["int32 index"], "BMenuItem *", :ignore
     interface ["%release BMenu *menu"], "bool"

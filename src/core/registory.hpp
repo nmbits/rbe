@@ -43,6 +43,7 @@ namespace rbe
 		VALUE Get(void *ptr);
 		void Own(VALUE vowner, gc::Ownership0 *ownership);
 		void Release(void *owner, void *target);
+		VALUE Owner(VALUE obj);
 		void Mark(void *object);
 	};
 }
