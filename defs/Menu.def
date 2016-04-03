@@ -100,7 +100,7 @@ define_class "BMenu" do
     interface ["BList *list", "int32 index"], "bool"
   end
   function "AddSeparatorItem" do
-    options :public, :ignore
+    options :public, :custom
     interface [], "bool"
   end
   function "RemoveItem" do

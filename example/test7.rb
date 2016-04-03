@@ -17,14 +17,19 @@ class MyApp < B::Application
     rect = B::Rect.new(20.0, 20.0, 300.0, 300.0)
     @window = MyWindow.new(rect, "Test", B::DOCUMENT_WINDOW, 0)
     menu = B::Menu.new "test"
-    10.times do |i|
-      if i % 3 == 2
+    20.times do |i|
+      if i % 5 == 4
+        menu.add_separator_item
+        item = nil
+      elsif i % 3 == 2
         item = B::SeparatorItem.new
       else
         item = B::MenuItem.new("item #{i}", B::Message.new(i+10))
       end
-      menu.add_item item
-      item.set_marked true if i % 2 == 0
+      unless item.nil?
+        menu.add_item item
+        item.set_marked true if i % 2 == 0
+      end
     end
 	submenu = B::Menu.new "submenu"
 	10.times do |i|

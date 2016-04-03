@@ -1,6 +1,7 @@
 
 #include "Menu.hpp"
 #include "MenuItem.hpp"
+#include "SeparatorItem.hpp"
 #include "deleting.hpp"
 #include "debug.hpp"
 #include "registory.hpp"
@@ -274,5 +275,17 @@ namespace rbe
 			return Qnil;
 		}
 
+		VALUE
+		Menu::rbe_add_separator_item(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("BMenu::rbe_add_separator_item", argc, argv, self);
+			if (0 == argc) {
+				VALUE vseparator_item = rb_class_new_instance(0, NULL, SeparatorItem::Class());
+				return rbe_add_item(1, &vseparator_item, self);
+			}
+
+			rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
+			return Qnil;
+		}
 	}
 }
