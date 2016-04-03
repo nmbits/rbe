@@ -8,7 +8,7 @@ define_class "BMenuItem" do
     options :ctor, :public, :custom
     interface ["const char *label", "%own BMessage *message", "char shortcut = 0", "uint32 modifiers = 0"], nil
     interface ["%own BMenu *menu", "%own %nillable BMessage *message = NULL"], nil
-    interface ["BMessage *data"], nil, :ignore
+    interface ["BMessage *data"], nil
   end
   function "Instantiate" do
     options :public, :static
@@ -55,15 +55,15 @@ define_class "BMenuItem" do
     interface [], "char", :const
   end
   function "Shortcut" do
-    options :public, :ignore
-    interface ["uint32 *_modifiers = NULL"], "char", :const
+    options :public
+    interface ["%out uint32 *_modifiers = NULL"], "char", :const
   end
   function "Submenu" do
-    options :public, :ignore
+    options :public
     interface [], "BMenu *", :const
   end
   function "Menu" do
-    options :public, :ignore
+    options :public
     interface [], "BMenu *", :const
   end
   function "Frame" do
