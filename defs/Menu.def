@@ -2,7 +2,7 @@ define_class "BMenu" do
   kit "interface"
   header_file "interface/Menu.h"
   super_class_name "BView"
-  options :wrapper, :custom_free
+  options :wrapper, :custom_free, :hide_hooks
   function "BMenu" do
     options :ctor, :public
     interface ["const char *name", "menu_layout layout = B_ITEMS_IN_COLUMN"], nil

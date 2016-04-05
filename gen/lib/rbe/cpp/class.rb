@@ -5,6 +5,9 @@ module RBe
       attr_accessor :name, :kit, :super_class_name, :class_list, :header_file, :mixin_name
       attr_reader :variables, :options
 
+      OPTIONS = [:wrapper, :ancestors, :module, :custom_free, :custom_mark,
+                 :hide_hooks]
+
       def initialize(name, super_class_name = nil, class_list = nil)
         @name = name
         @super_class_name = super_class_name
@@ -22,7 +25,7 @@ module RBe
         @options[key]
       end        
 
-      [:wrapper, :ancestors, :module, :custom_free, :custom_mark].each do |sym|
+      OPTIONS.each do |sym|
         define_method(sym.to_s + "?") { option sym }
       end
 

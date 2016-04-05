@@ -1,0 +1,16 @@
+% c = target
+		// hooks
+% (c.hooks + c.super_hooks).each do |fn|
+%   next if fn.ignore?
+%   f = fn.interfaces.first
+		<%= f.proto true, class_binding_name(c.name), true %>
+		{
+			RBE_TRACE("<%= f.proto %>");
+%   if f.ret?
+			return <%= c.name %>::<%= fn.name %>(<%= args_string(f.args) %>);
+%   else
+			<%= c.name %>::<%= fn.name %>(<%= args_string(f.args) %>);
+%   end
+		}
+
+% end

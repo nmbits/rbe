@@ -53,7 +53,11 @@ namespace rbe {
 		}
 
 % end
+% if c.hide_hooks?
+<%= template :hidden_hooks_impl, c %>
+% else
 <%= template :hooks_impl, c %>
+%end
 
 % c.find_functions(:ctor => false).each do |fn|
 %   next if fn.ignore? || fn.custom?
