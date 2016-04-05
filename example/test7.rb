@@ -2,13 +2,18 @@
 $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
-B.DEBUG = true
+B.DEBUG = false
 
 class MyWindow < B::Window
   def quit_requested
     p :quit_requested
     B.app.post_message(B::QUIT_REQUESTED)
     true
+  end
+
+  def message_received(message)
+    message.print_to_stream
+    super
   end
 end
 
