@@ -1,5 +1,6 @@
 
 #include "Menu.hpp"
+#include "MenuBar.hpp"
 #include "MenuItem.hpp"
 #include "SeparatorItem.hpp"
 #include "deleting.hpp"
@@ -33,6 +34,14 @@ namespace rbe
 			BMenu *menu = static_cast<BMenu *>(obj);
 			menu->RemoveItems(0, menu->CountItems(), false);
 			delete menu;
+		}
+
+		void MenuBar::rbe__gc_free(void *ptr)
+		{
+		    RBE_TRACE("BMenuBar::rb__gc_free");
+		    RBE_PRINT(("  ptr = %p\n", ptr));
+		    RBE_PRINT(("  calling BMenu::rbe__gc_free\n"));
+		    Menu::rbe__gc_free(ptr);
 		}
 
 		VALUE
