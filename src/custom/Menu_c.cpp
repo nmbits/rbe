@@ -30,9 +30,7 @@ namespace rbe
 			ObjectRegistory::Instance()->Delete(ptr);
 			PointerOf<BMenu>::Class *obj =
 				static_cast<PointerOf<BMenu>::Class *>(ptr);
-			BMenu *menu = dynamic_cast<BMenu *>(obj);
-			if (!menu)
-				debugger("Menu::rbe__gc_free cast failed.");
+			BMenu *menu = static_cast<BMenu *>(obj);
 			menu->RemoveItems(0, menu->CountItems(), false);
 			delete menu;
 		}
