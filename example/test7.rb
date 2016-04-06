@@ -4,6 +4,17 @@ require 'rbe'
 
 B.DEBUG = false
 
+class MyView < B::View
+  def mouse_down(where)
+    popup = B::PopUpMenu.new "popup"
+    5.times do |i|
+      popup.add_item(B::MenuItem.new("item #{i}", B::Message.new(i+30)))
+    end
+    item = popup.go convert_to_screen(where)
+    p item
+  end
+end
+
 class MyWindow < B::Window
   def quit_requested
     p :quit_requested
@@ -47,6 +58,8 @@ class MyApp < B::Application
 	menu.add_item submenu
     @window.add_child menu_bar
     menu_bar.show
+    view = MyView.new B::Rect.new(50.0, 50.0, 200.0, 200.0), "test", B::FOLLOW_ALL_SIDES, B::WILL_DRAW
+    @window.add_child view
     @window.show
   end
 

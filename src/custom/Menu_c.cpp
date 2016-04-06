@@ -1,6 +1,7 @@
 
 #include "Menu.hpp"
 #include "MenuBar.hpp"
+#include "PopUpMenu.hpp"
 #include "MenuItem.hpp"
 #include "SeparatorItem.hpp"
 #include "deleting.hpp"

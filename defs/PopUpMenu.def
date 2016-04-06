@@ -1,0 +1,112 @@
+define_class "BPopUpMenu" do
+  kit "interface"
+  header_file "interface/PopUpMenu.h"
+  super_class_name "BMenu"
+  options :wrapper, :hide_hooks, :custom_free
+  function "BPopUpMenu" do
+    options :ctor, :public
+    interface ["const char *name", "bool radioMode = true", "bool labelFromMarked = true", "menu_layout layout = B_ITEMS_IN_COLUMN"], nil
+    interface ["BMessage *data"], nil
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *archive", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Go" do
+    options :public, :custom
+    interface ["BPoint where", "bool autoInvoke = false", "bool keepOpen = false", "bool async = false"], "BMenuItem *"
+    interface ["BPoint where", "bool autoInvoke", "bool keepOpen", "BRect openRect", "bool async = false"], "BMenuItem *"
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "MouseDown" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseUp" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseMoved" do
+    options :public, :hook
+    interface ["BPoint where", "uint32 transit", "const BMessage *dragMessage"], nil, :virtual
+  end
+  function "AttachedToWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "FrameMoved" do
+    options :public, :hook
+    interface ["BPoint newPosition"], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 form", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code code", "void *_data"], "status_t", :virtual
+  end
+  function "ResizeToPreferred" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "GetPreferredSize" do
+    options :public, :hook
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool state = true"], nil, :virtual
+  end
+  function "AllAttached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllDetached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "SetAsyncAutoDestruct" do
+    options :public, :unsupported
+    interface ["bool on"], nil
+  end
+  function "AsyncAutoDestruct" do
+    options :public, :unsupported
+    interface [], "bool", :const
+  end
+  function "ScreenLocation" do
+    options :protected
+    interface [], "BPoint", :virtual
+  end
+  function "_ReservedPopUpMenu1" do
+    options :protected, :ignore
+    interface [], nil, :virtual
+  end
+  function "_ReservedPopUpMenu2" do
+    options :protected, :ignore
+    interface [], nil, :virtual
+  end
+  function "_ReservedPopUpMenu3" do
+    options :protected, :ignore
+    interface [], nil, :virtual
+  end
+end
