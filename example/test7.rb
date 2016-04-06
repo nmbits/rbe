@@ -3,15 +3,17 @@ $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
 B.DEBUG = false
+DEBUG = true
 
 class MyView < B::View
   def mouse_down(where)
     popup = B::PopUpMenu.new "popup"
     5.times do |i|
-      popup.add_item(B::MenuItem.new("item #{i}", B::Message.new(i+30)))
+      item = B::MenuItem.new "item #{i}", B::Message.new(i+30)
+      item.set_target self
+      popup.add_item item
     end
-    item = popup.go convert_to_screen(where)
-    p item
+    item = popup.go convert_to_screen(where), true
   end
 end
 
@@ -23,6 +25,7 @@ class MyWindow < B::Window
   end
 
   def message_received(message)
+    p self.class
     message.print_to_stream
     super
   end
@@ -69,7 +72,7 @@ class MyApp < B::Application
   end
   
   def ready_to_run
-    set_pulse_rate 1000000
+    # set_pulse_rate 1000000
     set_name "This is Ruby"
     create_window
   end
