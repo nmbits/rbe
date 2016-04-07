@@ -6,7 +6,14 @@
 		<%= f.proto true, class_binding_name(c.name), true %>
 		{
 			RBE_TRACE("<%= f.proto %>");
-			<%= hookst_call f %>;
+			if (ruby_native_thread_p())
+				<%= hookst_call f %>;
+			else
+%   if f.ret?
+			return <%= c.name %>::<%= fn.name %>(<%= args_string(f.args) %>);
+%   else
+			<%= c.name %>::<%= fn.name %>(<%= args_string(f.args) %>);
+%   end
 		}
 
 % end
