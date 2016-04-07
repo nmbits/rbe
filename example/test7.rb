@@ -13,7 +13,9 @@ class MyView < B::View
       item.set_target self
       popup.add_item item
     end
-    item = popup.go convert_to_screen(where), true
+    rect = B::Rect.new(100, 100, 200, 200);
+    item = popup.go convert_to_screen(where), true, true, rect
+    p item
   end
 end
 
