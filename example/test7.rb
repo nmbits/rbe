@@ -16,6 +16,9 @@ class MyView < B::View
     rect = B::Rect.new(100, 100, 200, 200);
     item = popup.go convert_to_screen(where), true, true, rect
     p item
+    item = popup.go convert_to_screen(where), true, true, rect
+  rescue => e
+    p e
   end
 end
 

@@ -10,6 +10,8 @@
 
 #include <functional>
 
+#define RBE_POPUPMENU_GO_CALLED "__rbe_popupmenu_go_called"
+
 namespace rbe
 {
 	namespace B
@@ -26,6 +28,13 @@ namespace rbe
 		PopUpMenu::rbe_go(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE("VALUE PopUpMenu::go()");
+
+			VALUE called = rb_iv_get(self, RBE_POPUPMENU_GO_CALLED);
+			if (!NIL_P(called))
+				rb_raise(rb_eRuntimeError, "B::PopUpMenu#go can not be called twice");
+			rb_iv_set(self, RBE_POPUPMENU_GO_CALLED, Qtrue);
+
+
 			VALUE vWhere, vKeepOpen, vAutoInvoke, vClickToOpen;
 			rb_scan_args(argc, argv, "13", &vWhere, &vAutoInvoke, &vKeepOpen, &vClickToOpen);
 			int type_error_index = 0;
