@@ -12,6 +12,7 @@
 #include <app/Message.h>
 #include <app/Cursor.h>
 #include <app/Invoker.h>
+#include <interface/Alert.h>
 #include <interface/Window.h>
 #include <interface/InterfaceDefs.h>
 #include <interface/GraphicsDefs.h>
@@ -367,11 +368,15 @@ namespace rbe
 
 		static const char *FromValue(VALUE v)
 		{
+			if (NIL_P(v))
+				return NULL;
 			return StringValueCStr(v);
 		}
 
 		static bool IsConvertable(VALUE v)
 		{
+			if (NIL_P(v))
+				return true;
 			return ((TYPE(v) == T_STRING) || (rb_respond_to(v, rb_intern("to_str"))));
 		}
 	};
@@ -483,6 +488,10 @@ namespace rbe
 
 	// interface/MenuBar.h
 	RBE_COMPATIBLE_CONVERT(menu_bar_border, unsigned long);
+
+	// interface/Alert.h
+	RBE_COMPATIBLE_CONVERT(alert_type, unsigned long);
+	RBE_COMPATIBLE_CONVERT(button_spacing, unsigned long);
 
 	// app/Cursor.h
 	RBE_COMPATIBLE_CONVERT(BCursorID, unsigned long);

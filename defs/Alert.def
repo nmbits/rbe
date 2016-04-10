@@ -1,0 +1,110 @@
+define_class "BAlert" do
+  kit "interface"
+  header_file "interface/Alert.h"
+  super_class_name "BWindow"
+  options :wrapper, :hide_hooks
+  function "BAlert" do
+    options :ctor, :public
+    interface [], nil
+    interface ["const char *title", "const char *text", "const char *button1", "%nillable const char *button2 = NULL", "%nillable const char *button3 = NULL", "button_width width = B_WIDTH_AS_USUAL", "alert_type type = B_INFO_ALERT"], nil
+    interface ["const char *title", "const char *text", "const char *button1", "const char *button2", "const char *button3", "button_width width", "button_spacing spacing", "alert_type type = B_INFO_ALERT"], nil
+    interface ["BMessage *data"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *data"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *data", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Type" do
+    options :public
+    interface [], "alert_type", :const
+  end
+  function "SetType" do
+    options :public
+    interface ["alert_type type"], nil
+  end
+  function "SetIcon" do
+    options :public, :ignore
+    interface ["BBitmap *bitmap"], nil
+  end
+  function "SetText" do
+    options :public
+    interface ["const char *text"], nil
+  end
+  function "SetButtonSpacing" do
+    options :public
+    interface ["button_spacing spacing"], nil
+  end
+  function "SetButtonWidth" do
+    options :public
+    interface ["button_width width"], nil
+  end
+  function "SetShortcut" do
+    options :public
+    interface ["int32 buttonIndex", "char key"], nil
+  end
+  function "Shortcut" do
+    options :public
+    interface ["int32 buttonIndex"], "char", :const
+  end
+  function "Go" do
+    options :public
+    interface [], "int32"
+    interface ["BInvoker *invoker"], "status_t", :ignore
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "AddButton" do
+    options :public, :ignore
+    interface ["const char *label", "char key = 0"], nil
+  end
+  function "CountButtons" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "ButtonAt" do
+    options :public, :ignore
+    interface ["int32 index"], "BButton *", :const
+  end
+  function "TextView" do
+    options :public, :ignore
+    interface [], "BTextView *", :const
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 form", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *data"], "status_t", :virtual
+  end
+  function "DispatchMessage" do
+    options :public, :hook
+    interface ["BMessage *message", "BHandler *handler"], nil, :virtual
+  end
+  function "Quit" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "QuitRequested" do
+    options :public, :hook
+    interface [], "bool", :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AlertPosition" do
+    options :public, :static
+    interface ["float width", "float height"], "BPoint"
+  end
+end

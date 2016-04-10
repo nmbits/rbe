@@ -28,8 +28,14 @@
 %     end
 %     f.args.each_with_index do |a, j|
 %       if j >= f.arity_min
+%         if !a.nillable?
+				if (<%= j %> < argc && NIL_P(vargs[<%= j %>])) goto break_<%= i %>;
+%         end
 				if (<%= j %> < argc && !Convert<<%= a.type %>>::IsConvertable(vargs[<%= j %>])) goto break_<%= i %>;
 %       else
+%         if !a.nillable?
+				if (NIL_P(vargs[<%= j %>])) goto break_<%= i %>;
+%         end
 				if (!Convert<<%= a.type %>>::IsConvertable(vargs[<%= j %>])) goto break_<%= i %>;
 %       end
 %     end

@@ -11,6 +11,8 @@
 #include <SupportDefs.h>
 #include <support/Debug.h>
 
+#include <interface/InterfaceDefs.h>
+#include <interface/Alert.h>
 #include <interface/Window.h>
 #include <interface/View.h>
 #include <interface/Menu.h>
@@ -156,6 +158,19 @@ namespace rbe {
 		RBE_CONST_ULONG(NAME_SPECIFIER);
 		RBE_CONST_ULONG(ID_SPECIFIER);
 		RBE_CONST_ULONG(SPECIFIERS_END);
+
+		RBE_CONST_ULONG(EMPTY_ALERT);
+		RBE_CONST_ULONG(INFO_ALERT);
+		RBE_CONST_ULONG(IDEA_ALERT);
+		RBE_CONST_ULONG(WARNING_ALERT);
+		RBE_CONST_ULONG(STOP_ALERT);
+		RBE_CONST_ULONG(EVEN_SPACING);
+		RBE_CONST_ULONG(OFFSET_SPACING);
+
+		// <interface/InterfaceDefs.h>
+		RBE_CONST_ULONG(WIDTH_AS_USUAL);
+		RBE_CONST_ULONG(WIDTH_FROM_WIDEST);
+		RBE_CONST_ULONG(WIDTH_FROM_LABEL);
 
 		// <interface/Window.h>
 		RBE_CONST_ULONG(UNTYPED_WINDOW);
