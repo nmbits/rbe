@@ -27,6 +27,9 @@ class MyWindow < B::Window
       alert.go
     when 0x1011
       self.post_message B::QUIT_REQUESTED
+    when 0x1012
+      puts "GC.start"
+      GC.start
     end
   rescue => e
     p e
@@ -56,6 +59,7 @@ class MyApp < B::Application
       menu.add_item submenu
     end
     menu.add_separator_item
+    menu.add_item B::MenuItem.new("GC.start", B::Message.new(0x1012))
     menu.add_item B::MenuItem.new("Quit", B::Message.new(0x1011))
     menu_bar.add_item menu
     @window.add_child menu_bar

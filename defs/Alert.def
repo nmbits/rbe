@@ -51,7 +51,7 @@ define_class "BAlert" do
     interface ["int32 buttonIndex"], "char", :const
   end
   function "Go" do
-    options :public
+    options :public, :custom
     interface [], "int32"
     interface ["BInvoker *invoker"], "status_t", :ignore
   end
