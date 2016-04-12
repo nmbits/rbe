@@ -21,6 +21,7 @@
 #include <interface/Font.h>
 #include <interface/Menu.h>
 #include <interface/MenuBar.h>
+#include <interface/TabView.h>
 
 #undef private
 #undef protected
@@ -492,6 +493,9 @@ namespace rbe
 	// interface/Alert.h
 	RBE_COMPATIBLE_CONVERT(alert_type, unsigned long);
 	RBE_COMPATIBLE_CONVERT(button_spacing, unsigned long);
+
+	// interface/TabView.h
+	RBE_COMPATIBLE_CONVERT(tab_position, unsigned long);
 
 	// app/Cursor.h
 	RBE_COMPATIBLE_CONVERT(BCursorID, unsigned long);

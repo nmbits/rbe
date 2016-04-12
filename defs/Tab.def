@@ -1,0 +1,79 @@
+define_class "BTab" do
+  kit "interface"
+  header_file "interface/TabView.h"
+  super_class_name "BArchivable"
+  options :wrapper
+  function "BTab" do
+    options :ctor, :public
+    interface ["%nillable %own BView *contentsView = NULL"], nil
+    interface ["BMessage *archive"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *data", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["uint32 d", "void *arg"], "status_t", :virtual
+  end
+  function "Label" do
+    options :public
+    interface [], "const char *", :const
+  end
+  function "SetLabel" do
+    options :public
+    interface ["const char *label"], nil, :virtual
+  end
+  function "IsSelected" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "Select" do
+    options :public
+    interface ["BView *owner"], nil, :virtual
+  end
+  function "Deselect" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "SetEnabled" do
+    options :public
+    interface ["bool enable"], nil, :virtual
+  end
+  function "IsEnabled" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool focus = true"], nil
+  end
+  function "IsFocus" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "SetView" do
+    options :public, :custom
+    interface ["BView *view"], nil, :virtual
+  end
+  function "View" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "DrawFocusMark" do
+    options :public, :hook
+    interface ["BView *owner", "BRect frame"], nil, :virtual
+  end
+  function "DrawLabel" do
+    options :public, :hook
+    interface ["BView *owner", "BRect frame"], nil, :virtual
+  end
+  function "DrawTab" do
+    options :public, :hook
+    interface ["BView *owner", "BRect frame", "tab_position position", "bool full = true"], nil, :virtual
+  end
+end
