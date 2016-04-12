@@ -17,8 +17,10 @@ namespace rbe
 		template<>
 		void Deleting<BTab, BView>(BTab *o, BView *t)
 		{
-			if (o->fView == t)
+			if (o->fView == t) {
+				t->RemoveSelf();
 				o->fView = NULL;
+			}
 		}
 	}
 
