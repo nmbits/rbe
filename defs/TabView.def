@@ -59,7 +59,7 @@ define_class "BTabView" do
   end
   function "MouseMoved" do
     options :public, :hook
-    interface ["BPoint where", "uint32 transit", "const BMessage *dragMessage"], nil, :virtual
+    interface ["BPoint where", "uint32 transit", "%nillable const BMessage *dragMessage"], nil, :virtual
   end
   function "Pulse" do
     options :public, :hook

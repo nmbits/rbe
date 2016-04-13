@@ -2,7 +2,7 @@
 $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
-B.DEBUG = true
+B.DEBUG = false
 DEBUG = true
 
 class MyWindow < B::Window
@@ -29,6 +29,14 @@ class MyApp < B::Application
     2.times do |i|
       view = B::TextView.new B::Rect.new(0, 100, 300, 150), "test", B::Rect.new(0, 100, 300, 150), B::FOLLOW_ALL
       tab_view.add_tab view
+    end
+
+    def tab_view.mouse_moved(*a)
+      super
+    rescue => e
+      p e
+      p a
+      exit
     end
 
     @window.show
