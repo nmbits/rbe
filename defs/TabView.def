@@ -1,0 +1,200 @@
+define_class "BTabView" do
+  kit "interface"
+  header_file "interface/TabView.h"
+  super_class_name "BView"
+  options :wrapper
+  function "BTabView" do
+    options :ctor, :public
+    interface ["const char *name", "button_width width = B_WIDTH_AS_USUAL", "uint32 flags = B_FULL_UPDATE_ON_RESIZE | B_WILL_DRAW | B_NAVIGABLE_JUMP | B_FRAME_EVENTS | B_NAVIGABLE"], nil
+    interface ["BRect frame", "const char *name", "button_width width = B_WIDTH_AS_USUAL", "uint32 resizeMask = B_FOLLOW_ALL", "uint32 flags = B_FULL_UPDATE_ON_RESIZE | B_WILL_DRAW | B_NAVIGABLE_JUMP | B_FRAME_EVENTS | B_NAVIGABLE"], nil
+    interface ["BMessage *archive"], nil
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *archive"], "BArchivable *"
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *into", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "AllUnarchived" do
+    options :public
+    interface ["const BMessage *from"], "status_t", :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AttachedToWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromWindow" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllAttached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "AllDetached" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "MessageReceived" do
+    options :public, :hook
+    interface ["BMessage *message"], nil, :virtual
+  end
+  function "KeyDown" do
+    options :public, :hook
+    interface ["const char *bytes", "int32 numBytes"], nil, :virtual
+  end
+  function "MouseDown" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseUp" do
+    options :public, :hook
+    interface ["BPoint where"], nil, :virtual
+  end
+  function "MouseMoved" do
+    options :public, :hook
+    interface ["BPoint where", "uint32 transit", "const BMessage *dragMessage"], nil, :virtual
+  end
+  function "Pulse" do
+    options :public, :hook
+    interface [], nil, :virtual
+  end
+  function "Select" do
+    options :public
+    interface ["int32 index"], nil, :virtual
+  end
+  function "Selection" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "WindowActivated" do
+    options :public, :hook
+    interface ["bool active"], nil, :virtual
+  end
+  function "MakeFocus" do
+    options :public
+    interface ["bool focused = true"], nil, :virtual
+  end
+  function "SetFocusTab" do
+    options :public
+    interface ["int32 tab", "bool focused"], nil, :virtual
+  end
+  function "FocusTab" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "Draw" do
+    options :public, :hook
+    interface ["BRect updateRect"], nil, :virtual
+  end
+  function "DrawTabs" do
+    options :public, :hook
+    interface [], "BRect = BRect(0, 0, -1, -1)", :virtual
+  end
+  function "DrawBox" do
+    options :public, :hook
+    interface ["BRect selectedTabRect"], nil, :virtual
+  end
+  function "TabFrame" do
+    options :public
+    interface ["int32 index"], "BRect", :const, :virtual
+  end
+  function "SetFlags" do
+    options :public
+    interface ["uint32 flags"], nil, :virtual
+  end
+  function "SetResizingMode" do
+    options :public
+    interface ["uint32 mode"], nil, :virtual
+  end
+  function "ResizeToPreferred" do
+    options :public
+    interface [], nil, :virtual
+  end
+  function "GetPreferredSize" do
+    options :public, :hook
+    interface ["%out float *_width", "%out float *_height"], nil, :virtual
+  end
+  function "MinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "MaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "PreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "FrameMoved" do
+    options :public, :hook
+    interface ["BPoint newPosition"], nil, :virtual
+  end
+  function "FrameResized" do
+    options :public, :hook
+    interface ["float newWidth", "float newHeight"], nil, :virtual
+  end
+  function "ResolveSpecifier" do
+    options :public
+    interface ["BMessage *message", "int32 index", "BMessage *specifier", "int32 what", "const char *property"], "BHandler *", :virtual
+  end
+  function "GetSupportedSuites" do
+    options :public
+    interface ["BMessage *message"], "status_t", :virtual
+  end
+  function "AddTab" do
+    options :public, :custom
+    interface ["%own BView *target", "%nillable %own BTab *tab = NULL"], nil, :virtual
+  end
+  function "RemoveTab" do
+    options :public, :custom
+    interface ["int32 tabIndex"], "BTab *", :virtual
+  end
+  function "TabAt" do
+    options :public
+    interface ["int32 index"], "BTab *", :const, :virtual
+  end
+  function "SetTabWidth" do
+    options :public
+    interface ["button_width width"], nil, :virtual
+  end
+  function "TabWidth" do
+    options :public
+    interface [], "button_width", :const
+  end
+  function "SetTabHeight" do
+    options :public
+    interface ["float height"], nil, :virtual
+  end
+  function "TabHeight" do
+    options :public
+    interface [], "float", :const
+  end
+  function "SetBorder" do
+    options :public
+    interface ["border_style border"], nil, :virtual
+  end
+  function "Border" do
+    options :public
+    interface [], "border_style", :const
+  end
+  function "ContainerView" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "CountTabs" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "ViewForTab" do
+    options :public
+    interface ["int32 tabIndex"], "BView *", :const
+  end
+end

@@ -54,8 +54,8 @@
 %     f.args.each_with_index do |a, j|
 %       if a.own?
 %         oname = owner_name(c, a.type)
-				if (!NIL_P(argv[<%= j %>])) {
-					gc::Ownership0 *ownership = new gc::Ownership<<%= oname %>, <%= a.type.dereferenced %>>(argv[<%= j %>]);
+				if (!NIL_P(vargs[<%= j %>])) {
+					gc::Ownership0 *ownership = new gc::Ownership<<%= oname %>, <%= a.type.dereferenced %>>(vargs[<%= j %>]);
 					ObjectRegistory::Instance()->Own(self, ownership);
 				}
 %       end

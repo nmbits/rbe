@@ -1,5 +1,6 @@
 
 #include "Tab.hpp"
+#include "TabView.hpp"
 #include "View.hpp"
 #include "deleting.hpp"
 #include "debug.hpp"
@@ -9,6 +10,12 @@
 #include "ownership.hpp"
 
 #include <functional>
+
+#define private public
+#define protected public
+#include <interface/Layout.h>
+#undef protected
+#undef private
 
 namespace rbe
 {
@@ -20,6 +27,19 @@ namespace rbe
 			if (o->fView == t) {
 				t->RemoveSelf();
 				o->fView = NULL;
+			}
+		}
+
+		template<>
+		void Deleting<BTabView, BTab>(BTabView *o, BTab *t)
+		{
+			for (int i = 0; i < o->CountTabs(); i++)
+			{
+				BTab *tab = o->TabAt(i);
+				if (tab == t) {
+					o->RemoveTab(i);
+					break;
+				}
 			}
 		}
 	}
@@ -73,6 +93,76 @@ namespace rbe
 			g();
 			rb_thread_check_ints();
 			return Qnil;
+		}
+
+		VALUE
+		TabView::rbe_add_tab(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("TabView#add_tab", argc, argv, self);
+
+			VALUE vview, vtab;
+			rb_scan_args(argc, argv, "11", &vview, &vtab);
+			BTabView *_this = Convert<BTabView *>::FromValue(self);
+			if (NIL_P(vtab)) {
+				vtab = rb_class_new_instance(0, NULL, Tab::Class());
+			} else {
+				if (Convert<BTab *>::IsConvertable(vtab)) {
+					rb_raise(rb_eTypeError, "wrong type of argument 2");
+					return Qnil;
+				}
+			}
+			BTab *tab = Convert<BTab *>::FromValue(vtab);
+			if (!Convert<BView *>::IsConvertable(vview) || NIL_P(vview)) {
+				rb_raise(rb_eTypeError, "wrong type of argument 1");
+				return Qnil;
+			}
+			BView *view = Convert<BView *>::FromValue(vview);
+			Tab::rbe_set_view(1, &vview, vtab);
+			std::function<void ()> f = [&]() {
+				// from Haiku's TabView.cpp
+				if (_this->fContainerView->GetLayout())
+					_this->fContainerView->GetLayout()->AddView(_this->CountTabs(), view);
+				_this->fTabList->AddItem(tab);
+				// BTab::Private(tab).SetTabView(_this);
+				tab->fTabView = _this;
+				if (_this->CountTabs() == 1 && _this->Window() != NULL)
+					_this->Select(0);
+			};
+			CallWithoutGVL<std::function<void ()>, void> g(f);
+			g();
+			gc::Ownership<BTabView, BTab> *ownership = new gc::Ownership<BTabView, BTab>(vtab);
+			ObjectRegistory::Instance()->Own(self, ownership);
+			rb_thread_check_ints();
+
+			return Qnil;
+		}
+
+		VALUE
+		TabView::rbe_remove_tab(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("B::TabView#remove_tab", argc, argv, self);
+			VALUE vindex;
+			rb_scan_args(argc, argv, "10", &vindex);
+			BTabView *_this = Convert<BTabView *>::FromValue(self);
+
+			int32 index = 0;
+			if (!Convert<int32>::IsConvertable(vindex)) {
+				rb_raise(rb_eTypeError, "wrong type of argument 1");
+				return Qnil;
+			}
+			index = Convert<int32>::FromValue(vindex);
+			BTab *tab = NULL;
+			std::function<void ()> f = [&]() {
+				tab = _this->RemoveTab(index);
+			};
+			CallWithoutGVL<std::function<void ()>, void> g(f);
+			g();
+			if (tab) {
+				PointerOf<BTabView>::Class *pthis = static_cast<PointerOf<BTabView>::Class *>(_this);
+				PointerOf<BTab>::Class *ptab = static_cast<PointerOf<BTab>::Class *>(tab);
+				ObjectRegistory::Instance()->Release((void *)pthis, (void *)ptab);
+			}
+			return Convert<BTab *>::ToValue(tab);
 		}
 	}
 }
