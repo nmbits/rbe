@@ -1,35 +1,36 @@
 RBe: A Haiku C++ API bindings for Ruby
 ======================================
 
-About RBe
----------
+About
+-----
 
 RBe is a Haiku C++ API bindings for Ruby(MRI).
-The goal of this project is to make
-Application kit and Interface kit callable from your ruby scripts.
 
-A part of classes are supported for now.
+Few classes are supported for now. However, you can display your window written in Ruby, having menu and text view, and handle mouse and keyboard messages, by using this library.
 
 Prerequisite
 ------------
 
-* Ruby 2.3.0 
-* Haiku OS x86 gcc2 hybrid hrev50101
+* Haiku OS R1/Beta1 x86 64-bit (32-bit might OK)
+* Ruby 2.6.3 or higher
 
 How to build
 ------------
 
-### Install Ruby 2.3.0
+ 1. Install ruby and ruby_devel packages via pkgman.
+ 2. Clone this repositoy into your working directory and cd to there.
+ 3. Run 'rake'.
+ 4. Run 'ruby extconf.rb'.
+ 5. Run 'make'. 'rbe.so' is created.
 
-1. Get Ruby 2.3.0 tar ball from the web site. Then, build and install it with x86 arch.
-2. Add your ruby's bin directory to PATH environment variable.
+ > pkgman install ruby ruby_devel
+ > git clone https://github.com/nmbits/rbe.git
+ > cd rbe
+ > rake
+ > ruby extconf.rb
+ > make
 
-### Build RBe
-
-    > git clone https://github.com/nmbits/rbe.git
-    > cd rbe
-    > rake
-    > ruby extconf.rb
-    > make
-
-'make install' is not recommended.
+Running example
+---------------
+ > cd example
+ > ruby test4.rb
