@@ -266,7 +266,7 @@ namespace rbe
 					rb_raise(rb_eRangeError, "index exceeds the number of items");
 				BMenuItem *menu_item = _this->ItemAt(index);
 				if (menu_item == NULL)
-					rb_raise(rb_eSystemCallError, "item not found. index = %ld", index);
+					rb_raise(rb_eSystemCallError, "item not found. index = %d", index);
 				PointerOf<BMenuItem>::Class *ptr = static_cast<PointerOf<BMenuItem>::Class *>(menu_item);
 				VALUE vmenu_item = ObjectRegistory::Instance()->Get(ptr);
 				if (NIL_P(vmenu_item))

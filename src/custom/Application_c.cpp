@@ -93,7 +93,7 @@ namespace rbe
 				char * arg0 = Convert<char *>::FromValue(varg0);
 				_this = new Application(arg0, &status);
 				if (status != B_OK)
-					rb_raise(rb_eArgError, "BApplication cannot be initialized (%ld)", status);
+					rb_raise(rb_eArgError, "BApplication cannot be initialized (%d)", status);
 			} else if (Convert<BMessage *>::IsConvertable(varg0)) {
 				BMessage *arg0 = Convert<BMessage *>::FromValue(varg0);
 				_this = new Application(arg0);

@@ -90,13 +90,15 @@ namespace rbe
 	int
 	ThreadException()
 	{
-		return (int)tls_get(g_tls_thread_exception);
+		void * sp = tls_get(g_tls_thread_exception);
+		return (int)reinterpret_cast<std::intptr_t>(sp);
 	}
 
 	void
 	SetThreadException(int s)
 	{
-		tls_set(g_tls_thread_exception, (void *)s);
+		std::intptr_t sp = s;
+		tls_set(g_tls_thread_exception, reinterpret_cast<void *>(sp));
 	}
 
 	void

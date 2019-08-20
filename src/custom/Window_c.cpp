@@ -157,7 +157,7 @@ namespace rbe
 			BWindow *_this = Convert<BWindow *>::FromValue(self);
 			if (!_this->fRunCalled)
 				Window::rbe_run(0, NULL, self);
-			RBE_PRINT(("  _this->Thread(): %ld\n", _this->Thread()));
+			RBE_PRINT(("  _this->Thread(): %d\n", _this->Thread()));
 			std::function<status_t (bigtime_t)> f = [&](bigtime_t tm) -> status_t {
 				return _this->LockWithTimeout(tm);
 			};
@@ -166,7 +166,7 @@ namespace rbe
 				_this->Show(); // TODO might block ?
 				_this->Unlock();
 			}
-			RBE_PRINT(("  _this->Thread(): %ld\n", _this->Thread()));
+			RBE_PRINT(("  _this->Thread(): %d\n", _this->Thread()));
 			if (ThreadException() > 0)
 				rb_jump_tag(ThreadException());
 
@@ -187,7 +187,7 @@ namespace rbe
 			while (!_this->IsHidden())
 				_this->Hide();
 			Util::RemoveChildrenIfWindow(_this);
-			RBE_PRINT(("  _this->Thread(): %ld\n", _this->Thread()));
+			RBE_PRINT(("  _this->Thread(): %d\n", _this->Thread()));
 			if (_this->fFlags & B_QUIT_ON_WINDOW_CLOSE)
 				be_app->PostMessage(B_QUIT_REQUESTED);
 			B::Looper::rbe_quit(0, NULL, self);

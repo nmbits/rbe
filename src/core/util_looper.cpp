@@ -83,7 +83,7 @@ namespace rbe {
 		looper_thread_func0(void *data)
 		{
 			RBE_TRACE("looper_thread_func0");
-			RBE_PRINT(("  thread = %ld\n", find_thread(NULL)));
+			RBE_PRINT(("  thread = %d\n", find_thread(NULL)));
 			BLooper *looper = static_cast<BLooper *>(data);
 			looper->fThread = find_thread(NULL);
 

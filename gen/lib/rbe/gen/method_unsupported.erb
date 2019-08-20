@@ -1,10 +1,10 @@
 % c, fn = args
 
-		VALUE
+		[[noreturn]] VALUE
 		<%= class_binding_name c.name %>::rbe_<%= underscore fn.name %>(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE_METHOD_CALL("<%= c.name %>::rbe_<%= underscore fn.name %>", argc, argv, self);
 % delim = fn.static? ? "." : "#"
 			rb_raise(rb_eNotImpError, "B::<%= class_binding_name c.name %><%= delim %><%= underscore fn.name %> is not implemented.");
-			return Qnil;
+			// return Qnil;
 		}

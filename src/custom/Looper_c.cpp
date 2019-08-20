@@ -109,8 +109,8 @@ namespace rbe
 			if (!_this->fRunCalled)
 				return Qnil;
 
-			RBE_PRINT(("  _this->Thread(): %ld\n", _this->Thread()));
-			RBE_PRINT(("  caller:          %ld\n", tid));
+			RBE_PRINT(("  _this->Thread(): %d\n", _this->Thread()));
+			RBE_PRINT(("  caller:          %d\n", tid));
 
 			if (_this->Thread() == tid)
 				rb_raise(eQuitLooper, "Looper::rbe_quit");

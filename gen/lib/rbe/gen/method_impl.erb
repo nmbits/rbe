@@ -68,7 +68,7 @@
 				<%= a.type.dereferenced %> _tmp_<%= a.name %>;
 				<%= a.type %> <%= a.name %> = &_tmp_<%= a.name %>;
 %     elsif a.optional?
-				<%= a.type %> <%= a.name %> = (<%= j %> < argc ? Convert<<%= a.type %> >::FromValue(argv[<%= j %>]) : <%= a.value %>);
+				<%= a.type %> <%= a.name %> = (<%= j %> < argc ? Convert<<%= a.type %> >::FromValue(argv[<%= j %>]) : (<%= a.type %>)<%= a.value %>);
 %     elsif a.pair?
 				<%= type %> pair_<%= a.name %>_<%= b.name %> = Convert<<%= type %> >::FromValue(argv[<%= j %>]);
 				<%= a.type %> <%= a.name %> = pair_<%= a.name %>_<%= b.name %>.first;

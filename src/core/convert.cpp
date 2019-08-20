@@ -92,7 +92,7 @@ namespace rbe {
 	bool
 	Convert<rgb_color>::IsConvertable(VALUE v)
 	{
-		if (TYPE(v) == T_ARRAY && (RARRAY_LEN(v) == 3) || (RARRAY_LEN(v) == 4))
+		if (TYPE(v) == T_ARRAY && ((RARRAY_LEN(v) == 3) || (RARRAY_LEN(v) == 4)))
 			return true;
 		return false;
 	}
