@@ -32,5 +32,8 @@ RBeは、Haiku C++ APIのRubyバインディングです。現在のところサ
 
 Running example
 ---------------
+
+```
  > cd example
  > ruby test4.rb
+```

@@ -34,5 +34,8 @@ How to build
 
 Running example
 ---------------
+
+```
  > cd example
  > ruby test4.rb
+```
