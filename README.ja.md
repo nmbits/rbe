@@ -21,12 +21,14 @@ RBeは、Haiku C++ APIのRubyバインディングです。現在のところサ
  4. Run 'ruby extconf.rb'.
  5. Run 'make'. 'rbe.so'ができる。
 
+```
  > pkgman install ruby ruby_devel
  > git clone https://github.com/nmbits/rbe.git
  > cd rbe
  > rake
  > ruby extconf.rb
  > make
+```
 
 Running example
 ---------------

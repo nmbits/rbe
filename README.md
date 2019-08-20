@@ -23,12 +23,14 @@ How to build
  4. Run 'ruby extconf.rb'.
  5. Run 'make'. 'rbe.so' is created.
 
+```
  > pkgman install ruby ruby_devel
  > git clone https://github.com/nmbits/rbe.git
  > cd rbe
  > rake
  > ruby extconf.rb
  > make
+```
 
 Running example
 ---------------
