@@ -1,0 +1,162 @@
+define_class "BLayout" do
+  kit "interface"
+  header_file "interface/Layout.h"
+  super_class_name "BLayoutItem"
+  # options :wrapper
+  function "BLayout" do
+    options :ctor, :public, :unsupported
+    interface [], nil
+    interface ["BMessage *archive"], nil
+  end
+  function "Owner" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "TargetView" do
+    options :public
+    interface [], "BView *", :const
+  end
+  function "View" do
+    options :public
+    interface [], "BView *", :virtual
+  end
+  function "AddView" do
+    options :public
+    interface ["BView *child"], "BLayoutItem *", :virtual
+    interface ["int32 index", "BView *child"], "BLayoutItem *", :virtual
+  end
+  function "AddItem" do
+    options :public
+    interface ["BLayoutItem *item"], "bool", :virtual
+    interface ["int32 index", "BLayoutItem *item"], "bool", :virtual
+  end
+  function "RemoveView" do
+    options :public
+    interface ["BView *child"], "bool", :virtual
+  end
+  function "RemoveItem" do
+    options :public
+    interface ["BLayoutItem *item"], "bool", :virtual
+    interface ["int32 index"], "BLayoutItem *", :virtual
+  end
+  function "ItemAt" do
+    options :public
+    interface ["int32 index"], "BLayoutItem *", :const
+  end
+  function "CountItems" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "IndexOfItem" do
+    options :public
+    interface ["const BLayoutItem *item"], "int32", :const
+  end
+  function "IndexOfView" do
+    options :public
+    interface ["BView *child"], "int32", :const
+  end
+  function "AncestorsVisible" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "InvalidateLayout" do
+    options :public
+    interface ["bool children = false"], nil, :virtual
+  end
+  function "Relayout" do
+    options :public
+    interface ["bool immediate = false"], nil, :virtual
+  end
+  function "RequireLayout" do
+    options :public
+    interface [], nil
+  end
+  function "IsValid" do
+    options :public
+    interface [], "bool"
+  end
+  function "EnableLayoutInvalidation" do
+    options :public
+    interface [], nil
+  end
+  function "DisableLayoutInvalidation" do
+    options :public
+    interface [], nil
+  end
+  function "LayoutItems" do
+    options :public
+    interface ["bool force = false"], nil
+  end
+  function "LayoutArea" do
+    options :public
+    interface [], "BRect"
+  end
+  function "LayoutContext" do
+    options :public, :ignore
+    interface [], "BLayoutContext *", :const
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *into", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AllArchived" do
+    options :protected, :ignore
+    interface ["BMessage *archive"], "status_t", :const, :virtual
+  end
+  function "AllUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from"], "status_t", :virtual
+  end
+  function "ItemArchived" do
+    options :protected, :ignore
+    interface ["BMessage *into", "BLayoutItem *item", "int32 index"], "status_t", :const, :virtual
+  end
+  function "ItemUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from", "BLayoutItem *item", "int32 index"], "status_t", :virtual
+  end
+  function "ItemAdded" do
+    options :protected, :hook
+    interface ["BLayoutItem *item", "int32 atIndex"], "bool = true", :virtual
+  end
+  function "ItemRemoved" do
+    options :protected, :hook
+    interface ["BLayoutItem *item", "int32 fromIndex"], nil, :virtual
+  end
+  function "LayoutInvalidated" do
+    options :protected, :hook
+    interface ["bool children"], nil, :virtual
+  end
+  function "DoLayout" do
+    options :protected, :unsupported
+    interface [], nil, :pure, :virtual
+  end
+  function "OwnerChanged" do
+    options :protected, :hook
+    interface ["BView *was"], nil, :virtual
+  end
+  function "AttachedToLayout" do
+    options :protected, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromLayout" do
+    options :protected, :hook
+    interface ["BLayout *layout"], nil, :virtual
+  end
+  function "AncestorVisibilityChanged" do
+    options :protected, :hook
+    interface ["bool shown"], nil, :virtual
+  end
+  function "VisibilityChanged" do
+    options :protected, :hook
+    interface ["bool show"], nil
+  end
+  function "ResetLayoutInvalidation" do
+    options :protected
+    interface [], nil
+  end
+end

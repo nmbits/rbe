@@ -1,0 +1,135 @@
+define_class "BLayoutItem" do
+  kit "interface"
+  header_file "interface/LayoutItem.h"
+  super_class_name "BArchivable"
+  # options :wrapper
+  function "BLayoutItem" do
+    options :ctor, :public, :unsupported
+    interface [], nil
+    interface ["BMessage *from"], nil
+  end
+  function "Layout" do
+    options :public
+    interface [], "BLayout *", :const
+  end
+  function "RemoveSelf" do
+    options :public, :ignore
+    interface [], "bool"
+  end
+  function "MinSize" do
+    options :public, :unsupported
+    interface [], "BSize", :pure, :virtual
+  end
+  function "MaxSize" do
+    options :public, :unsupported
+    interface [], "BSize", :pure, :virtual
+  end
+  function "PreferredSize" do
+    options :public, :unsupported
+    interface [], "BSize", :pure, :virtual
+  end
+  function "Alignment" do
+    options :public, :ignore
+    interface [], "BAlignment", :pure, :virtual
+  end
+  function "SetExplicitMinSize" do
+    options :public, :unsupported
+    interface ["BSize size"], nil, :pure, :virtual
+  end
+  function "SetExplicitMaxSize" do
+    options :public, :unsupported
+    interface ["BSize size"], nil, :pure, :virtual
+  end
+  function "SetExplicitPreferredSize" do
+    options :public, :unsupported
+    interface ["BSize size"], nil, :pure, :virtual
+  end
+  function "SetExplicitSize" do
+    options :public
+    interface ["BSize size"], nil
+  end
+  function "SetExplicitAlignment" do
+    options :public, :ignore
+    interface ["BAlignment alignment"], nil, :pure, :virtual
+  end
+  function "IsVisible" do
+    options :public, :unsupported
+    interface [], "bool", :pure, :virtual
+  end
+  function "SetVisible" do
+    options :public, :unsupported
+    interface ["bool visible"], nil, :pure, :virtual
+  end
+  function "Frame" do
+    options :public, :unsupported
+    interface [], "BRect", :pure, :virtual
+  end
+  function "SetFrame" do
+    options :public, :unsupported
+    interface ["BRect frame"], nil, :pure, :virtual
+  end
+  function "HasHeightForWidth" do
+    options :public
+    interface [], "bool", :virtual
+  end
+  function "GetHeightForWidth" do
+    options :public
+    interface ["float width", "%out float *min", "%out float *max", "%out float *preferred"], nil, :virtual
+  end
+  function "View" do
+    options :public
+    interface [], "BView *", :virtual
+  end
+  function "InvalidateLayout" do
+    options :public
+    interface ["bool children = false"], nil, :virtual
+  end
+  function "Relayout" do
+    options :public
+    interface ["bool immediate = false"], nil, :virtual
+  end
+  function "LayoutData" do
+    options :public, :ignore
+    interface [], "void *", :const
+  end
+  function "SetLayoutData" do
+    options :public, :ignore
+    interface ["void *data"], nil
+  end
+  function "AlignInFrame" do
+    options :public
+    interface ["BRect frame"], nil
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *into", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AllArchived" do
+    options :protected, :ignore
+    interface ["BMessage *into"], "status_t", :const, :virtual
+  end
+  function "AllUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from"], "status_t", :virtual
+  end
+  function "LayoutInvalidated" do
+    options :protected, :hook
+    interface ["bool children"], nil, :virtual
+  end
+  function "AttachedToLayout" do
+    options :protected, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromLayout" do
+    options :protected, :hook
+    interface ["BLayout *layout"], nil, :virtual
+  end
+  function "AncestorVisibilityChanged" do
+    options :protected, :hook
+    interface ["bool shown"], nil, :virtual
+  end
+end
