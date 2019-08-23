@@ -43,7 +43,8 @@
 			<%= intf_t %> intf;
 %     end
 %   end
-			int status = rbe::CallScript<<%= c.name %><%= intf_t ? ", " + intf_t : ""%> >(_this, "<%= underscore fn.name %>"<%= intf_t ? ", intf" : "" %>);
+%   uthis = f.const? ? "const_cast<#{c.name}*>(_this)" : "_this"
+			int status = rbe::CallScript<<%= c.name %><%= intf_t ? ", " + intf_t : ""%> >(<%= uthis %>, "<%= underscore fn.name %>"<%= intf_t ? ", intf" : "" %>);
 			SetThreadException(status);
 %   if f.ret?
 			return (status ? <%= f.default %> : intf.Return());

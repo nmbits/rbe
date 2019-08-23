@@ -1,11 +1,13 @@
 % c = target
 		// Ruby C API interfaces
-
+% if c.ctor.unsupported?
+		[[ noreturn ]]
+% end
 		VALUE <%= class_binding_name c.name %>::rbe__alloc(VALUE clazz)
 		{
 % if c.ctor.unsupported?
 			rb_raise(rb_eNotImpError, "To instatiate B::<%= class_binding_name c.name %> is prohivited.");
-			return Qnil;
+			// return Qnil;
 % else
 			return TypedData_Wrap_Struct(clazz, &sDataType, 0);
 % end

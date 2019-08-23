@@ -26,10 +26,11 @@ module RBe
         ret = interface.ret || 'void'
         name = interface.function.name
         clazz = interface.function.clazz
+        const = interface.const? ? "const " : ""
         if for_impl
-          answer = "#{ret} #{class_binding_name clazz.name}::#{name}ST(#{clazz.name} *_this"
+          answer = "#{ret} #{class_binding_name clazz.name}::#{name}ST(#{const}#{clazz.name} *_this"
         else
-          answer = "static #{ret} #{name}ST(#{clazz.name} *_this"
+          answer = "static #{ret} #{name}ST(#{const}#{clazz.name} *_this"
         end
         unless interface.args.empty?
           xargs = args_proto_string(interface.args)

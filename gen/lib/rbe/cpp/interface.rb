@@ -63,7 +63,7 @@ module RBe
         @options[name]
       end
 
-      [:virtual, :const, :ignore].each do |sym|
+      [:virtual, :const, :ignore, :pure].each do |sym|
         define_method(sym.to_s + "?") { option sym }
       end
 

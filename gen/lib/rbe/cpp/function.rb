@@ -95,10 +95,11 @@ module RBe
         /\((.*)\)/ =~ str.strip
         ret_and_fname = $`.strip
         args = $1.strip
-        const = $'.strip
+        const_pure = $'.strip
         ret_and_fname.sub! /inline/, ""
 
-        opt[:const] = true if const.include? "const"
+        opt[:const] = true if const_pure.include? "const"
+        opt[:pure] = true if /\=\s*0/ =~ const_pure
 
         /([a-zA-Z0-9_]+)$/ =~ ret_and_fname
         fname = $1
