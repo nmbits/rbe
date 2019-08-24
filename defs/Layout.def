@@ -132,7 +132,7 @@ define_class "BLayout" do
     interface ["bool children"], nil, :virtual
   end
   function "DoLayout" do
-    options :protected, :unsupported
+    options :protected
     interface [], nil, :pure, :virtual
   end
   function "OwnerChanged" do

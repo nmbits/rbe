@@ -81,16 +81,21 @@
 %     end
 %   end
 
+%   if f.pure?
+%     class_spec = ""
+%   else
+%     class_spec = "#{c.name}::"
+%   end
 %   if f.ret?
 				<%= f.ret %> ret;
 				std::function<void ()> f = [&]() {
-					ret = <%= dereference %><%= c.name %>::<%= fn.name %>(<%= input_args_no_paren f %>);
+					ret = <%= dereference %><%= class_spec %><%= fn.name %>(<%= input_args_no_paren f %>);
 				};
 				CallWithoutGVL<std::function<void ()>, void> g(f);
 				g();
 %   else
 				std::function<void ()> f = [&]() {
-					<%= dereference %><%= c.name %>::<%= fn.name %>(<%= input_args_no_paren f %>);
+					<%= dereference %><%= class_spec %><%= fn.name %>(<%= input_args_no_paren f %>);
 				};
 				CallWithoutGVL<std::function<void ()>, void> g(f);
 				g();

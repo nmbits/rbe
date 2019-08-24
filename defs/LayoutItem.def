@@ -17,15 +17,15 @@ define_class "BLayoutItem" do
     interface [], "bool"
   end
   function "MinSize" do
-    options :public, :unsupported
+    options :public
     interface [], "BSize", :pure, :virtual
   end
   function "MaxSize" do
-    options :public, :unsupported
+    options :public
     interface [], "BSize", :pure, :virtual
   end
   function "PreferredSize" do
-    options :public, :unsupported
+    options :public
     interface [], "BSize", :pure, :virtual
   end
   function "Alignment" do
@@ -33,15 +33,15 @@ define_class "BLayoutItem" do
     interface [], "BAlignment", :pure, :virtual
   end
   function "SetExplicitMinSize" do
-    options :public, :unsupported
+    options :public
     interface ["BSize size"], nil, :pure, :virtual
   end
   function "SetExplicitMaxSize" do
-    options :public, :unsupported
+    options :public
     interface ["BSize size"], nil, :pure, :virtual
   end
   function "SetExplicitPreferredSize" do
-    options :public, :unsupported
+    options :public
     interface ["BSize size"], nil, :pure, :virtual
   end
   function "SetExplicitSize" do
@@ -53,19 +53,19 @@ define_class "BLayoutItem" do
     interface ["BAlignment alignment"], nil, :pure, :virtual
   end
   function "IsVisible" do
-    options :public, :unsupported
+    options :public
     interface [], "bool", :pure, :virtual
   end
   function "SetVisible" do
-    options :public, :unsupported
+    options :public
     interface ["bool visible"], nil, :pure, :virtual
   end
   function "Frame" do
-    options :public, :unsupported
+    options :public
     interface [], "BRect", :pure, :virtual
   end
   function "SetFrame" do
-    options :public, :unsupported
+    options :public
     interface ["BRect frame"], nil, :pure, :virtual
   end
   function "HasHeightForWidth" do
