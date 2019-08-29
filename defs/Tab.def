@@ -2,10 +2,10 @@ define_class "BTab" do
   kit "interface"
   header_file "interface/TabView.h"
   super_class_name "BArchivable"
-  options :wrapper
+  options :wrapper, :custom_free
   function "BTab" do
     options :ctor, :public
-    interface ["%nillable %own BView *contentsView = NULL"], nil
+    interface ["%nillable %up BView *contentsView = NULL"], nil
     interface ["BMessage *archive"], nil
   end
   function "Instantiate" do

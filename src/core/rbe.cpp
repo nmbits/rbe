@@ -7,10 +7,10 @@
 #include <map>
 #include <functional>
 
-#include "registory.hpp"
 #include "Application.hpp"
 #include "debug.hpp"
 #include "gvl.hpp"
+#include "gc.hpp"
 
 namespace rbe
 {
@@ -27,7 +27,7 @@ namespace rbe
 		if (!be_app)
 			return Qnil;
 		BArchivable *ptr = static_cast<BArchivable *>(be_app);
-		return ObjectRegistory::Instance()->Get(static_cast<void *>(ptr));
+		return gc::GetValue(ptr);
 	}
 
 	VALUE
@@ -84,7 +84,7 @@ namespace rbe
 		gMarker = Data_Wrap_Struct(rb_cData, global_mark, global_free, 0);
 		rb_global_variable(&gMarker);
 		eQuitLooper = rb_define_class_under(gModule, "QuitLooper", rb_eException);
-		ObjectRegistory::Initialize();
+		gc::Init();
 	}
 
 	int

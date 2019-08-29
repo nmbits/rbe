@@ -4,45 +4,25 @@
 #include "PopUpMenu.hpp"
 #include "MenuItem.hpp"
 #include "SeparatorItem.hpp"
-#include "deleting.hpp"
+
 #include "debug.hpp"
-#include "registory.hpp"
 #include "gvl.hpp"
-#include "ownership.hpp"
+
 #include "convert.hpp"
-#include "member.hpp"
 
 namespace rbe
 {
-	namespace gc
-	{
-		template<>
-		void Deleting<BMenu, BMenuItem>(BMenu *o, BMenuItem *t)
-		{
-			o->RemoveItem(t);
-		}
-	}
-
 	namespace B
 	{
 		void Menu::rbe__gc_free(void *ptr)
 		{
 		    RBE_TRACE("BMenu::rb__gc_free");
 		    RBE_PRINT(("  ptr = %p\n", ptr));
-			ObjectRegistory::Instance()->Delete(ptr);
 			PointerOf<BMenu>::Class *obj =
 				static_cast<PointerOf<BMenu>::Class *>(ptr);
 			BMenu *menu = static_cast<BMenu *>(obj);
 			menu->RemoveItems(0, menu->CountItems(), false);
-			delete menu;
-		}
-
-		void MenuBar::rbe__gc_free(void *ptr)
-		{
-		    RBE_TRACE("BMenuBar::rb__gc_free");
-		    RBE_PRINT(("  ptr = %p\n", ptr));
-		    RBE_PRINT(("  calling BMenu::rbe__gc_free\n"));
-		    Menu::rbe__gc_free(ptr);
+			View::rbe__gc_free(ptr);
 		}
 
 		VALUE
@@ -62,7 +42,6 @@ namespace rbe
 					goto break_0;
 				}
 				BMenuItem * item = Convert<BMenuItem * >::FromValue(argv[0]);
-				bool prev_member_item = item && Util::IsMemberOf(item, _this);
 
 				bool ret;
 				std::function<void ()> f = [&]() {
@@ -70,10 +49,8 @@ namespace rbe
 				};
 				CallWithoutGVL<std::function<void ()>, void> g(f);
 				g();
-				if (item && !prev_member_item && Util::IsMemberOf(item, _this)) {
-					gc::Ownership0 *ownership = new gc::Ownership<BMenu, BMenuItem>(argv[0]);
-					ObjectRegistory::Instance()->Own(self, ownership);
-				}
+				if (item && ret)
+					gc::Up(self, argv[0]);
 				rb_thread_check_ints();
 				if (ThreadException() > 0) {
 					rb_jump_tag(ThreadException());
@@ -101,7 +78,6 @@ namespace rbe
 					goto break_1;
 				}
 				BMenuItem * item = Convert<BMenuItem * >::FromValue(argv[0]);
-				bool prev_member_item = item && Util::IsMemberOf(item, _this);
 				int32 index = Convert<int32 >::FromValue(argv[1]);
 
 				bool ret;
@@ -110,10 +86,9 @@ namespace rbe
 				};
 				CallWithoutGVL<std::function<void ()>, void> g(f);
 				g();
-				if (item && !prev_member_item && Util::IsMemberOf(item, _this)) {
-					gc::Ownership0 *ownership = new gc::Ownership<BMenu, BMenuItem>(argv[0]);
-					ObjectRegistory::Instance()->Own(self, ownership);
-				}
+				if (item && ret)
+					gc::Up(self, argv[0]);
+
 				rb_thread_check_ints();
 				if (ThreadException() > 0) {
 					rb_jump_tag(ThreadException());
@@ -141,7 +116,6 @@ namespace rbe
 					goto break_2;
 				}
 				BMenuItem * item = Convert<BMenuItem * >::FromValue(argv[0]);
-				bool prev_member_item = item && Util::IsMemberOf(item, _this);
 				BRect frame = Convert<BRect >::FromValue(argv[1]);
 
 				bool ret;
@@ -150,10 +124,9 @@ namespace rbe
 				};
 				CallWithoutGVL<std::function<void ()>, void> g(f);
 				g();
-				if (item && !prev_member_item && Util::IsMemberOf(item, _this)) {
-					gc::Ownership0 *ownership = new gc::Ownership<BMenu, BMenuItem>(argv[0]);
-					ObjectRegistory::Instance()->Own(self, ownership);
-				}
+				if (item && ret)
+					gc::Up(self, argv[0]);
+
 				rb_thread_check_ints();
 				if (ThreadException() > 0) {
 					rb_jump_tag(ThreadException());
@@ -216,7 +189,6 @@ namespace rbe
 					goto break_0;
 				}
 				BMenuItem * item = Convert<BMenuItem * >::FromValue(argv[0]);
-				bool prev_member_item = item && Util::IsMemberOf(item, _this);
 
 				bool ret;
 				std::function<void ()> f = [&]() {
@@ -224,9 +196,9 @@ namespace rbe
 				};
 				CallWithoutGVL<std::function<void ()>, void> g(f);
 				g();
-				if (prev_member_item && !Util::IsMemberOf(item, _this)) {
-					ObjectRegistory::Instance()->Release(DATA_PTR(self), DATA_PTR(argv[0]));
-				}
+				if (ret)
+					gc::Down(self, argv[0]);
+
 				rb_thread_check_ints();
 				if (ThreadException() > 0) {
 					rb_jump_tag(ThreadException());
@@ -245,13 +217,22 @@ namespace rbe
 					type_error_index = 0;
 					goto break_2;
 				}
-				VALUE vmenu_item = ObjectRegistory::Instance()->Owner(argv[0]);
-				if (NIL_P(vmenu_item) || !Convert<BMenuItem *>::IsConvertable(vmenu_item))
-					goto break_3;
-				return rbe_remove_item(1, &vmenu_item, self);
+				BMenu *submenu = Convert<BMenu *>::FromValue(argv[0]);
+				for (int32 i = 0; i < _this->CountItems(); i++) {
+					BMenuItem *item = _this->ItemAt(i);
+					if (item->Submenu() == submenu) {
+						bool ret = _this->RemoveItem(i);
+						if (ret) {
+							VALUE item_ = Convert<BMenuItem *>::ToValue(item);
+							gc::Down(self, item_);
+							return Qtrue;
+						}
+					}
+				}
+				return Qfalse;
 			}
-		break_2:
 
+		break_2:
 			if (1 == argc) {
 				if (argv[0] == Qnil) {
 					type_error_index = 0;
@@ -268,10 +249,15 @@ namespace rbe
 				if (menu_item == NULL)
 					rb_raise(rb_eSystemCallError, "item not found. index = %d", index);
 				PointerOf<BMenuItem>::Class *ptr = static_cast<PointerOf<BMenuItem>::Class *>(menu_item);
-				VALUE vmenu_item = ObjectRegistory::Instance()->Get(ptr);
+				VALUE vmenu_item = gc::GetValue(ptr);
 				if (NIL_P(vmenu_item))
 					debugger("MenuItem may not be a ruby object");
-				return rbe_remove_item(1, &vmenu_item, self);
+				bool ret = _this->RemoveItem(index);
+				if (ret) {
+					gc::Down(self, vmenu_item);
+					return Qtrue;
+				}
+				return Qfalse;
 			}
 
 		break_3:

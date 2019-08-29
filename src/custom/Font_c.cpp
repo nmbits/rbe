@@ -41,7 +41,7 @@ namespace rbe
 
 			PointerOf<BFont>::Class *ptr = static_cast<PointerOf<BFont>::Class *>(_this);
 			DATA_PTR(self) = static_cast<void *>(ptr);
-			ObjectRegistory::Instance()->Add(self);
+			gc::Memorize(self);
 			return self;
 		}
 	}

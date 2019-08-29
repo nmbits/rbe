@@ -15,7 +15,6 @@
 #include "Handler.hpp"
 #include "Looper.hpp"
 #include "util_looper.hpp"
-#include "deleting.hpp"
 
 #define private public
 #define protected public
@@ -31,15 +30,6 @@
 
 namespace rbe
 {
-	namespace gc
-	{
-		template<>
-		void Deleting<BLooper, BHandler>(BLooper *o, BHandler *t)
-		{
-			o->RemoveHandler(t);
-		}
-	}
-
 	static inline VALUE
 	lock_with_timeout(BLooper *looper, bigtime_t timeout)
 	{

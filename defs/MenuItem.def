@@ -6,8 +6,8 @@ define_class "BMenuItem" do
   options :custom_free, :custom_mark
   function "BMenuItem" do
     options :ctor, :public, :custom
-    interface ["const char *label", "%own BMessage *message", "char shortcut = 0", "uint32 modifiers = 0"], nil
-    interface ["%own BMenu *menu", "%own %nillable BMessage *message = NULL"], nil
+    interface ["const char *label", "%up BMessage *message", "char shortcut = 0", "uint32 modifiers = 0"], nil
+    interface ["%up BMenu *menu", "%up %nillable BMessage *message = NULL"], nil
     interface ["BMessage *data"], nil
   end
   function "Instantiate" do

@@ -4,7 +4,7 @@ require 'rbe/cpp/type'
 module RBe
   module Cpp
     class Variable < Struct.new(:type, :name, :value, :options)
-      OPTIONS = ["out", "release", "own", "nillable", "pair"]
+      OPTIONS = ["out", "down", "up", "nillable", "pair"]
 
       def has_value?
         ! value.nil?

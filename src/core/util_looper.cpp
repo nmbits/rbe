@@ -2,7 +2,6 @@
 #include "util_looper.hpp"
 #include "interface.hpp"
 #include "call_script.hpp"
-#include "memorize.hpp"
 
 #include "Application.hpp"
 #include "Looper.hpp"
@@ -107,8 +106,8 @@ namespace rbe {
 
 			PointerOf<BLooper>::Class *ptr =
 				static_cast<PointerOf<BLooper>::Class *>(looper);
-			VALUE v = ObjectRegistory::Instance()->Get(ptr);
-			ObjectRegistory::Instance()->Delete(ptr);
+			VALUE v = gc::GetValue(ptr);
+			gc::Forget(ptr);
 			DATA_PTR(v) = NULL;
 			RemoveChildrenIfWindow(looper);
 			delete looper;

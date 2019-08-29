@@ -127,11 +127,11 @@ define_class "BApplication" do
     interface ["bigtime_t rate"], nil
   end
   function "RegisterLooper" do
-    options :public
+    options :public, :ignore
     interface ["BLooper *looper"], "status_t"
   end
   function "UnregisterLooper" do
-    options :public
+    options :public, :ignore
     interface ["BLooper *looper"], "status_t"
   end
   function "GetSupportedSuites" do

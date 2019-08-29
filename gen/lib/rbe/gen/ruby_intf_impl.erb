@@ -19,7 +19,10 @@
 		void <%= class_binding_name c.name %>::rbe__gc_mark(void *ptr)
 		{
 		    RBE_PRINT(("<%= class_binding_name c.name %>::rb__gc_mark: %p\n", ptr));
-		    ObjectRegistory::Instance()->Mark(ptr);
+% if c.super_class_name
+			// call super
+			<%= class_binding_name c.super_class_name %>::rbe__gc_mark(ptr);
+% end
 		}
 % if c.custom_mark?
 		******/
@@ -32,10 +35,16 @@
 		{
 		    RBE_PRINT(("<%= c.name %>::rb__gc_free: %p\n", ptr));
 		    PRINT(("ptr = %p\n", ptr));
-			ObjectRegistory::Instance()->Delete(ptr);
+% if c.super_class_name == nil
+			// delete this
+			gc::Forget(ptr);
 			PointerOf<<%= c.name %>>::Class *obj =
 				static_cast<PointerOf<<%= c.name %>>::Class *>(ptr);
 			delete obj;
+% else
+			// call super
+			<%= class_binding_name c.super_class_name %>::rbe__gc_free(ptr);
+% end
 		}
 % if c.custom_free?
 		******/

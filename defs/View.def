@@ -2,7 +2,7 @@ define_class "BView" do
   kit "interface"
   header_file "interface/View.h"
   super_class_name "BHandler"
-  options :wrapper
+  options :wrapper, :custom_free
   function "BView" do
     options :ctor, :public
     interface ["const char *name", "uint32 flags", "BLayout *layout = NULL"], nil, :ignore
@@ -47,12 +47,12 @@ define_class "BView" do
   end
   function "AddChild" do
     options :public
-    interface ["%own BView *child", "BView *before = NULL"], nil
-    interface ["BLayoutItem *child"], "bool", :ignore
+    interface ["%up BView *child", "BView *before = NULL"], nil
+    interface ["%up BLayoutItem *child"], "bool", :ignore
   end
   function "RemoveChild" do
     options :public
-    interface ["%release BView *child"], "bool"
+    interface ["%down BView *child"], "bool"
   end
   function "CountChildren" do
     options :public

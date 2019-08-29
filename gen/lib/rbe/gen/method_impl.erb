@@ -76,9 +76,6 @@
 %     else
 				<%= a.type %> <%= a.name %> = Convert<<%= type %> >::FromValue(argv[<%= j %>]);
 %     end
-%     if a.own? || a.release?
-				bool prev_member_<%= a.name %> = <%= a.name %> && Util::IsMemberOf(<%= a.name %>, _this);
-%     end
 %   end
 
 %   if f.pure?
@@ -101,16 +98,12 @@
 				g();
 %   end
 %   f.each_method_arg_with_type do |a, type, j|
-%     if a.own?
-%       oname = owner_name(c, a.type)
-				if (<%= a.name %> && !prev_member_<%= a.name %> && Util::IsMemberOf(<%= a.name %>, _this)) {
-					gc::Ownership0 *ownership = new gc::Ownership<<%= oname %>, <%= a.type.dereferenced %>>(argv[<%= j %>]);
-					ObjectRegistory::Instance()->Own(self, ownership);
-				}
-%     elsif a.release?
-				if (prev_member_<%= a.name %> && !Util::IsMemberOf(<%= a.name %>, _this)) {
-					ObjectRegistory::Instance()->Release(DATA_PTR(self), DATA_PTR(argv[<%= j %>]));
-				}
+%     if a.up?
+				if (!NIL_P(argv[<%= j %>]))
+					gc::Up(self, argv[<%= j %>]);
+%     elsif a.down?
+				if (!NIL_P(argv[<%= j %>]))
+					gc::Down(self, argv[<%= j %>]);
 %     end
 %   end
 %   if need_unlock

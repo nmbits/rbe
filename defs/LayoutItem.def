@@ -2,7 +2,7 @@ define_class "BLayoutItem" do
   kit "interface"
   header_file "interface/LayoutItem.h"
   super_class_name "BArchivable"
-  options :custom_mark
+  options :custom_free
   function "BLayoutItem" do
     options :ctor, :public, :unsupported
     interface [], nil

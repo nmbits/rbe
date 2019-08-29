@@ -116,7 +116,7 @@ namespace rbe
 
 			PointerOf<BMessenger>::Class *ptr = _this;
 			DATA_PTR(self) = static_cast<void *>(ptr);
-			ObjectRegistory::Instance()->Add(self);
+			gc::Memorize(self);
 
 			switch (status) {
 			case B_BAD_VALUE:

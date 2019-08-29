@@ -88,12 +88,12 @@ define_class "BMenu" do
   end
   function "AddItem" do
     options :public, :custom
-    interface ["%own BMenuItem *item"], "bool"
-    interface ["%own BMenuItem *item", "int32 index"], "bool"
-    interface ["%own BMenuItem *item", "BRect frame"], "bool"
-    interface ["%own BMenu *menu"], "bool"
-    interface ["%own BMenu *menu", "int32 index"], "bool"
-    interface ["%own BMenu *menu", "BRect frame"], "bool"
+    interface ["%up BMenuItem *item"], "bool"
+    interface ["%up BMenuItem *item", "int32 index"], "bool"
+    interface ["%up BMenuItem *item", "BRect frame"], "bool"
+    interface ["%up BMenu *menu"], "bool"
+    interface ["%up BMenu *menu", "int32 index"], "bool"
+    interface ["%up BMenu *menu", "BRect frame"], "bool"
   end
   function "AddList" do
     options :public, :ignore
@@ -105,9 +105,9 @@ define_class "BMenu" do
   end
   function "RemoveItem" do
     options :public, :custom
-    interface ["%release BMenuItem *item"], "bool"
+    interface ["%down BMenuItem *item"], "bool"
     interface ["int32 index"], "BMenuItem *", :ignore
-    interface ["%release BMenu *menu"], "bool"
+    interface ["%down BMenu *menu"], "bool"
   end
   function "RemoveItems" do
     options :public, :ignore

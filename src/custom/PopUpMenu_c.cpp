@@ -16,14 +16,6 @@ namespace rbe
 {
 	namespace B
 	{
-		void PopUpMenu::rbe__gc_free(void *ptr)
-		{
-		    RBE_TRACE("BPopUpMenu::rb__gc_free");
-		    RBE_PRINT(("  ptr = %p\n", ptr));
-		    RBE_PRINT(("  calling BMenu::rbe__gc_free\n"));
-		    Menu::rbe__gc_free(ptr);
-		}
-
 		VALUE
 		PopUpMenu::rbe_go(int argc, VALUE *argv, VALUE self)
 		{

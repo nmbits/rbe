@@ -7,10 +7,7 @@
 #include "gvl.hpp"
 #include "lock.hpp"
 #include "debug.hpp"
-#include "member.hpp"
-// #include "memorize.hpp"
-#include "registory.hpp"
-#include "ownership.hpp"
+#include "gc.hpp"
 
 #include "<%= class_binding_header c.name %>"
 
@@ -40,14 +37,14 @@ namespace rbe {
 		VALUE <%= class_binding_name c.name %>::Wrap(<%= c.name %> *obj)
 		{
 			PointerOf<<%= c.name %>>::Class *ptr = static_cast<PointerOf<<%= c.name %>>::Class *>(obj);
-			VALUE result = ObjectRegistory::Instance()->Get(ptr);
+			VALUE result = gc::GetValue(ptr);
 			if (result == Qnil) {
 % if c.module?
 				result = TypedData_Wrap_Struct(rb_cData, &sDataType, ptr);
 % else
 				result = TypedData_Wrap_Struct(sClass, &sDataType, ptr);
 % end
-				ObjectRegistory::Instance()->Add(result);
+				gc::Memorize(result);
 			}
 			return result;
 		}

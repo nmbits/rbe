@@ -53,11 +53,11 @@ define_class "BLooper" do
   end
   function "AddHandler" do
     options :public, :assert_locked
-    interface ["%own BHandler *handler"], nil
+    interface ["%up BHandler *handler"], nil
   end
   function "RemoveHandler" do
     options :public, :assert_locked
-    interface ["%release BHandler *handler"], "bool"
+    interface ["%down BHandler *handler"], "bool"
   end
   function "CountHandlers" do
     options :public, :assert_locked

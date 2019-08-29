@@ -102,7 +102,7 @@ namespace rbe
 			}
 			PointerOf<BApplication>::Class *p = _this;
 			DATA_PTR(self) = p;
-			ObjectRegistory::Instance()->Add(self);
+			gc::Memorize(self);
 			return self;
 		}
 

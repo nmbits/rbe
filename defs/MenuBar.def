@@ -2,7 +2,7 @@ define_class "BMenuBar" do
   kit "interface"
   header_file "interface/MenuBar.h"
   super_class_name "BMenu"
-  options :wrapper, :hide_hooks, :custom_free
+  options :wrapper, :hide_hooks
   function "BMenuBar" do
     options :ctor, :public
     interface ["BRect frame", "const char *name", "uint32 resizingMode = B_FOLLOW_LEFT_RIGHT | B_FOLLOW_TOP", "menu_layout layout = B_ITEMS_IN_ROW", "bool resizeToFit = true"], nil

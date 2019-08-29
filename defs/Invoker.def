@@ -5,12 +5,12 @@ define_class "BInvoker" do
   function "BInvoker" do
     options :ctor, :public
     interface [], nil
-    interface ["%own BMessage *message", "const BHandler *handler", "%nillable const BLooper *looper = NULL"], nil
-    interface ["%own BMessage *message", "BMessenger target"], nil
+    interface ["BMessage *message", "const BHandler *handler", "%nillable const BLooper *looper = NULL"], nil, :ignore
+    interface ["BMessage *message", "BMessenger target"], nil, :ignore
   end
   function "SetMessage" do
     options :public, :custom
-    interface ["BMessage *message"], "status_t", :virtual
+    interface ["%up BMessage *message"], "status_t", :virtual
   end
   function "Message" do
     options :public

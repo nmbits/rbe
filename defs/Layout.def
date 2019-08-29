@@ -2,7 +2,7 @@ define_class "BLayout" do
   kit "interface"
   header_file "interface/Layout.h"
   super_class_name "BLayoutItem"
-  # options :wrapper
+  options :custom_free
   function "BLayout" do
     options :ctor, :public, :unsupported
     interface [], nil

@@ -24,15 +24,6 @@
 
 namespace rbe
 {
-	namespace gc
-	{
-		template<>
-		void Deleting<BWindow, BView>(BWindow *o, BView *t)
-		{
-			o->RemoveChild(t);
-		}
-	}
-
 	namespace B
 	{
 		void
@@ -135,7 +126,7 @@ namespace rbe
 
 			PointerOf<BWindow>::Class *ptr = static_cast<PointerOf<BWindow>::Class *>(_this);
 			DATA_PTR(self) = static_cast<void *>(ptr);
-			ObjectRegistory::Instance()->Add(self);
+			gc::Memorize(self);
 			return self;
 		}
 

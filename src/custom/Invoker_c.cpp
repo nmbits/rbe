@@ -9,46 +9,26 @@
 #include "Messenger.hpp"
 
 #include "rbe.hpp"
-#include "memorize.hpp"
 #include "convert.hpp"
-#include "registory.hpp"
-#include "ownership.hpp"
 #include "type_map.hpp"
 #include "debug.hpp"
-#include "deleting.hpp"
+#include "gc.hpp"
 
 namespace rbe
 {
-	namespace gc
-	{
-		template<>
-		void Deleting<BInvoker, BMessage>(BInvoker *o, BMessage *t)
-		{
-			RBE_TRACE(("rbe::gc::Deleting<BInvoker, BMessage>()"));
-			RBE_PRINT(("BMessage = %p\n", t));
-			RBE_PRINT(("BInvoker = %p\n", o));
-			RBE_PRINT(("o->fMessage = %p\n", o->fMessage));
-			if (o->fMessage == t)
-				o->fMessage = NULL;
-		}
-	}
-
 	namespace B
 	{
 		void Invoker::rbe__gc_free(void *ptr)
 		{
 			RBE_PRINT(("Invoker::rb__gc_free: %p\n", ptr));
 			BInvoker *invoker = static_cast<BInvoker *>(ptr);
-			ObjectRegistory::Instance()->Delete(ptr);
 			invoker->fMessage = NULL;
-			delete invoker;
 		}
 
 		void Invoker::rbe__gc_mark(void *ptr)
 		{
 			RBE_TRACE("Invoker::rbe_gc_mark");
 			RBE_PRINT(("  ptr = %p\n", ptr));
-			ObjectRegistory::Instance()->Mark(ptr);
 			BInvoker *invoker = static_cast<BInvoker *>(ptr);
 			BLooper *looper;
 			BHandler *handler = invoker->Target(&looper);
@@ -77,25 +57,24 @@ namespace rbe
 				rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)", argc);
 
 			BInvoker *invoker = Convert<BInvoker *>::FromValue(self);
-			VALUE vinvoker = Convert<BInvoker *>::ToValue(invoker);
 
 			VALUE vmessage = *argv;
 			if (!NIL_P(vmessage) && !Convert<BMessage *>::IsConvertable(vmessage))
 				rb_raise(rb_eTypeError, "wrong type of argument 1");
-			BMessage *message = NULL;
-			if (!NIL_P(vmessage))
-				message = Convert<BMessage *>::FromValue(vmessage);
-			BMessage *old_message = invoker->Message();
-			if (old_message) {
-				ObjectRegistory::Instance()->Release(DATA_PTR(vinvoker), static_cast<void *>(old_message));
-				invoker->fMessage = NULL;  // because, Invoker automatically deletes the old message
+
+			if (invoker->fMessage) {
+				VALUE vold = Convert<BMessage *>::ToValue(invoker->fMessage);
+				gc::Down(self, vold);
+				invoker->fMessage = NULL;
 			}
+
+			BMessage *message = (!NIL_P(vmessage) ?
+								 Convert<BMessage *>::FromValue(vmessage) : NULL);
 			status_t ret = invoker->BInvoker::SetMessage(message);
-			if (ret == B_OK && message) {
-				gc::Ownership0 *ownership = new gc::Ownership<BInvoker, BMessage>(vmessage);
-				ObjectRegistory::Instance()->Own(vinvoker, ownership);
-			}
-			vret = Convert< status_t>::ToValue(ret);
+			if (ret == B_OK && message)
+				gc::Up(self, vmessage);
+
+			vret = Convert<status_t>::ToValue(ret);
 			return vret;
 		}
 

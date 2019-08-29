@@ -2,7 +2,7 @@ define_class "BPopUpMenu" do
   kit "interface"
   header_file "interface/PopUpMenu.h"
   super_class_name "BMenu"
-  options :wrapper, :hide_hooks, :custom_free
+  options :wrapper, :hide_hooks
   function "BPopUpMenu" do
     options :ctor, :public
     interface ["const char *name", "bool radioMode = true", "bool labelFromMarked = true", "menu_layout layout = B_ITEMS_IN_COLUMN"], nil

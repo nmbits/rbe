@@ -2,7 +2,7 @@ define_class "BTabView" do
   kit "interface"
   header_file "interface/TabView.h"
   super_class_name "BView"
-  options :wrapper
+  options :wrapper, :custom_free
   function "BTabView" do
     options :ctor, :public
     interface ["const char *name", "button_width width = B_WIDTH_AS_USUAL", "uint32 flags = B_FULL_UPDATE_ON_RESIZE | B_WILL_DRAW | B_NAVIGABLE_JUMP | B_FRAME_EVENTS | B_NAVIGABLE"], nil
@@ -151,7 +151,7 @@ define_class "BTabView" do
   end
   function "AddTab" do
     options :public, :custom
-    interface ["%own BView *target", "%nillable %own BTab *tab = NULL"], nil, :virtual
+    interface ["%up BView *target", "%nillable %up BTab *tab = NULL"], nil, :virtual
   end
   function "RemoveTab" do
     options :public, :custom

@@ -26,7 +26,6 @@
 #undef private
 #undef protected
 
-#include "registory.hpp"
 #include "type_map.hpp"
 
 #include "Archivable.hpp"
@@ -36,6 +35,8 @@
 #include "Rect.hpp"
 #include "Size.hpp"
 #include "Font.hpp"
+
+#include "gc.hpp"
 
 #include <utility>
 #include <string.h>
@@ -635,9 +636,9 @@ namespace rbe
 
 			BArchivable *archivable = dynamic_cast<BArchivable *>(invoker);
 			if (archivable)
-				return ObjectRegistory::Instance()->Get(static_cast<void *>(archivable));
+				return gc::GetValue(archivable);
 			pointer_t *ptr = static_cast<pointer_t *>(invoker);
-			return ObjectRegistory::Instance()->Get(static_cast<void *>(ptr));
+			return gc::GetValue(ptr);
 		}
 
 		static BInvoker *FromValue(VALUE v)
@@ -682,7 +683,7 @@ namespace rbe
 				return Qnil;
 
 			pointer_t *ptr = a;
-			return ObjectRegistory::Instance()->Get(static_cast<void *>(ptr));
+			return gc::GetValue(ptr);
 		}
 
 		static R *FromValue(VALUE v)

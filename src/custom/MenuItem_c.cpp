@@ -1,31 +1,21 @@
 
+#include "Archivable.hpp"
 #include "MenuItem.hpp"
 #include "Menu.hpp"
 #include "Message.hpp"
 #include "Window.hpp"
-#include "registory.hpp"
 #include "convert.hpp"
-#include "deleting.hpp"
-#include "ownership.hpp"
 
 namespace rbe
 {
-	namespace gc
-	{
-		template<>
-		void Deleting<BMenuItem, BMenu>(BMenuItem *o, BMenu *t)
-		{
-			if (o->fSubmenu == t)
-				o->fSubmenu = NULL;
-		}
-	}
-
 	namespace B
 	{
 		void
 		MenuItem::rbe__gc_mark(void *ptr)
 		{
-			BMenuItem *_this = static_cast<BMenuItem *>(ptr);
+			PointerOf<BMenuItem>::Class *p =
+				static_cast<PointerOf<BMenuItem>::Class *>(ptr);
+			BMenuItem *_this = static_cast<BMenuItem *>(p);
 			if (_this->fWindow != NULL) {
 				VALUE vwindow = Convert<BWindow *>::ToValue(_this->fWindow);
 				rb_gc_mark(vwindow);
@@ -34,17 +24,18 @@ namespace rbe
 				VALUE vmenu = Convert<BMenu *>::ToValue(_this->fSuper);
 				rb_gc_mark(vmenu);
 			}
-			ObjectRegistory::Instance()->Mark(ptr);
+			Archivable::rbe__gc_mark(ptr);
 		}
 
 		void
 		MenuItem::rbe__gc_free(void *ptr)
 		{
-			BMenuItem *_this = static_cast<BMenuItem *>(ptr);
-			ObjectRegistory::Instance()->Delete(ptr);
+			PointerOf<BMenuItem>::Class *p =
+				static_cast<PointerOf<BMenuItem>::Class *>(ptr);
+			BMenuItem *_this = static_cast<BMenuItem *>(p);
 			_this->fMessage = NULL;
 			_this->fSubmenu = NULL;
-			delete _this;
+			Archivable::rbe__gc_free(ptr);
 		}
 
 		VALUE MenuItem::rbe__initialize(int argc, VALUE *argv, VALUE self)
@@ -66,11 +57,9 @@ namespace rbe
 				_this = new BMenuItem(label, message, shortcut, modifiers);
 				PointerOf<BMenuItem>::Class *ptr = static_cast<PointerOf<BMenuItem>::Class *>(_this);
 				DATA_PTR(self) = static_cast<void *>(ptr);
-				ObjectRegistory::Instance()->Add(self);
-				if (!NIL_P(argv[1])) {
-					gc::Ownership0 *ownership = new gc::Ownership<BInvoker, BMessage>(argv[1]);
-					ObjectRegistory::Instance()->Own(self, ownership);
-				}
+				gc::Memorize(self);
+				if (!NIL_P(argv[1]))
+					gc::Up(self, argv[1]);
 				goto fin;
 			}
 		break_0:
@@ -83,15 +72,13 @@ namespace rbe
 				_this = new BMenuItem(menu, message);
 				PointerOf<BMenuItem>::Class *ptr = static_cast<PointerOf<BMenuItem>::Class *>(_this);
 				DATA_PTR(self) = static_cast<void *>(ptr);
-				ObjectRegistory::Instance()->Add(self);
-				if (!NIL_P(argv[0])) {
-					gc::Ownership0 *ownership = new gc::Ownership<BMenuItem, BMenu>(argv[0]);
-					ObjectRegistory::Instance()->Own(self, ownership);
-				}
-				if (!NIL_P(argv[1])) {
-					gc::Ownership0 *ownership = new gc::Ownership<BInvoker, BMessage>(argv[1]);
-					ObjectRegistory::Instance()->Own(self, ownership);
-				}
+				gc::Memorize(self);
+				if (!NIL_P(argv[0]))
+					gc::Up(self, argv[0]);
+
+				if (!NIL_P(argv[1]))
+					gc::Up(self, argv[1]);
+
 				goto fin;
 			}
 		break_1:

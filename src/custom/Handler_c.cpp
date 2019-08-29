@@ -6,6 +6,8 @@
 
 #include "Handler.hpp"
 
+#include "gc.hpp"
+
 #include <functional>
 
 namespace rbe

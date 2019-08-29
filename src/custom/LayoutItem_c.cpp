@@ -1,23 +1,22 @@
 #include "rbe.hpp"
 #include "convert.hpp"
-#include "registory.hpp"
 #include "debug.hpp"
 
 #include "LayoutItem.hpp"
-#include "View.hpp"
+#include "Layout.hpp"
+#include "type_map.hpp"
 
 namespace rbe {
 	namespace B {
-		void LayoutItem::rbe__gc_mark(void *ptr)
+		void
+		LayoutItem::rbe__gc_free(void *ptr)
 		{
-		    RBE_PRINT(("LayoutItem::rb__gc_mark: %p\n", ptr));
-			BLayoutItem *_this = static_cast<BLayoutItem *>(ptr);
-			BView *view = _this->View();
-			if (view) {
-				VALUE vview = Convert<BView *>::ToValue(view);
-				rb_gc_mark(vview);
-			}
-		    ObjectRegistory::Instance()->Mark(ptr);
+			PointerOf<BLayoutItem>::Class *p =
+				static_cast<PointerOf<BLayoutItem>::Class *>(ptr);
+			BLayoutItem *li = static_cast<BLayoutItem *>(p);
+			if (li->fLayout)
+				li->fLayout->RemoveItem(li);
+			Archivable::rbe__gc_free(ptr);
 		}
 	}
 }
