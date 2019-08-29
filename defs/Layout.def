@@ -21,21 +21,21 @@ define_class "BLayout" do
     interface [], "BView *", :virtual
   end
   function "AddView" do
-    options :public
+    options :public, :custom
     interface ["BView *child"], "BLayoutItem *", :virtual
     interface ["int32 index", "BView *child"], "BLayoutItem *", :virtual
   end
   function "AddItem" do
-    options :public
+    options :public, :custom
     interface ["BLayoutItem *item"], "bool", :virtual
     interface ["int32 index", "BLayoutItem *item"], "bool", :virtual
   end
   function "RemoveView" do
-    options :public
+    options :public, :custom
     interface ["BView *child"], "bool", :virtual
   end
   function "RemoveItem" do
-    options :public
+    options :public, :custom
     interface ["BLayoutItem *item"], "bool", :virtual
     interface ["int32 index"], "BLayoutItem *", :virtual
   end

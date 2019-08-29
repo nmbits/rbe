@@ -13,7 +13,7 @@ define_class "BLayoutItem" do
     interface [], "BLayout *", :const
   end
   function "RemoveSelf" do
-    options :public, :ignore
+    options :public, :custom
     interface [], "bool"
   end
   function "MinSize" do
@@ -78,7 +78,7 @@ define_class "BLayoutItem" do
   end
   function "View" do
     options :public
-    interface [], "BView *", :virtual
+    interface [], "BView *", :virtual, :pure
   end
   function "InvalidateLayout" do
     options :public
