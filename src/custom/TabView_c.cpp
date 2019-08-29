@@ -38,6 +38,8 @@ namespace rbe
 			VALUE vview, vtab;
 			rb_scan_args(argc, argv, "11", &vview, &vtab);
 			BTabView *_this = Convert<BTabView *>::FromValue(self);
+			RBE_PRINT(("  _this: %p\n", _this));
+			RBE_PRINT(("  vtab: %lu\n", vtab));
 			if (NIL_P(vtab)) {
 				vtab = rb_class_new_instance(0, NULL, Tab::Class());
 			} else {
@@ -47,15 +49,20 @@ namespace rbe
 				}
 			}
 			BTab *tab = Convert<BTab *>::FromValue(vtab);
+			RBE_PRINT(("  tab: %p\n", tab));
 			if (!Convert<BView *>::IsConvertable(vview) || NIL_P(vview)) {
 				rb_raise(rb_eTypeError, "wrong type of argument 1");
 				return Qnil;
 			}
 			BView *view = Convert<BView *>::FromValue(vview);
+			RBE_PRINT(("  view: %p\n", view));
 			Tab::rbe_set_view(1, &vview, vtab);
 			std::function<void ()> f =
 				[&]() {
 					// from Haiku's TabView.cpp
+					RBE_PRINT(("  _this: %p\n", _this));
+					RBE_PRINT(("  _this->fContainerView: %p\n", _this->fContainerView));
+					RBE_PRINT(("  _this->fContainerView->GetLayout(): %p\n", _this->fContainerView->GetLayout()));
 					if (_this->fContainerView->GetLayout())
 						_this->fContainerView->GetLayout()->AddView(_this->CountTabs(), view);
 					_this->fTabList->AddItem(tab);

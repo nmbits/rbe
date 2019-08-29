@@ -2,7 +2,7 @@
 $: << File.expand_path('..', File.dirname(__FILE__))
 require 'rbe'
 
-B.DEBUG = false
+B.DEBUG = true
 DEBUG = true
 
 class MyWindow < B::Window

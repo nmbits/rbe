@@ -53,7 +53,7 @@
 				gc::Memorize(self);
 %     f.args.each_with_index do |a, j|
 %       if a.up?
-				if (!NIL_P(argv[<%= j %>]))
+				if (!NIL_P(vargs[<%= j %>]))
 					gc::Up(self, vargs[<%= j %>]);
 %       end
 %     end
