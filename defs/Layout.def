@@ -121,7 +121,7 @@ define_class "BLayout" do
   end
   function "ItemAdded" do
     options :protected, :hook
-    interface ["BLayoutItem *item", "int32 atIndex"], "bool = true", :virtual
+    interface ["BLayoutItem *item", "int32 atIndex"], "bool = false", :virtual
   end
   function "ItemRemoved" do
     options :protected, :hook
