@@ -1,0 +1,44 @@
+define_class "BAlignment" do
+  kit "interface"
+  header_file "interface/Alignment.h"
+  variable "alignment horizontal"
+  variable "vertical_alignment vertical"
+  function "BAlignment" do
+    options :ctor, :public
+    interface [], nil
+    interface ["const BAlignment& other"], nil, :ignore
+    interface ["alignment horizontal", "vertical_alignment vertical"], nil
+  end
+  function "Horizontal" do
+    options :public
+    interface [], "alignment", :const
+  end
+  function "Vertical" do
+    options :public
+    interface [], "vertical_alignment", :const
+  end
+  function "RelativeHorizontal" do
+    options :public
+    interface [], "float", :const
+  end
+  function "RelativeVertical" do
+    options :public
+    interface [], "float", :const
+  end
+  function "SetHorizontal" do
+    options :public
+    interface ["alignment horizontal"], nil
+  end
+  function "SetVertical" do
+    options :public
+    interface ["vertical_alignment vertical"], nil
+  end
+  function "IsHorizontalSet" do
+    options :public
+    interface [], "bool", :const
+  end
+  function "IsVerticalSet" do
+    options :public
+    interface [], "bool", :const
+  end
+end
