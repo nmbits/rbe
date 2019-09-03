@@ -1,0 +1,127 @@
+define_class "BAbstractLayout" do
+  kit "interface"
+  header_file "interface/AbstractLayout.h"
+  super_class_name "BLayout"
+  options :wrapper
+  function "BAbstractLayout" do
+    options :ctor, :public, :unsupported
+    interface [], nil
+    interface ["BMessage *from"], nil
+  end
+  function "MinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "MaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "PreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "Alignment" do
+    options :public, :ignore
+    interface [], "BAlignment", :virtual
+  end
+  function "SetExplicitMinSize" do
+    options :public
+    interface ["BSize size"], nil, :virtual
+  end
+  function "SetExplicitMaxSize" do
+    options :public
+    interface ["BSize size"], nil, :virtual
+  end
+  function "SetExplicitPreferredSize" do
+    options :public
+    interface ["BSize size"], nil, :virtual
+  end
+  function "SetExplicitAlignment" do
+    options :public, :ignore
+    interface ["BAlignment alignment"], nil, :virtual
+  end
+  function "BaseMinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "BaseMaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "BasePreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "BaseAlignment" do
+    options :public, :ignore
+    interface [], "BAlignment", :virtual
+  end
+  function "Frame" do
+    options :public
+    interface [], "BRect", :virtual
+  end
+  function "SetFrame" do
+    options :public
+    interface ["BRect frame"], nil, :virtual
+  end
+  function "IsVisible" do
+    options :public
+    interface [], "bool", :virtual
+  end
+  function "SetVisible" do
+    options :public
+    interface ["bool visible"], nil, :virtual
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *into", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AllArchived" do
+    options :protected, :hook, :ignore
+    interface ["BMessage *archive"], "status_t = B_ERROR", :const, :virtual
+  end
+  function "AllUnarchived" do
+    options :protected, :hook, :ignore
+    interface ["const BMessage *from"], "status_t = B_ERROR", :virtual
+  end
+  function "ItemArchived" do
+    options :protected, :hook, :ignore
+    interface ["BMessage *into", "BLayoutItem *item", "int32 index"], "status_t = B_OK", :const, :virtual
+  end
+  function "ItemUnarchived" do
+    options :protected, :hook, :ignore
+    interface ["const BMessage *from", "BLayoutItem *item", "int32 index"], "status_t = B_OK", :virtual
+  end
+  function "ItemAdded" do
+    options :protected, :hook
+    interface ["BLayoutItem *item", "int32 atIndex"], "bool = false", :virtual
+  end
+  function "ItemRemoved" do
+    options :protected, :hook
+    interface ["BLayoutItem *item", "int32 fromIndex"], nil, :virtual
+  end
+  function "LayoutInvalidated" do
+    options :protected, :hook
+    interface ["bool children"], nil, :virtual
+  end
+  function "OwnerChanged" do
+    options :protected, :hook
+    interface ["BView *was"], nil, :virtual
+  end
+  function "AttachedToLayout" do
+    options :protected, :hook
+    interface [], nil, :virtual
+  end
+  function "DetachedFromLayout" do
+    options :protected, :hook
+    interface ["BLayout *layout"], nil, :virtual
+  end
+  function "AncestorVisibilityChanged" do
+    options :protected, :hook
+    interface ["bool shown"], nil, :virtual
+  end
+end
