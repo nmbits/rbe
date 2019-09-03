@@ -1,0 +1,127 @@
+define_class "BTwoDimensionalLayout" do
+  kit "interface"
+  header_file "interface/TwoDimensionalLayout.h"
+  super_class_name "BAbstractLayout"
+  # variable "float fLeftInset"
+  # variable "float fRightInset"
+  # variable "float fTopInset"
+  # variable "float fBottomInset"
+  # variable "float fHSpacing"
+  # variable "float fVSpacing"
+  function "BTwoDimensionalLayout" do
+    options :ctor, :public, :unsupported
+    interface [], nil
+    interface ["BMessage *from"], nil
+  end
+  function "SetInsets" do
+    options :public
+    interface ["float left", "float top", "float right", "float bottom"], nil
+    interface ["float horizontal", "float vertical"], nil
+    interface ["float insets"], nil
+  end
+  function "GetInsets" do
+    options :public
+    interface ["%out float *left", "%out float *top", "%out float *right", "%out float *bottom"], nil, :const
+  end
+  function "AlignLayoutWith" do
+    options :public, :ignore
+    interface ["BTwoDimensionalLayout *other", "orientation orientation"], nil
+  end
+  function "BaseMinSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "BaseMaxSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "BasePreferredSize" do
+    options :public
+    interface [], "BSize", :virtual
+  end
+  function "BaseAlignment" do
+    options :public, :ignore
+    interface [], "BAlignment", :virtual
+  end
+  function "HasHeightForWidth" do
+    options :public
+    interface [], "bool", :virtual
+  end
+  function "GetHeightForWidth" do
+    options :public
+    interface ["float width", "%out float *min", "%out float *max", "%out float *preferred"], nil, :virtual
+  end
+  function "SetFrame" do
+    options :public
+    interface ["BRect frame"], nil, :virtual
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *into", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AllArchived" do
+    options :protected, :ignore
+    interface ["BMessage *into"], "status_t = B_NG", :const, :virtual
+  end
+  function "AllUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from"], "status_t = B_NG", :virtual
+  end
+  function "ItemArchived" do
+    options :protected, :ignore
+    interface ["BMessage *into", "BLayoutItem *item", "int32 index"], "status_t", :const, :virtual
+  end
+  function "ItemUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from", "BLayoutItem *item", "int32 index"], "status_t", :virtual
+  end
+  function "LayoutInvalidated" do
+    options :protected
+    interface ["bool children = false"], nil, :virtual
+  end
+  function "DoLayout" do
+    options :protected
+    interface [], nil, :virtual
+  end
+  function "AddInsets" do
+    options :protected
+    interface ["BSize size"], "BSize"
+    interface ["float *minHeight", "float *maxHeight", "float *preferredHeight"], nil, :ignore
+  end
+  function "SubtractInsets" do
+    options :protected
+    interface ["BSize size"], "BSize"
+  end
+  function "PrepareItems" do
+    options :protected, :ignore
+    interface ["orientation orientation"], nil, :virtual
+  end
+  function "HasMultiColumnItems" do
+    options :protected
+    interface [], "bool", :virtual
+  end
+  function "HasMultiRowItems" do
+    options :protected
+    interface [], "bool", :virtual
+  end
+  function "InternalCountColumns" do
+    options :protected
+    interface [], "int32", :pure, :virtual
+  end
+  function "InternalCountRows" do
+    options :protected
+    interface [], "int32", :pure, :virtual
+  end
+  function "GetColumnRowConstraints" do
+    options :protected, :ignore
+    interface ["orientation orientation", "int32 index", "%out ColumnRowConstraints *constraints"], nil, :pure, :virtual
+  end
+  function "GetItemDimensions" do
+    options :protected, :ignore
+    interface ["BLayoutItem *item", "%out Dimensions *dimensions"], nil, :pure, :virtual
+  end
+end
