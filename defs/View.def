@@ -827,11 +827,11 @@ define_class "BView" do
     interface ["bool descendants = false"], nil
   end
   function "SetLayout" do
-    options :public, :ignore
+    options :public
     interface ["BLayout *layout"], nil, :virtual
   end
   function "GetLayout" do
-    options :public, :ignore
+    options :public
     interface [], "BLayout *", :const
   end
   function "EnableLayoutInvalidation" do
@@ -867,7 +867,7 @@ define_class "BView" do
     interface [], nil
   end
   function "LayoutInvalidated" do
-    options :protected
+    options :protected, :hook
     interface ["bool descendants = false"], nil, :virtual
   end
   function "DoLayout" do
