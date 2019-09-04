@@ -42,7 +42,7 @@
 %     use_label = f.args.length > 0
 %     f.args.each_with_index do |a, j|
 %       if a.optional?
-				<%= a.type %> <%= a.name %> = (<%= j %> < argc ? Convert<<%= a.type %>>::FromValue(vargs[<%= j %>]) : <%= a.value %>);
+				<%= a.type %> <%= a.name %> = (<%= j %> < argc ? Convert<<%= a.type %>>::FromValue(vargs[<%= j %>]) : (<%= a.type %>)<%= a.value %>);
 %       else
 				<%= a.type %> <%= a.name %> = Convert<<%= a.type %>>::FromValue(vargs[<%= j %>]);
 %       end

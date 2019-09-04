@@ -1,0 +1,105 @@
+define_class "BGroupLayout" do
+  kit "interface"
+  header_file "interface/GroupLayout.h"
+  super_class_name "BTwoDimensionalLayout"
+  options :wrapper
+  function "BGroupLayout" do
+    options :ctor, :public
+    interface ["orientation ortt", "float spacing = B_USE_DEFAULT_SPACING"], nil
+    interface ["BMessage *from"], nil
+  end
+  function "Spacing" do
+    options :public
+    interface [], "float", :const
+  end
+  function "SetSpacing" do
+    options :public
+    interface ["float spacing"], nil
+  end
+  function "Orientation" do
+    options :public
+    interface [], "orientation", :const
+  end
+  function "SetOrientation" do
+    options :public
+    interface ["orientation ortt"], nil
+  end
+  function "ItemWeight" do
+    options :public
+    interface ["int32 index"], "float", :const
+  end
+  function "SetItemWeight" do
+    options :public
+    interface ["int32 index", "float weight"], nil
+  end
+  function "AddView" do
+    options :public, :custom
+    interface ["BView *child"], "BLayoutItem *", :virtual
+    interface ["int32 index", "BView *child"], "BLayoutItem *", :virtual
+    interface ["BView *child", "float weight"], "BLayoutItem *", :virtual
+    interface ["int32 index", "BView *child", "float weight"], "BLayoutItem *", :virtual
+  end
+  function "AddItem" do
+    options :public, :custom
+    interface ["BLayoutItem *item"], "bool", :virtual
+    interface ["int32 index", "BLayoutItem *item"], "bool", :virtual
+    interface ["BLayoutItem *item", "float weight"], "bool", :virtual
+    interface ["int32 index", "BLayoutItem *item", "float weight"], "bool", :virtual
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *into", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *from"], "BArchivable *"
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AllArchived" do
+    options :protected, :ignore
+    interface ["BMessage *into"], "status_t", :const, :virtual
+  end
+  function "AllUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from"], "status_t", :virtual
+  end
+  function "ItemArchived" do
+    options :protected, :ignore
+    interface ["BMessage *into", "BLayoutItem *item", "int32 index"], "status_t", :const, :virtual
+  end
+  function "ItemUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from", "BLayoutItem *item", "int32 index"], "status_t", :virtual
+  end
+  function "ItemAdded" do
+    options :protected, :hook
+    interface ["BLayoutItem *item", "int32 atIndex"], "bool = false", :virtual
+  end
+  function "ItemRemoved" do
+    options :protected, :hook
+    interface ["BLayoutItem *item", "int32 fromIndex"], nil, :virtual
+  end
+  function "PrepareItems" do
+    options :protected
+    interface ["orientation ortt"], nil, :virtual
+  end
+  function "InternalCountColumns" do
+    options :protected
+    interface [], "int32", :virtual
+  end
+  function "InternalCountRows" do
+    options :protected
+    interface [], "int32", :virtual
+  end
+  function "GetColumnRowConstraints" do
+    options :protected, :ignore
+    interface ["orientation ortt", "int32 index", "ColumnRowConstraints *constraints"], nil, :virtual
+  end
+  function "GetItemDimensions" do
+    options :protected, :ignore
+    interface ["BLayoutItem *item", "Dimensions *dimensions"], nil, :virtual
+  end
+end
