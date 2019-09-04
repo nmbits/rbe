@@ -827,7 +827,7 @@ define_class "BView" do
     interface ["bool descendants = false"], nil
   end
   function "SetLayout" do
-    options :public
+    options :public, :custom
     interface ["BLayout *layout"], nil, :virtual
   end
   function "GetLayout" do
