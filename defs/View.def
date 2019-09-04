@@ -775,7 +775,7 @@ define_class "BView" do
     interface [], "BSize", :virtual
   end
   function "LayoutAlignment" do
-    options :public, :ignore
+    options :public
     interface [], "BAlignment", :virtual
   end
   function "SetExplicitMinSize" do
@@ -795,7 +795,7 @@ define_class "BView" do
     interface ["BSize size"], nil
   end
   function "SetExplicitAlignment" do
-    options :public, :ignore
+    options :public
     interface ["BAlignment alignment"], nil
   end
   function "ExplicitMinSize" do
@@ -811,7 +811,7 @@ define_class "BView" do
     interface [], "BSize", :const
   end
   function "ExplicitAlignment" do
-    options :public, :ignore
+    options :public
     interface [], "BAlignment", :const
   end
   function "HasHeightForWidth" do

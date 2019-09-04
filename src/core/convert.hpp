@@ -35,6 +35,7 @@
 #include "Rect.hpp"
 #include "Size.hpp"
 #include "Font.hpp"
+#include "Alignment.hpp"
 
 #include "gc.hpp"
 
@@ -555,6 +556,7 @@ namespace rbe
 	RBE_IMM_STRUCT_CONVERT(BPoint);
 	RBE_IMM_STRUCT_CONVERT(BRect);
 	RBE_IMM_STRUCT_CONVERT(BSize);
+	RBE_IMM_STRUCT_CONVERT(BAlignment);
 
 	template<typename R>
 	struct Convert<const R>
