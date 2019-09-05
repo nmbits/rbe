@@ -46,9 +46,9 @@ define_class "BView" do
     interface ["BMessage *message"], nil, :virtual
   end
   function "AddChild" do
-    options :public
-    interface ["%up BView *child", "BView *before = NULL"], nil
-    interface ["%up BLayoutItem *child"], "bool", :ignore
+    options :public, :custom
+    interface ["%up BView *child", "%nillable BView *before = NULL"], nil
+    interface ["%up BLayoutItem *child"], "bool"
   end
   function "RemoveChild" do
     options :public

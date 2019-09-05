@@ -157,5 +157,86 @@ namespace rbe
 				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
 			return Qnil;
 		}
+
+		VALUE
+		View::rbe_add_child(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("BView::rbe_add_child", argc, argv, self);
+			VALUE vret = Qnil;
+			BView *_this = Convert<BView *>::FromValue(self);
+			int type_error_index = 0;
+			if (1 <= argc && argc <= 2) {
+				if (0 < argc && argv[0] == Qnil) {
+					type_error_index = 0;
+					goto break_0;
+				}
+				if (0 < argc && !Convert<BView * >::IsConvertable(argv[0])) {
+					type_error_index = 0;
+					goto break_0;
+				}
+				if (1 < argc && !Convert<BView * >::IsConvertable(argv[1])) {
+					type_error_index = 1;
+					goto break_0;
+				}
+				BView * child = Convert<BView * >::FromValue(argv[0]);
+				BView * before = (1 < argc ? Convert<BView * >::FromValue(argv[1]) : (BView *)NULL);
+				// see BView::_AddChild()
+
+				if (child->fParent != NULL)
+					rb_raise(rb_eRuntimeError, "B::View#add_child failed - the view already has a parent.");
+
+				if (child == _this)
+					rb_raise(rb_eRuntimeError, "B::View#add_child failed - cannot add a view to itself.");
+
+				if (before && before->fParent != _this)
+					rb_raise(rb_eRuntimeError, "Invalid before view");
+
+				std::function<void ()> f = [&]() {
+					_this->BView::AddChild(child, before);
+				};
+				CallWithoutGVL<std::function<void ()>, void> g(f);
+				g();
+
+				if (child->fParent != _this)
+					rb_raise(rb_eRuntimeError, "B::View#add_child failed - something wrong with the view");
+				gc::Up(self, argv[0]);
+
+				if (_this->fLayoutData->fLayout) {
+					VALUE layout_ = Convert<BLayout *>::ToValue(_this->fLayoutData->fLayout);
+					gc::Up(layout_, argv[0]);
+				}
+
+				rb_thread_check_ints();
+				if (ThreadException() > 0) {
+					rb_jump_tag(ThreadException());
+				}
+				return vret;
+			}
+		break_0:
+
+			if (1 == argc) {
+				if (0 < argc && argv[0] == Qnil) {
+					type_error_index = 0;
+					goto break_1;
+				}
+				if (0 < argc && !Convert<BLayoutItem * >::IsConvertable(argv[0])) {
+					type_error_index = 0;
+					goto break_1;
+				}
+				BLayout *layout = _this->fLayoutData->fLayout;
+				if (!layout)
+					return Qfalse;
+
+				VALUE layout_ = Convert<BLayout *>::ToValue(layout);
+				return rb_funcall(layout_, rb_intern("add_item"), 1, argv[0]);
+			}
+		break_1:
+
+			if (argc < 1 || argc > 2)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for (1..2))", argc);
+			else
+				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+			return Qnil;
+		}
 	}
 }
