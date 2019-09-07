@@ -51,7 +51,7 @@ define_class "BView" do
     interface ["%up BLayoutItem *child"], "bool"
   end
   function "RemoveChild" do
-    options :public
+    options :public, :custom
     interface ["%down BView *child"], "bool"
   end
   function "CountChildren" do
@@ -71,7 +71,7 @@ define_class "BView" do
     interface [], "BView *", :const
   end
   function "RemoveSelf" do
-    options :public, :ignore
+    options :public, :custom
     interface [], "bool"
   end
   function "Window" do

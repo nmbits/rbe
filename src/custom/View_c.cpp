@@ -228,7 +228,8 @@ namespace rbe
 					return Qfalse;
 
 				VALUE layout_ = Convert<BLayout *>::ToValue(layout);
-				return rb_funcall(layout_, rb_intern("add_item"), 1, argv[0]);
+				return Layout::rbe_add_item(1, argv, layout_);
+				// return rb_funcall(layout_, rb_intern("add_item"), 1, argv[0]);
 			}
 		break_1:
 
@@ -236,6 +237,84 @@ namespace rbe
 				rb_raise(rb_eArgError, "wrong number of arguments (%d for (1..2))", argc);
 			else
 				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+			return Qnil;
+		}
+
+		VALUE
+		View::rbe_remove_child(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("BView::rbe_remove_child", argc, argv, self);
+			BView *_this = Convert<BView *>::FromValue(self);
+			int type_error_index = 0;
+			if (1 == argc) {
+				if (argv[0] == Qnil)
+					return Qfalse;
+
+				if (0 < argc && !Convert<BView * >::IsConvertable(argv[0])) {
+					type_error_index = 0;
+					goto break_0;
+				}
+				BView * child = Convert<BView * >::FromValue(argv[0]);
+
+				if (child->fParent != _this)
+					return Qfalse;
+
+				return rbe_remove_self(0, NULL, argv[0]);
+				// return rb_funcall(argv[0], rb_intern("remove_self"), 0);
+			}
+		break_0:
+
+			if (argc != 1)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)", argc);
+			else
+				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+			return Qnil;
+		}
+
+		VALUE
+		View::rbe_remove_self(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("BView::rbe_remove_self", argc, argv, self);
+			VALUE vret = Qnil;
+			BView *_this = Convert<BView *>::FromValue(self);
+			if (0 == argc) {
+
+				// View::_RemoveLayoutItemsFromLayout
+
+				if (_this->fParent != NULL &&
+					_this->fParent->fLayoutData->fLayout != NULL) {
+					int32 index = _this->fLayoutData->fLayoutItems.CountItems();
+					while (index-- > 0) {
+						BLayoutItem *item = _this->fLayoutData->fLayoutItems.ItemAt(index);
+						BLayout *layout = item->Layout();
+						if (layout) {
+							VALUE layout_ = Convert<BLayout *>::ToValue(layout);
+							VALUE item_ = Convert<BLayoutItem *>::ToValue(item);
+							Layout::rbe_remove_item(1, &item_, layout_);
+						}
+					}
+				}
+
+				BView *parent = _this->fParent;
+				bool ret = false;
+				std::function<void ()> f = [&]() {
+					ret = _this->BView::_RemoveSelf();
+				};
+				CallWithoutGVL<std::function<void ()>, void> g(f);
+				g();
+				if (ret && !parent->fTopLevelView) {
+					VALUE parent_ = Convert<BView *>::ToValue(parent);
+					gc::Down(parent_, self);
+				}
+				rb_thread_check_ints();
+				if (ThreadException() > 0)
+					rb_jump_tag(ThreadException());
+
+				vret = Convert<bool>::ToValue(ret);
+				return vret;
+			}
+
+			rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
 			return Qnil;
 		}
 	}
