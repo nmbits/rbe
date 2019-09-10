@@ -296,15 +296,21 @@ namespace rbe
 				}
 
 				BView *parent = _this->fParent;
+				BWindow *window = _this->Window();
 				bool ret = false;
 				std::function<void ()> f = [&]() {
 					ret = _this->BView::_RemoveSelf();
 				};
 				CallWithoutGVL<std::function<void ()>, void> g(f);
 				g();
-				if (ret && !parent->fTopLevelView) {
-					VALUE parent_ = Convert<BView *>::ToValue(parent);
-					gc::Down(parent_, self);
+				if (ret) {
+					VALUE parent_;
+					if (parent->fTopLevelView)
+						parent_ = Convert<BWindow *>::ToValue(window);
+					else
+						parent_ = Convert<BView *>::ToValue(parent);
+					if (!NIL_P(parent_))
+						gc::Down(parent_, self);
 				}
 				rb_thread_check_ints();
 				if (ThreadException() > 0)
