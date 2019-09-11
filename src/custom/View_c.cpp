@@ -3,6 +3,7 @@
 #include "Message.hpp"
 #include "Rect.hpp"
 #include "Layout.hpp"
+#include "Window.hpp"
 
 #include "rbe.hpp"
 #include "protect.hpp"
@@ -275,7 +276,7 @@ namespace rbe
 		View::rbe_remove_self(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE_METHOD_CALL("BView::rbe_remove_self", argc, argv, self);
-			VALUE vret = Qnil;
+			VALUE vret = Qfalse;
 			BView *_this = Convert<BView *>::FromValue(self);
 			if (0 == argc) {
 
@@ -321,7 +322,7 @@ namespace rbe
 			}
 
 			rb_raise(rb_eArgError, "wrong number of arguments (%d for 0)", argc);
-			return Qnil;
+			return Qfalse;
 		}
 	}
 }

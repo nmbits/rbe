@@ -5,6 +5,8 @@
 #define protected public
 
 #include <app/Application.h>
+#include <interface/LayoutContext.h>
+#include <support/ObjectList.h>
 
 #undef private
 #undef protected
@@ -14,6 +16,8 @@
 #include "Window.hpp"
 #include "View.hpp"
 #include "Message.hpp"
+#include "LayoutItem.hpp"
+#include "Layout.hpp"
 
 #include "rbe.hpp"
 #include "lock.hpp"
@@ -21,6 +25,68 @@
 #include "deleting.hpp"
 
 #include <functional>
+
+// copied from haiku/src/kits/interface/View.cpp
+// TODO
+
+struct BView::LayoutData {
+	LayoutData()
+		:
+		fMinSize(),
+		fMaxSize(),
+		fPreferredSize(),
+		fAlignment(),
+		fLayoutInvalidationDisabled(0),
+		fLayout(NULL),
+		fLayoutContext(NULL),
+		fLayoutItems(5, false),
+		fLayoutValid(true),		// TODO: Rethink these initial values!
+		fMinMaxValid(true),		//
+		fLayoutInProgress(false),
+		fNeedsRelayout(true)
+	{
+	}
+
+	// status_t
+	// AddDataToArchive(BMessage* archive)
+	// {
+	// 	status_t err = archive->AddSize(kSizesField, fMinSize);
+
+	// 	if (err == B_OK)
+	// 		err = archive->AddSize(kSizesField, fMaxSize);
+
+	// 	if (err == B_OK)
+	// 		err = archive->AddSize(kSizesField, fPreferredSize);
+
+	// 	if (err == B_OK)
+	// 		err = archive->AddAlignment(kAlignmentField, fAlignment);
+
+	// 	return err;
+	// }
+
+	// void
+	// PopulateFromArchive(BMessage* archive)
+	// {
+	// 	archive->FindSize(kSizesField, 0, &fMinSize);
+	// 	archive->FindSize(kSizesField, 1, &fMaxSize);
+	// 	archive->FindSize(kSizesField, 2, &fPreferredSize);
+	// 	archive->FindAlignment(kAlignmentField, &fAlignment);
+	// }
+
+	BSize			fMinSize;
+	BSize			fMaxSize;
+	BSize			fPreferredSize;
+	BAlignment		fAlignment;
+	int				fLayoutInvalidationDisabled;
+	BLayout*		fLayout;
+	BLayoutContext*	fLayoutContext;
+	BObjectList<BLayoutItem> fLayoutItems;
+	bool			fLayoutValid;
+	bool			fMinMaxValid;
+	bool			fLayoutInProgress;
+	bool			fNeedsRelayout;
+};
+
 
 namespace rbe
 {
@@ -182,6 +248,159 @@ namespace rbe
 			if (_this->fFlags & B_QUIT_ON_WINDOW_CLOSE)
 				be_app->PostMessage(B_QUIT_REQUESTED);
 			B::Looper::rbe_quit(0, NULL, self);
+			return Qnil;
+		}
+
+		VALUE
+		Window::rbe_add_child(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("BWindow::rbe_add_child", argc, argv, self);
+			VALUE vret = Qnil;
+			BWindow *_this = Convert<BWindow *>::FromValue(self);
+			bool unlock = false;
+			if (find_thread(NULL) != _this->LockingThread()) {
+				status_t status =
+					Util::LockLooperWithTimeout(_this, B_INFINITE_TIMEOUT);
+				if (status != B_OK)
+					return Qnil;
+				unlock = true;
+			}
+			int type_error_index = 0;
+			if (1 <= argc && argc <= 2) {
+				if (0 < argc && argv[0] == Qnil) {
+					type_error_index = 0;
+					goto break_0;
+				}
+				if (0 < argc && !Convert<BView * >::IsConvertable(argv[0])) {
+					type_error_index = 0;
+					goto break_0;
+				}
+				if (1 < argc && argv[1] == Qnil) {
+					type_error_index = 1;
+					goto break_0;
+				}
+				if (1 < argc && !Convert<BView * >::IsConvertable(argv[1])) {
+					type_error_index = 1;
+					goto break_0;
+				}
+				BView * child = Convert<BView * >::FromValue(argv[0]);
+				BView * before = (1 < argc ? Convert<BView * >::FromValue(argv[1]) : (BView *)NULL);
+				// see BView::_AddChild()
+
+				if (child->fParent != NULL) {
+					if (unlock) _this->Unlock();
+					rb_raise(rb_eRuntimeError,
+							 "B::Window#add_child failed - the view already has a parent.");
+				}
+
+				if (before && before->fParent != _this->fTopView) {
+					if (unlock) _this->Unlock();
+					rb_raise(rb_eRuntimeError, "Invalid before view");
+				}
+
+				std::function<void ()> f = [&]() {
+					_this->BWindow::AddChild(child, before);
+				};
+				CallWithoutGVL<std::function<void ()>, void> g(f);
+				g();
+				if (child->Window() == _this)
+					gc::Up(self, argv[0]);
+				if (unlock)
+					_this->Unlock();
+				rb_thread_check_ints();
+				if (ThreadException() > 0) {
+					rb_jump_tag(ThreadException());
+				}
+				return vret;
+			}
+		break_0:
+
+			if (1 == argc) {
+				if (0 < argc && argv[0] == Qnil) {
+					type_error_index = 0;
+					goto break_1;
+				}
+				if (0 < argc && !Convert<BLayoutItem * >::IsConvertable(argv[0])) {
+					type_error_index = 0;
+					goto break_1;
+				}
+				BLayoutItem * child = Convert<BLayoutItem * >::FromValue(argv[0]);
+
+				BLayout *layout = _this->fTopView->fLayoutData->fLayout;
+				if (layout == NULL) {
+					if (unlock) _this->Unlock();
+					return Qnil;
+				}
+				VALUE layout_ = Convert<BLayout *>::ToValue(layout);
+				vret = Layout::rbe_add_item(1, argv, layout_);
+				BView *view = child->View();
+				if (view && (view->Window() == _this)) {
+					VALUE view_ = Convert<BView *>::ToValue(view);
+					gc::Up(self, view_);
+				}
+
+				if (unlock) _this->Unlock();
+				return vret;
+			}
+		break_1:
+
+			if (unlock)
+			    _this->Unlock();
+			if (argc < 1 || argc > 2)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for (1..2))", argc);
+			else
+				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+			return Qnil;
+		}
+
+		VALUE
+		Window::rbe_remove_child(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("BWindow::rbe_remove_child", argc, argv, self);
+			VALUE vret = Qfalse;
+			BWindow *_this = Convert<BWindow *>::FromValue(self);
+			bool unlock = false;
+			if (find_thread(NULL) != _this->LockingThread()) {
+				status_t status =
+					Util::LockLooperWithTimeout(_this, B_INFINITE_TIMEOUT);
+				if (status != B_OK)
+					return Qnil;
+				unlock = true;
+			}
+			int type_error_index = 0;
+			if (1 == argc) {
+				if (0 < argc && argv[0] == Qnil) {
+					type_error_index = 0;
+					goto break_0;
+				}
+				if (0 < argc && !Convert<BView * >::IsConvertable(argv[0])) {
+					type_error_index = 0;
+					goto break_0;
+				}
+				BView * child = Convert<BView * >::FromValue(argv[0]);
+
+				if (child->Window() != _this)
+					return Qfalse;
+
+				std::function<void ()> f =
+					[&](){ vret = View::rbe_remove_self(0, NULL, argv[0]); };
+				Protect<std::function<void ()>> g(f);
+				g();
+				if (unlock)
+					_this->Unlock();
+				if (g.State() > 0)
+					rb_jump_tag(g.State());
+
+				return vret;
+			}
+		break_0:
+
+			if (unlock)
+			    _this->Unlock();
+			if (argc != 1)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)", argc);
+			else
+				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
 			return Qnil;
 		}
 	}
