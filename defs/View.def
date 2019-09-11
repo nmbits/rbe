@@ -5,7 +5,7 @@ define_class "BView" do
   options :wrapper, :custom_free
   function "BView" do
     options :ctor, :public
-    interface ["const char *name", "uint32 flags", "BLayout *layout = NULL"], nil, :ignore
+    interface ["const char *name", "uint32 flags", "%up %nillable BLayout *layout = NULL"], nil
     interface ["BRect frame", "const char *name", "uint32 resizingMode", "uint32 flags"], nil
     interface ["BMessage *archive"], nil
   end

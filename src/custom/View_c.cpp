@@ -85,11 +85,30 @@ struct BView::LayoutData {
 
 namespace rbe
 {
+	namespace Util
+	{
+		BLayout *
+		UnsetLayout(BView *view)
+		{
+			BLayout *ret = view->fLayoutData->fLayout;
+			// unset and (don't) delete the old layout
+			if (ret) {
+				ret->RemoveSelf();
+				ret->SetOwner(NULL);
+				view->fLayoutData->fLayout = NULL;
+			}
+			return ret;
+		}
+	}
+
 	namespace B
 	{
 		void
 		View::rbe__gc_free(void *ptr)
 		{
+		    RBE_PRINT(("BView::rb__gc_free: %p\n", ptr));
+		    PRINT(("ptr = %p\n", ptr));
+
 			PointerOf<BView>::Class *tmp = static_cast<PointerOf<BView>::Class *>(ptr);
 			BView *view = static_cast<BView *>(tmp);
 
@@ -100,8 +119,14 @@ namespace rbe
 			while (BView *child = view->ChildAt(0))
 				child->RemoveSelf();
 
-			// 3. remove LayoutItems
-			// TODO
+			// 3. Unset Layout
+			Util::UnsetLayout(view);
+
+			// 4. TODO ToolTIp
+
+			// 5. TODO VerScroller
+
+			// 6. TODO HorScroller
 
 			Handler::rbe__gc_free(ptr);
 		}
@@ -130,12 +155,7 @@ namespace rbe
 					rb_raise(rb_eRuntimeError,
 							 "B::View#set_layout failed, layout if already in use.");
 				// unset and (don't) delete the old layout
-				if (_this->fLayoutData->fLayout) {
-					_this->fLayoutData->fLayout->RemoveSelf();
-					_this->fLayoutData->fLayout->SetOwner(NULL);
-					// delete fLayoutData->fLayout;
-					_this->fLayoutData->fLayout = NULL;
-				}
+				Util::UnsetLayout(_this);
 
 				std::function<void ()> f = [&]() {
 					_this->BView::SetLayout(layout);
