@@ -58,7 +58,11 @@
 				}
 %     end
 %     use_break = true
+%     if a.nillable?
+				if (<%= j %> < argc && !Convert<<%= type %> >::IsConvertable(argv[<%= j %>]) && !NIL_P(argv[<%= j %>])) {
+%     else
 				if (<%= j %> < argc && !Convert<<%= type %> >::IsConvertable(argv[<%= j %>])) {
+%     end
 					type_error_index = <%= j %>;
 					goto break_<%= i %>;
 				}

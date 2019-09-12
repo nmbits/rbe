@@ -137,7 +137,7 @@ define_class "BLayout" do
   end
   function "OwnerChanged" do
     options :protected, :hook
-    interface ["BView *was"], nil, :virtual
+    interface ["%nillable BView *was"], nil, :virtual
   end
   function "AttachedToLayout" do
     options :protected, :hook
