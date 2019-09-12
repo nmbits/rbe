@@ -99,6 +99,24 @@ namespace rbe
 			}
 			return ret;
 		}
+
+		bool
+		SetLayoutCommon(BView *view, BLayout *layout)
+		{
+			// see  haiku/src/kits/interface/View.cpp
+			if (layout == view->fLayoutData->fLayout)
+				return false;
+
+			if (layout && layout->Layout())
+				rb_raise(rb_eRuntimeError,
+						 "B::View#set_layout failed, layout is already in use.");
+			// unset and (don't) delete the old layout
+			Util::UnsetLayout(view);
+			std::function<void ()> f = [&]() { view->SetLayout(layout); };
+			CallWithoutGVL<std::function<void ()>, void> g(f);
+			g();
+			return true;
+		}
 	}
 
 	namespace B
@@ -135,7 +153,6 @@ namespace rbe
 		View::rbe_set_layout(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE_METHOD_CALL("BView::rbe_set_layout", argc, argv, self);
-			VALUE vret = Qnil;
 			BView *_this = Convert<BView *>::FromValue(self);
 			int type_error_index = 0;
 			if (1 == argc) {
@@ -147,28 +164,15 @@ namespace rbe
 					}
 					layout = Convert<BLayout * >::FromValue(argv[0]);
 				}
-				// see  haiku/src/kits/interface/View.cpp
-				if (layout == _this->fLayoutData->fLayout)
-					return Qnil;
-
-				if (layout && layout->Layout())
-					rb_raise(rb_eRuntimeError,
-							 "B::View#set_layout failed, layout if already in use.");
-				// unset and (don't) delete the old layout
-				Util::UnsetLayout(_this);
-
-				std::function<void ()> f = [&]() {
-					_this->BView::SetLayout(layout);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				if (layout)
-					gc::Up(self, argv[0]);
+				if (Util::SetLayoutCommon(_this, layout)) {
+					if (layout)
+						gc::Up(self, argv[0]);
+				}
 				rb_thread_check_ints();
 				if (ThreadException() > 0) {
 					rb_jump_tag(ThreadException());
 				}
-				return vret;
+				return Qnil;
 			}
 		break_0:
 

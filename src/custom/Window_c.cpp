@@ -22,7 +22,7 @@
 #include "rbe.hpp"
 #include "lock.hpp"
 #include "convert.hpp"
-#include "deleting.hpp"
+#include "util_view.hpp"
 
 #include <functional>
 
@@ -397,6 +397,40 @@ namespace rbe
 
 			if (unlock)
 			    _this->Unlock();
+			if (argc != 1)
+				rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)", argc);
+			else
+				rb_raise(rb_eArgError, "wrong type of argument at %d", type_error_index);
+			return Qnil;
+		}
+
+		VALUE
+		Window::rbe_set_layout(int argc, VALUE *argv, VALUE self)
+		{
+			RBE_TRACE_METHOD_CALL("BWindow::rbe_set_layout", argc, argv, self);
+			VALUE vret = Qnil;
+			BWindow *_this = Convert<BWindow *>::FromValue(self);
+			int type_error_index = 0;
+			if (1 == argc) {
+				if (0 < argc && !Convert<BLayout * >::IsConvertable(argv[0])) {
+					type_error_index = 0;
+					goto break_0;
+				}
+				BLayout * layout = Convert<BLayout * >::FromValue(argv[0]);
+				if (layout != NULL)
+					_this->fTopView->AdoptViewColors(layout->View());
+				if (Util::SetLayoutCommon(_this->fTopView, layout)) {
+					if (layout)
+						gc::Up(self, argv[0]);
+				}
+				rb_thread_check_ints();
+				if (ThreadException() > 0) {
+					rb_jump_tag(ThreadException());
+				}
+				return vret;
+			}
+		break_0:
+
 			if (argc != 1)
 				rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)", argc);
 			else

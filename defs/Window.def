@@ -390,8 +390,8 @@ define_class "BWindow" do
     interface [], "thread_id", :virtual
   end
   function "SetLayout" do
-    options :public, :ignore
-    interface ["BLayout *layout"], nil, :virtual
+    options :public, :custom
+    interface ["%nillable %up BLayout *layout"], nil, :virtual
   end
   function "GetLayout" do
     options :public, :ignore
