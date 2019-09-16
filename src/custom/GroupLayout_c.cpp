@@ -9,12 +9,24 @@
 #include "gc.hpp"
 
 #include "GroupLayout.hpp"
+#include "Layout.hpp"
 
 #include "Message.hpp"
 #include "View.hpp"
 #include "LayoutItem.hpp"
 #include "Archivable.hpp"
 #include "TwoDimensionalLayout.hpp"
+
+// haiku/src/kits/interface/GroupLayout.cpp
+
+struct BGroupLayout::ItemLayoutData {
+	float	weight;
+
+	ItemLayoutData()
+		: weight(1)
+	{
+	}
+};
 
 namespace rbe
 {
@@ -25,7 +37,6 @@ namespace rbe
 		{
 			RBE_TRACE_METHOD_CALL("BGroupLayout::rbe_add_view", argc, argv, self);
 			VALUE vret = Qnil;
-			BGroupLayout *_this = Convert<BGroupLayout *>::FromValue(self);
 			int type_error_index = 0;
 			if (1 == argc) {
 				if (0 < argc && argv[0] == Qnil) {
@@ -36,22 +47,7 @@ namespace rbe
 					type_error_index = 0;
 					goto break_0;
 				}
-				BView * child = Convert<BView * >::FromValue(argv[0]);
-
-				BLayoutItem * ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BGroupLayout::AddView(child);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
-				}
-				vret = Convert<BLayoutItem *>::ToValue(ret);
-				if (!NIL_P(vret))
-					gc::Up(self, vret);
-				return vret;
+				return Layout::rbe_add_view(argc, argv, self);
 			}
 		break_0:
 
@@ -72,23 +68,7 @@ namespace rbe
 					type_error_index = 1;
 					goto break_1;
 				}
-				int32 index = Convert<int32 >::FromValue(argv[0]);
-				BView * child = Convert<BView * >::FromValue(argv[1]);
-
-				BLayoutItem * ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BGroupLayout::AddView(index, child);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
-				}
-				vret = Convert<BLayoutItem *>::ToValue(ret);
-				if (!NIL_P(vret))
-					gc::Up(self, vret);
-				return vret;
+				return Layout::rbe_add_view(argc, argv, self);
 			}
 		break_1:
 
@@ -109,22 +89,15 @@ namespace rbe
 					type_error_index = 1;
 					goto break_2;
 				}
-				BView * child = Convert<BView * >::FromValue(argv[0]);
 				float weight = Convert<float >::FromValue(argv[1]);
-
-				BLayoutItem * ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BGroupLayout::AddView(child, weight);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
+				vret = Layout::rbe_add_view(1, argv, self);
+				if (!NIL_P(vret)) {
+					BLayoutItem *item = Convert<BLayoutItem *>::FromValue(vret);
+					if (item && item->LayoutData()) {
+						ItemLayoutData *data = (ItemLayoutData *)item->LayoutData();
+						data->weight = weight;
+					}
 				}
-				vret = Convert<BLayoutItem *>::ToValue(ret);
-				if (!NIL_P(vret))
-					gc::Up(self, vret);
 				return vret;
 			}
 		break_2:
@@ -154,23 +127,15 @@ namespace rbe
 					type_error_index = 2;
 					goto break_3;
 				}
-				int32 index = Convert<int32 >::FromValue(argv[0]);
-				BView * child = Convert<BView * >::FromValue(argv[1]);
 				float weight = Convert<float >::FromValue(argv[2]);
-
-				BLayoutItem * ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BGroupLayout::AddView(index, child, weight);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
+				vret = Layout::rbe_add_view(2, argv, self);
+				if (!NIL_P(vret)) {
+					BLayoutItem *item = Convert<BLayoutItem *>::FromValue(vret);
+					if (item && item->LayoutData()) {
+						ItemLayoutData *data = (ItemLayoutData *)item->LayoutData();
+						data->weight = weight;
+					}
 				}
-				vret = Convert<BLayoutItem *>::ToValue(ret);
-				if (!NIL_P(vret))
-					gc::Up(self, vret);
 				return vret;
 			}
 		break_3:
@@ -188,7 +153,6 @@ namespace rbe
 		{
 			RBE_TRACE_METHOD_CALL("BGroupLayout::rbe_add_item", argc, argv, self);
 			VALUE vret = Qnil;
-			BGroupLayout *_this = Convert<BGroupLayout *>::FromValue(self);
 			int type_error_index = 0;
 			if (1 == argc) {
 				if (0 < argc && argv[0] == Qnil) {
@@ -199,22 +163,7 @@ namespace rbe
 					type_error_index = 0;
 					goto break_0;
 				}
-				BLayoutItem * item = Convert<BLayoutItem * >::FromValue(argv[0]);
-
-				bool ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BGroupLayout::AddItem(item);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
-				}
-				if (ret)
-					gc::Up(self, argv[0]);
-				vret = Convert<bool>::ToValue(ret);
-				return vret;
+				return Layout::rbe_add_item(argc, argv, self);
 			}
 		break_0:
 
@@ -235,23 +184,7 @@ namespace rbe
 					type_error_index = 1;
 					goto break_1;
 				}
-				int32 index = Convert<int32 >::FromValue(argv[0]);
-				BLayoutItem * item = Convert<BLayoutItem * >::FromValue(argv[1]);
-
-				bool ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BGroupLayout::AddItem(index, item);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
-				}
-				if (ret)
-					gc::Up(self, argv[1]);
-				vret = Convert<bool>::ToValue(ret);
-				return vret;
+				return Layout::rbe_add_item(argc, argv, self);
 			}
 		break_1:
 
@@ -272,22 +205,15 @@ namespace rbe
 					type_error_index = 1;
 					goto break_2;
 				}
-				BLayoutItem * item = Convert<BLayoutItem * >::FromValue(argv[0]);
-				float weight = Convert<float >::FromValue(argv[1]);
-
-				bool ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BGroupLayout::AddItem(item, weight);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
+				float weight = Convert<float >::FromValue(argv[2]);
+				vret = Layout::rbe_add_item(1, argv, self);
+				if (!NIL_P(vret)) {
+					BLayoutItem *item = Convert<BLayoutItem *>::FromValue(vret);
+					if (item && item->LayoutData()) {
+						ItemLayoutData *data = (ItemLayoutData *)item->LayoutData();
+						data->weight = weight;
+					}
 				}
-				if (ret)
-					gc::Up(self, argv[0]);
-				vret = Convert<bool>::ToValue(ret);
 				return vret;
 			}
 		break_2:
@@ -317,23 +243,15 @@ namespace rbe
 					type_error_index = 2;
 					goto break_3;
 				}
-				int32 index = Convert<int32 >::FromValue(argv[0]);
-				BLayoutItem * item = Convert<BLayoutItem * >::FromValue(argv[1]);
 				float weight = Convert<float >::FromValue(argv[2]);
-
-				bool ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BGroupLayout::AddItem(index, item, weight);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
+				vret = Layout::rbe_add_item(2, argv, self);
+				if (!NIL_P(vret)) {
+					BLayoutItem *item = Convert<BLayoutItem *>::FromValue(vret);
+					if (item && item->LayoutData()) {
+						ItemLayoutData *data = (ItemLayoutData *)item->LayoutData();
+						data->weight = weight;
+					}
 				}
-				if (ret)
-					gc::Up(self, argv[1]);
-				vret = Convert<bool>::ToValue(ret);
 				return vret;
 			}
 		break_3:

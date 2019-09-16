@@ -36,12 +36,12 @@ class MyApp < B::Application
   def create_window
     rect = B::Rect.new(20.0, 20.0, 300.0, 300.0)
     window = MyWindow.new(rect, "Test", B::DOCUMENT_WINDOW, 0)
-    # view = MyView.new B::Rect.new(0.0, 0.0, 200.0, 200.0), "test", B::FOLLOW_ALL_SIDES, B::WILL_DRAW
-    view = MyView.new "test", B::WILL_DRAW
     layout = B::GroupLayout.new(B::VERTICAL)
     window.set_layout layout
-    item = layout.add_view view
-    item.set_explict_alignment(B::Alignment.new(B::ALIGN_HORIZONTAL_CENTER, B::ALIGN_VERTICAL_CENTER))
+    4.times do
+      item = layout.add_view MyView.new("test", B::WILL_DRAW)
+      item.set_explicit_alignment(B::Alignment.new(B::ALIGN_HORIZONTAL_CENTER, B::ALIGN_VERTICAL_CENTER))
+    end
     window.show
   end
   

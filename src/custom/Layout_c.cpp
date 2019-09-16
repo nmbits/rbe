@@ -8,6 +8,12 @@
 #include "Layout.hpp"
 #include "type_map.hpp"
 
+#define private public
+#define protected public
+#include "ViewLayoutItem.h"
+#undef protected
+#undef private
+
 #include <functional>
 
 namespace rbe {
@@ -26,8 +32,6 @@ namespace rbe {
 		Layout::rbe_add_view(int argc, VALUE *argv, VALUE self)
 		{
 			RBE_TRACE_METHOD_CALL("BLayout::rbe_add_view", argc, argv, self);
-			VALUE vret = Qnil;
-			BLayout *_this = Convert<BLayout *>::FromValue(self);
 			int type_error_index = 0;
 			if (1 == argc) {
 				if (0 < argc && argv[0] == Qnil) {
@@ -39,21 +43,35 @@ namespace rbe {
 					goto break_0;
 				}
 				BView * child = Convert<BView * >::FromValue(argv[0]);
-
-				BLayoutItem * ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BLayout::AddView(child);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
+				BLayoutItem *item = child->GetLayout();
+				VALUE item_ = Qnil;
+				if (!item) {
+					item = new BViewLayoutItem(child);
+					if (item) {
+						item_ = LayoutItem::Wrap(item);
+						gc::Up(item_, argv[0]);
+					} else {
+						return Qnil;
+					}
 				}
-				vret = Convert<BLayoutItem *>::ToValue(ret);
-				if (!NIL_P(vret))
-					gc::Up(self, vret);
-				return vret;
+				VALUE add_item = rbe_add_item(1, &item_, self);
+				if (add_item == Qtrue)
+					return item_;
+				return Qnil;
+
+				// std::function<void ()> f = [&]() {
+				// 	ret = _this->BLayout::AddView(child);
+				// };
+				// CallWithoutGVL<std::function<void ()>, void> g(f);
+				// g();
+				// rb_thread_check_ints();
+				// if (ThreadException() > 0) {
+				// 	rb_jump_tag(ThreadException());
+				// }
+				// vret = Convert<BLayoutItem *>::ToValue(ret);
+				// if (!NIL_P(vret))
+				// 	gc::Up(self, vret);
+				// return vret;
 			}
 		break_0:
 
@@ -74,23 +92,41 @@ namespace rbe {
 					type_error_index = 1;
 					goto break_1;
 				}
-				int32 index = Convert<int32 >::FromValue(argv[0]);
-				BView * child = Convert<BView * >::FromValue(argv[1]);
 
-				BLayoutItem * ret;
-				std::function<void ()> f = [&]() {
-					ret = _this->BLayout::AddView(index, child);
-				};
-				CallWithoutGVL<std::function<void ()>, void> g(f);
-				g();
-				rb_thread_check_ints();
-				if (ThreadException() > 0) {
-					rb_jump_tag(ThreadException());
+				BView * child = Convert<BView * >::FromValue(argv[1]);
+				BLayoutItem *item = child->GetLayout();
+				VALUE item_ = Qnil;
+				if (!item) {
+					item = new BViewLayoutItem(child);
+					if (item) {
+						item_ = LayoutItem::Wrap(item);
+						gc::Up(item_, argv[1]);
+					} else {
+						return Qnil;
+					}
 				}
-				vret = Convert<BLayoutItem *>::ToValue(ret);
-				if (!NIL_P(vret))
-					gc::Up(self, vret);
-				return vret;
+				VALUE tmp[2];
+				tmp[0] = argv[0];
+				tmp[1] = item_;
+				VALUE add_item = rbe_add_item(2, tmp, self);
+				if (add_item == Qtrue)
+					return item_;
+				return Qnil;
+
+				// BLayoutItem * ret;
+				// std::function<void ()> f = [&]() {
+				// 	ret = _this->BLayout::AddView(index, child);
+				// };
+				// CallWithoutGVL<std::function<void ()>, void> g(f);
+				// g();
+				// rb_thread_check_ints();
+				// if (ThreadException() > 0) {
+				// 	rb_jump_tag(ThreadException());
+				// }
+				// vret = Convert<BLayoutItem *>::ToValue(ret);
+				// if (!NIL_P(vret))
+				// 	gc::Up(self, vret);
+				// return vret;
 			}
 		break_1:
 

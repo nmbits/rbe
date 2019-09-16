@@ -49,7 +49,7 @@ define_class "BLayoutItem" do
     interface ["BSize size"], nil
   end
   function "SetExplicitAlignment" do
-    options :public, :ignore
+    options :public
     interface ["BAlignment alignment"], nil, :pure, :virtual
   end
   function "IsVisible" do
