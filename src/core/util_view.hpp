@@ -11,6 +11,7 @@ namespace rbe
 {
 	namespace Util
 	{
+		BLayout *UnsetLayout(BView *view);
 		bool SetLayoutCommon(BView *view, BLayout *layout);
 	}
 }

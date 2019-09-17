@@ -21,6 +21,8 @@ namespace rbe {
 		void
 		Layout::rbe__gc_free(void *ptr)
 		{
+		    RBE_PRINT(("BLayout::rb__gc_free: %p\n", ptr));
+		    PRINT(("ptr = %p\n", ptr));
 			PointerOf<BLayout>::Class *p = static_cast<PointerOf<BLayout>::Class *>(ptr);
 			BLayout *layout = static_cast<BLayout *>(p);
 			while (layout->CountItems() > 0)

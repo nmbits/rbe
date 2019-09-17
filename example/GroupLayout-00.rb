@@ -38,7 +38,7 @@ class MyApp < B::Application
     window = MyWindow.new(rect, "Test", B::DOCUMENT_WINDOW, 0)
     layout = B::GroupLayout.new(B::VERTICAL)
     window.set_layout layout
-    4.times do
+    2.times do
       item = layout.add_view MyView.new("test", B::WILL_DRAW)
       item.set_explicit_alignment(B::Alignment.new(B::ALIGN_HORIZONTAL_CENTER, B::ALIGN_VERTICAL_CENTER))
     end
@@ -48,10 +48,15 @@ class MyApp < B::Application
   def ready_to_run
     set_name "This is Ruby"
     create_window
+    set_pulse_rate 1000000
   end
   
   def quit_requested
     true
+  end
+
+  def pulse
+    # GC.start
   end
 end
 

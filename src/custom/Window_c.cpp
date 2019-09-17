@@ -13,6 +13,7 @@
 
 #include "Looper.hpp"
 #include "util_looper.hpp"
+#include "util_view.hpp"
 #include "Window.hpp"
 #include "View.hpp"
 #include "Message.hpp"
@@ -92,6 +93,18 @@ namespace rbe
 {
 	namespace B
 	{
+		void
+		Window::rbe__gc_free(void *ptr)
+		{
+		    RBE_PRINT(("BWindow::rb__gc_free: %p\n", ptr));
+		    PRINT(("ptr = %p\n", ptr));
+
+			PointerOf<BWindow>::Class *tmp = static_cast<PointerOf<BWindow>::Class *>(ptr);
+			BWindow *_this = static_cast<BWindow *>(tmp);
+			Util::RemoveChildrenIfWindow(_this);
+			Looper::rbe__gc_free(ptr);
+		}
+
 		void
 		Window::DispatchMessageST(BWindow *_this, BMessage *message, BHandler *handler)
 		{

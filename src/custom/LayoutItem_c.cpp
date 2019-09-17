@@ -11,6 +11,8 @@ namespace rbe {
 		void
 		LayoutItem::rbe__gc_free(void *ptr)
 		{
+		    RBE_PRINT(("BLayoutItem::rb__gc_free: %p\n", ptr));
+		    PRINT(("ptr = %p\n", ptr));
 			PointerOf<BLayoutItem>::Class *p =
 				static_cast<PointerOf<BLayoutItem>::Class *>(ptr);
 			BLayoutItem *li = static_cast<BLayoutItem *>(p);

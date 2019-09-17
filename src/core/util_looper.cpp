@@ -1,5 +1,6 @@
 
 #include "util_looper.hpp"
+#include "util_view.hpp"
 #include "interface.hpp"
 #include "call_script.hpp"
 
@@ -33,6 +34,7 @@ namespace rbe {
 					RBE_PRINT(("     removing %p\n", view));
 					window->RemoveChild(view);
 				}
+				UnsetLayout(window->fTopView);
 			}
 		}
 
