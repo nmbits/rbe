@@ -1,0 +1,163 @@
+define_class "BGridLayout" do
+  kit "interface"
+  header_file "interface/GridLayout.h"
+  super_class_name "BTwoDimensionalLayout"
+  options :wrapper
+  function "BGridLayout" do
+    options :ctor, :public
+    interface ["float horizontal = B_USE_DEFAULT_SPACING", "float vertical = B_USE_DEFAULT_SPACING"], nil
+    interface ["BMessage *from"], nil
+  end
+  function "CountColumns" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "CountRows" do
+    options :public
+    interface [], "int32", :const
+  end
+  function "HorizontalSpacing" do
+    options :public
+    interface [], "float", :const
+  end
+  function "VerticalSpacing" do
+    options :public
+    interface [], "float", :const
+  end
+  function "SetHorizontalSpacing" do
+    options :public
+    interface ["float spacing"], nil
+  end
+  function "SetVerticalSpacing" do
+    options :public
+    interface ["float spacing"], nil
+  end
+  function "SetSpacing" do
+    options :public
+    interface ["float horizontal", "float vertical"], nil
+  end
+  function "ColumnWeight" do
+    options :public
+    interface ["int32 column"], "float", :const
+  end
+  function "SetColumnWeight" do
+    options :public
+    interface ["int32 column", "float weight"], nil
+  end
+  function "MinColumnWidth" do
+    options :public
+    interface ["int32 column"], "float", :const
+  end
+  function "SetMinColumnWidth" do
+    options :public
+    interface ["int32 column", "float width"], nil
+  end
+  function "MaxColumnWidth" do
+    options :public
+    interface ["int32 column"], "float", :const
+  end
+  function "SetMaxColumnWidth" do
+    options :public
+    interface ["int32 column", "float width"], nil
+  end
+  function "RowWeight" do
+    options :public
+    interface ["int32 row"], "float", :const
+  end
+  function "SetRowWeight" do
+    options :public
+    interface ["int32 row", "float weight"], nil
+  end
+  function "MinRowHeight" do
+    options :public
+    interface ["int row"], "float", :const
+  end
+  function "SetMinRowHeight" do
+    options :public
+    interface ["int32 row", "float height"], nil
+  end
+  function "MaxRowHeight" do
+    options :public
+    interface ["int32 row"], "float", :const
+  end
+  function "SetMaxRowHeight" do
+    options :public
+    interface ["int32 row", "float height"], nil
+  end
+  function "ItemAt" do
+    options :public
+    interface ["int32 column", "int32 row"], "BLayoutItem *", :const
+  end
+  function "AddView" do
+    options :public
+    interface ["BView *child"], "BLayoutItem *", :virtual
+    interface ["int32 index", "BView *child"], "BLayoutItem *", :virtual
+    interface ["BView *child", "int32 column", "int32 row", "int32 columnCount = 1", "int32 rowCount = 1"], "BLayoutItem *", :virtual
+  end
+  function "AddItem" do
+    options :public
+    interface ["BLayoutItem *item"], "bool", :virtual
+    interface ["int32 index", "BLayoutItem *item"], "bool", :virtual
+    interface ["BLayoutItem *item", "int32 column", "int32 row", "int32 columnCount = 1", "int32 rowCount = 1"], "bool", :virtual
+  end
+  function "Archive" do
+    options :public
+    interface ["BMessage *into", "bool deep = true"], "status_t", :const, :virtual
+  end
+  function "Instantiate" do
+    options :public, :static
+    interface ["BMessage *from"], "BArchivable *"
+  end
+  function "Perform" do
+    options :public, :ignore
+    interface ["perform_code d", "void *arg"], "status_t", :virtual
+  end
+  function "AllArchived" do
+    options :protected, :ignore
+    interface ["BMessage *into"], "status_t", :const, :virtual
+  end
+  function "AllUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from"], "status_t", :virtual
+  end
+  function "ItemArchived" do
+    options :protected, :ignore
+    interface ["BMessage *into", "BLayoutItem *item", "int32 index"], "status_t", :const, :virtual
+  end
+  function "ItemUnarchived" do
+    options :protected, :ignore
+    interface ["const BMessage *from", "BLayoutItem *item", "int32 index"], "status_t", :virtual
+  end
+  function "ItemAdded" do
+    options :protected, :hook
+    interface ["BLayoutItem *item", "int32 atIndex"], "bool = false", :virtual
+  end
+  function "ItemRemoved" do
+    options :protected, :hook
+    interface ["BLayoutItem *item", "int32 fromIndex"], nil, :virtual
+  end
+  function "HasMultiColumnItems" do
+    options :protected
+    interface [], "bool", :virtual
+  end
+  function "HasMultiRowItems" do
+    options :protected
+    interface [], "bool", :virtual
+  end
+  function "InternalCountColumns" do
+    options :protected
+    interface [], "int32", :virtual
+  end
+  function "InternalCountRows" do
+    options :protected
+    interface [], "int32", :virtual
+  end
+  function "GetColumnRowConstraints" do
+    options :protected, :ignore
+    interface ["orientation orientation", "int32 index", "ColumnRowConstraints *constraints"], nil, :virtual
+  end
+  function "GetItemDimensions" do
+    options :protected, :ignore
+    interface ["BLayoutItem *item", "Dimensions *dimensions"], nil, :virtual
+  end
+end
