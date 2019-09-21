@@ -89,13 +89,13 @@ define_class "BGridLayout" do
     interface ["int32 column", "int32 row"], "BLayoutItem *", :const
   end
   function "AddView" do
-    options :public
+    options :public, :custom
     interface ["BView *child"], "BLayoutItem *", :virtual
     interface ["int32 index", "BView *child"], "BLayoutItem *", :virtual
     interface ["BView *child", "int32 column", "int32 row", "int32 columnCount = 1", "int32 rowCount = 1"], "BLayoutItem *", :virtual
   end
   function "AddItem" do
-    options :public
+    options :public, :custom
     interface ["BLayoutItem *item"], "bool", :virtual
     interface ["int32 index", "BLayoutItem *item"], "bool", :virtual
     interface ["BLayoutItem *item", "int32 column", "int32 row", "int32 columnCount = 1", "int32 rowCount = 1"], "bool", :virtual

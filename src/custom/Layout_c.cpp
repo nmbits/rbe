@@ -14,9 +14,31 @@
 #undef protected
 #undef private
 
+#include "util_layout.hpp"
+
 #include <functional>
 
-namespace rbe {
+namespace rbe
+{
+	namespace Util
+	{
+		VALUE
+		AllocateLayoutItemForView(VALUE view_)
+		{
+			BView *view = Convert<BView *>::FromValue(view_);
+			BLayoutItem *item = view->GetLayout();
+			VALUE item_ = Qnil;
+			if (!item) {
+				item = new BViewLayoutItem(view);
+				item_ = B::LayoutItem::Wrap(item);
+				gc::Up(item_, view_);
+			} else {
+				item_ = Convert<BLayoutItem *>::ToValue(item);
+			}
+			return item_;
+		}
+	}
+
 	namespace B {
 		void
 		Layout::rbe__gc_free(void *ptr)
@@ -44,36 +66,11 @@ namespace rbe {
 					type_error_index = 0;
 					goto break_0;
 				}
-				BView * child = Convert<BView * >::FromValue(argv[0]);
-				BLayoutItem *item = child->GetLayout();
-				VALUE item_ = Qnil;
-				if (!item) {
-					item = new BViewLayoutItem(child);
-					if (item) {
-						item_ = LayoutItem::Wrap(item);
-						gc::Up(item_, argv[0]);
-					} else {
-						return Qnil;
-					}
-				}
+				VALUE item_ = Util::AllocateLayoutItemForView(argv[0]);
 				VALUE add_item = rbe_add_item(1, &item_, self);
 				if (add_item == Qtrue)
 					return item_;
 				return Qnil;
-
-				// std::function<void ()> f = [&]() {
-				// 	ret = _this->BLayout::AddView(child);
-				// };
-				// CallWithoutGVL<std::function<void ()>, void> g(f);
-				// g();
-				// rb_thread_check_ints();
-				// if (ThreadException() > 0) {
-				// 	rb_jump_tag(ThreadException());
-				// }
-				// vret = Convert<BLayoutItem *>::ToValue(ret);
-				// if (!NIL_P(vret))
-				// 	gc::Up(self, vret);
-				// return vret;
 			}
 		break_0:
 
@@ -94,19 +91,7 @@ namespace rbe {
 					type_error_index = 1;
 					goto break_1;
 				}
-
-				BView * child = Convert<BView * >::FromValue(argv[1]);
-				BLayoutItem *item = child->GetLayout();
-				VALUE item_ = Qnil;
-				if (!item) {
-					item = new BViewLayoutItem(child);
-					if (item) {
-						item_ = LayoutItem::Wrap(item);
-						gc::Up(item_, argv[1]);
-					} else {
-						return Qnil;
-					}
-				}
+				VALUE item_ = Util::AllocateLayoutItemForView(argv[1]);
 				VALUE tmp[2];
 				tmp[0] = argv[0];
 				tmp[1] = item_;
@@ -114,21 +99,6 @@ namespace rbe {
 				if (add_item == Qtrue)
 					return item_;
 				return Qnil;
-
-				// BLayoutItem * ret;
-				// std::function<void ()> f = [&]() {
-				// 	ret = _this->BLayout::AddView(index, child);
-				// };
-				// CallWithoutGVL<std::function<void ()>, void> g(f);
-				// g();
-				// rb_thread_check_ints();
-				// if (ThreadException() > 0) {
-				// 	rb_jump_tag(ThreadException());
-				// }
-				// vret = Convert<BLayoutItem *>::ToValue(ret);
-				// if (!NIL_P(vret))
-				// 	gc::Up(self, vret);
-				// return vret;
 			}
 		break_1:
 
