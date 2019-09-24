@@ -44,14 +44,19 @@ class MyApp < B::Application
     end
     grid = B::GridLayout.new
     group.add_item grid
+    window.set_layout group
     m = 4
     m.times do |i|
       x = i % (m / 2)
       y = i / (m / 2)
       button = B::Button.new("button(#{x},#{y})")
-      grid.add_view button, x, y
+      p grid.add_view button, x, y
     end
     window.show
+    p group.count_items
+    p grid.count_items
+    p group.owner
+    p grid.owner
   end
   
   def ready_to_run

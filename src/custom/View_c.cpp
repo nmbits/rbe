@@ -94,6 +94,8 @@ namespace rbe
 			// unset and (don't) delete the old layout
 			if (ret) {
 				ret->RemoveSelf();
+				for (int i = ret->CountItems() - 1; i >= 0; i--)
+					ret->RemoveItem(i);
 				ret->SetOwner(NULL);
 				view->fLayoutData->fLayout = NULL;
 			}

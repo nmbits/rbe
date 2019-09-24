@@ -44,11 +44,14 @@ namespace rbe
 		Layout::rbe__gc_free(void *ptr)
 		{
 		    RBE_PRINT(("BLayout::rb__gc_free: %p\n", ptr));
-		    PRINT(("ptr = %p\n", ptr));
 			PointerOf<BLayout>::Class *p = static_cast<PointerOf<BLayout>::Class *>(ptr);
 			BLayout *layout = static_cast<BLayout *>(p);
-			while (layout->CountItems() > 0)
+			PRINT(("  count = %d\n", layout->CountItems()));
+			while (layout->CountItems() > 0) {
+				BLayoutItem *item = layout->ItemAt(0);
+				PRINT(("  removing item ptr = %p\n", item));
 				layout->RemoveItem(0);
+			}
 			LayoutItem::rbe__gc_free(ptr);
 		}
 
